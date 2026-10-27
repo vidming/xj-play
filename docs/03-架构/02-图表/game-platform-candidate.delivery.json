@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "15128656-15db-4e4f-ab1a-71c793a8f7e4",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/game-platform-candidate.json",
+  "output": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/game-platform-candidate.html",
+  "specification": {
+    "sha256": "fc1f6d7515cdac3208aff7a969f41470c70af7731d2de28799b14a073acbf600",
+    "bytes": 3845
+  },
+  "artifact": {
+    "sha256": "51ab6d1c58b91a5f66d01c2a0383fefb70586fd3c056f5c26d40a0a64e11c833",
+    "bytes": 819940
+  }
+}

@@ -1,0 +1,291 @@
+{
+  "source": "../02-演示/01-平台交互演示/tokens.css",
+  "status": "Original-layout proportion revision V1.2; awaiting actual acceptance",
+  "tokens": [
+    {
+      "name": "ink-900",
+      "value": "#24252b",
+      "layer": "primitive"
+    },
+    {
+      "name": "ink-600",
+      "value": "#60616a",
+      "layer": "primitive"
+    },
+    {
+      "name": "coral-500",
+      "value": "#df5a4e",
+      "layer": "primitive"
+    },
+    {
+      "name": "coral-700",
+      "value": "#b64036",
+      "layer": "primitive"
+    },
+    {
+      "name": "coral-800",
+      "value": "#9d342c",
+      "layer": "primitive"
+    },
+    {
+      "name": "paper-000",
+      "value": "#fff",
+      "layer": "primitive"
+    },
+    {
+      "name": "paper-100",
+      "value": "#f5f5f3",
+      "layer": "primitive"
+    },
+    {
+      "name": "paper-200",
+      "value": "#eeede9",
+      "layer": "primitive"
+    },
+    {
+      "name": "line-200",
+      "value": "#dededc",
+      "layer": "primitive"
+    },
+    {
+      "name": "night-900",
+      "value": "#191a1f",
+      "layer": "primitive"
+    },
+    {
+      "name": "night-soft",
+      "value": "#e1dcdb",
+      "layer": "primitive"
+    },
+    {
+      "name": "green-700",
+      "value": "#30664e",
+      "layer": "primitive"
+    },
+    {
+      "name": "green-100",
+      "value": "#e8f0eb",
+      "layer": "primitive"
+    },
+    {
+      "name": "amber-700",
+      "value": "#81551d",
+      "layer": "primitive"
+    },
+    {
+      "name": "amber-100",
+      "value": "#fcf0da",
+      "layer": "primitive"
+    },
+    {
+      "name": "red-700",
+      "value": "#a5302d",
+      "layer": "primitive"
+    },
+    {
+      "name": "red-100",
+      "value": "#fbebe8",
+      "layer": "primitive"
+    },
+    {
+      "name": "coral-100",
+      "value": "#f6e6e1",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-1",
+      "value": "4px",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-2",
+      "value": "8px",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-3",
+      "value": "12px",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-4",
+      "value": "16px",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-6",
+      "value": "24px",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-8",
+      "value": "32px",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-12",
+      "value": "48px",
+      "layer": "primitive"
+    },
+    {
+      "name": "space-16",
+      "value": "64px",
+      "layer": "primitive"
+    },
+    {
+      "name": "font-ui",
+      "value": "\"PingFang SC\",\"Microsoft YaHei\",-apple-system,BlinkMacSystemFont,sans-serif",
+      "layer": "primitive"
+    },
+    {
+      "name": "font-display",
+      "value": "\"PingFang SC\",\"Microsoft YaHei\",-apple-system,BlinkMacSystemFont,sans-serif",
+      "layer": "primitive"
+    },
+    {
+      "name": "font-brand",
+      "value": "-apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",sans-serif",
+      "layer": "primitive"
+    },
+    {
+      "name": "surface",
+      "value": "var(--paper-000)",
+      "layer": "semantic"
+    },
+    {
+      "name": "canvas",
+      "value": "var(--paper-100)",
+      "layer": "semantic"
+    },
+    {
+      "name": "text",
+      "value": "var(--ink-900)",
+      "layer": "semantic"
+    },
+    {
+      "name": "muted",
+      "value": "var(--ink-600)",
+      "layer": "semantic"
+    },
+    {
+      "name": "border",
+      "value": "var(--line-200)",
+      "layer": "semantic"
+    },
+    {
+      "name": "action",
+      "value": "var(--coral-700)",
+      "layer": "semantic"
+    },
+    {
+      "name": "focus",
+      "value": "var(--coral-700)",
+      "layer": "semantic"
+    },
+    {
+      "name": "coral",
+      "value": "var(--coral-500)",
+      "layer": "semantic"
+    },
+    {
+      "name": "positive",
+      "value": "var(--green-700)",
+      "layer": "semantic"
+    },
+    {
+      "name": "warning",
+      "value": "var(--amber-700)",
+      "layer": "semantic"
+    },
+    {
+      "name": "negative",
+      "value": "var(--red-700)",
+      "layer": "semantic"
+    },
+    {
+      "name": "radius-control",
+      "value": "7px",
+      "layer": "primitive"
+    },
+    {
+      "name": "radius-field",
+      "value": "7px",
+      "layer": "primitive"
+    },
+    {
+      "name": "radius-card",
+      "value": "10px",
+      "layer": "primitive"
+    },
+    {
+      "name": "radius-section",
+      "value": "12px",
+      "layer": "primitive"
+    },
+    {
+      "name": "column-bg",
+      "value": "#25252c",
+      "layer": "primitive"
+    },
+    {
+      "name": "column-fg",
+      "value": "#fff",
+      "layer": "primitive"
+    },
+    {
+      "name": "column-muted",
+      "value": "#d5d3d9",
+      "layer": "primitive"
+    },
+    {
+      "name": "button-bg",
+      "value": "var(--action)",
+      "layer": "component"
+    },
+    {
+      "name": "button-fg",
+      "value": "var(--paper-000)",
+      "layer": "component"
+    },
+    {
+      "name": "button-radius",
+      "value": "var(--radius-control)",
+      "layer": "component"
+    },
+    {
+      "name": "panel-radius",
+      "value": "var(--radius-card)",
+      "layer": "component"
+    },
+    {
+      "name": "feature-radius",
+      "value": "var(--radius-section)",
+      "layer": "component"
+    },
+    {
+      "name": "input-bg",
+      "value": "var(--surface)",
+      "layer": "component"
+    },
+    {
+      "name": "input-border",
+      "value": "var(--border)",
+      "layer": "component"
+    },
+    {
+      "name": "content-width",
+      "value": "1160px",
+      "layer": "primitive"
+    },
+    {
+      "name": "sidebar-width",
+      "value": "208px",
+      "layer": "primitive"
+    },
+    {
+      "name": "duration-state",
+      "value": "180ms",
+      "layer": "primitive"
+    }
+  ]
+}

@@ -1,0 +1,637 @@
+"""从同一规格源生成可审阅的物理字典；不连接数据库、不生成或执行DDL。"""
+import json
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+BASE = Path(__file__).resolve().parents[1]
+TODAY = datetime.now(ZoneInfo("Asia/Shanghai")).date().isoformat()
+TABLES = []
+
+
+def table(name, label, domain, fields, unique=(), rules="", store="mysql"):
+    columns = [
+        {"name": "id", "sqlType": "BIGINT UNSIGNED", "nullable": False,
+         "key": ["pk"], "description": "平台内部主键，服务端生成；不作为鉴权依据"},
+        {"name": "public_id", "sqlType": "CHAR(36) ASCII", "nullable": False,
+         "key": ["uk"], "description": "服务端UUID公开标识；不可猜测不代替对象授权"},
+        {"name": "created_at", "sqlType": "DATETIME(6)", "nullable": False,
+         "description": "服务端UTC创建时刻"},
+    ]
+    for row in fields.strip().splitlines():
+        name_, type_, desc, *ref = row.strip().split("|")
+        nullable = type_.endswith("?")
+        item = {"name": name_, "sqlType": type_.rstrip("?"),
+                "nullable": nullable, "description": desc}
+        if ref:
+            item.update(key=["ref"], references=ref[0], referenceKind="logical")
+        columns.append(item)
+    TABLES.append({"name": "xj_" + name, "label": label, "domain": domain, "store": store,
+                   "columns": columns, "unique": [["public_id"], *unique],
+                   "rules": rules, "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"})
+
+
+table("subject", "玩家主体与最小归属", "身份", """
+lifecycle|VARCHAR(24)|ACTIVE/DELETION_REQUESTED/PROCESSING/DELETED/EXCEPTION
+email_verified|BOOLEAN|与生命周期独立；后端维护
+session_generation|BIGINT UNSIGNED|撤会话代次
+revision|BIGINT UNSIGNED|乐观并发修订
+deleted_at|DATETIME(6)?|AD1最后确认时刻
+""", rules="主体无邮箱或剧情；注销后最小墓碑仅按必要履约/留存依据保留。")
+table("profile", "私人账号资料", "身份", """
+subject_id|BIGINT UNSIGNED|账号主体|xj_subject.id
+email_ciphertext|VARBINARY(2048)|密钥管理环境加密邮箱
+email_lookup|BINARY(32)|规范化邮箱带密钥检索摘要；不得当匿名数据
+password_hash|VARCHAR(255)|支持15–128码点的口令哈希；不裁剪
+nickname|VARCHAR(24)|1–24 Unicode码点；不作为身份
+updated_at|DATETIME(6)|服务端更新时刻
+""", unique=[["subject_id"], ["email_lookup"]], rules="规范化只折叠域名大小写，local-part保守处理；注销清理释放旧邮箱但不转移旧主体。哈希算法/参数须在工具冻结与资源测试中确定。")
+table("session", "受控玩家会话", "身份", """
+subject_id|BIGINT UNSIGNED?|游客时为空|xj_subject.id
+token_digest|BINARY(32)|只保存会话令牌摘要
+generation|BIGINT UNSIGNED|绑定主体撤销代次
+expires_at|DATETIME(6)|服务端到期，不由客户端延长
+revoked_at|DATETIME(6)?|登出/重置/注销撤销
+purpose|VARCHAR(16)|PLAYER/GUEST/SUPPORT受限目的
+""", unique=[["token_digest"]])
+table("identity_action", "验证与找回动作", "身份", """
+subject_id|BIGINT UNSIGNED?|防枚举响应可能无匹配主体|xj_subject.id
+action_type|VARCHAR(32)|REGISTER/VERIFY/RESET/CHANGE_EMAIL/DELETE
+token_digest|BINARY(32)?|一次性令牌摘要
+state|VARCHAR(24)|ACCEPTED/SENT/SUCCEEDED/FAILED/UNKNOWN/EXPIRED
+expires_at|DATETIME(6)?|成功发出的验证链接30分钟
+revision|BIGINT UNSIGNED|成功重发切换有效动作代次
+completed_at|DATETIME(6)?|动作真正完成
+""", rules="邮件发送成功才失效旧链接；60秒/小时5次；重置成功撤会话；泛化外部反馈不暴露存在性。")
+table("deletion_request", "AD1注销申请", "身份", """
+subject_id|BIGINT UNSIGNED|原账号|xj_subject.id
+state|VARCHAR(24)|REQUESTED/REVIEWING/AWAIT_CONFIRM/WITHDRAWN/PROCESSING/COMPLETE/EXCEPTION
+policy_version|VARCHAR(128)|已展示并确认的处理范围版本
+blocking_refs|JSON|具体在途业务和责任，不能冻结全部数据
+final_confirmed_at|DATETIME(6)?|T_delete；不可逆处理前最后确认
+next_review_at|DATETIME(6)?|个案下一复核
+revision|BIGINT UNSIGNED|流程并发修订
+""")
+
+table("game", "作品元数据", "目录", """
+slug|VARCHAR(128) ASCII|公开路径标识
+title|VARCHAR(80)|名称1–80码点
+summary|VARCHAR(160)|短摘要1–160码点
+description|TEXT|发布正文1–2000码点，安全渲染
+media|JSON|1封面/0–8截图；公开资源编号
+declarations|JSON|内容/设备/语言/声音/存档声明
+sale_state|VARCHAR(24)|DRAFT/ON_SALE/DELISTED
+runtime_state|VARCHAR(24)|AVAILABLE/SUSPENDED/TERMINATING/CLOSED
+data_namespace|VARCHAR(32) ASCII BINARY?|独立游戏表前缀登记，如xjg_ga_；未接入时空，登记后不可复用
+published_at|DATETIME(6)?|默认排序依据
+revision|BIGINT UNSIGNED|运营修改并发
+""", unique=[["slug"], ["data_namespace"]], rules="data_namespace为服务端登记的精确前缀，游戏key仅小写字母开头加字母数字且最长16位；空值仅未启用后端。前缀不是SQL权限或客户端可传表名，游戏账户逐表授权，禁止写xj_平台事实。")
+table("game_version", "不可变游戏版本", "目录", """
+game_id|BIGINT UNSIGNED|所属作品|xj_game.id
+version|VARCHAR(128) ASCII|游戏自有版本标签
+manifest_digest|BINARY(32)|审核manifest摘要
+package_digest|BINARY(32)|资源包摘要
+entry_path|VARCHAR(512)|已标准化入口
+protocol_range|VARCHAR(128)|消息协议兼容范围
+save_formats|JSON|写入及接受格式；游戏解释迁移
+state|VARCHAR(24)|UPLOADED/CHECKING/REVIEW/PUBLISHED/REJECTED/DISABLED
+update_notes|TEXT|发布1–1000码点
+revision|BIGINT UNSIGNED|审核/发布修订，不修改包
+""", unique=[["game_id", "version"]])
+table("resource", "私有资源索引", "目录", """
+version_id|BIGINT UNSIGNED|固定游戏版本|xj_game_version.id
+path|VARCHAR(512)|规范路径，拒穿越及碰撞
+storage_object_id|BIGINT UNSIGNED|精确不可变对象；只在后端解析|xj_storage_object.id
+visibility|VARCHAR(16)|PUBLIC/PROTECTED
+required_keys|JSON|需要全部满足的本作品contentKey清单
+""", unique=[["version_id", "path"]], rules="对象须已核验AVAILABLE且bucket_role=GAME；初次绑定须核上传计划归属本游戏版本。长度、SHA-256及审核MIME从对象表读取，公开接口不返回存储定位。PUBLIC仅表示可经审核发布路径复制；源桶仍私有。")
+table("content_key", "稳定内容标识", "目录", """
+game_id|BIGINT UNSIGNED|作品|xj_game.id
+content_key|VARCHAR(128) ASCII BINARY|1–128 ASCII，作品内大小写精确
+meaning|VARCHAR(1000)|已售含义/范围说明，不能复用缩减
+version_coverage|JSON|哪些不可变版本兑现该含义
+""", unique=[["game_id", "content_key"]])
+table("product_revision", "商品承诺快照", "目录", """
+game_id|BIGINT UNSIGNED|作品|xj_game.id
+product_key|VARCHAR(128) ASCII|逻辑商品
+revision_no|BIGINT UNSIGNED|每版不可变承诺
+kind|VARCHAR(16)|BUYOUT/CHAPTER/SCENE/FREE
+price_fen|BIGINT UNSIGNED|CNY分；业务输入≤999999；FREE=0
+currency|CHAR(3) ASCII|当前仅CNY
+promise|TEXT|购买时明确承诺，不包含所有未来DLC
+sale_state|VARCHAR(16)|DRAFT/ON_SALE/DELISTED
+""", unique=[["game_id", "product_key", "revision_no"]])
+table("product_scope", "商品内容覆盖", "目录", """
+product_revision_id|BIGINT UNSIGNED|不可变商品版|xj_product_revision.id
+content_id|BIGINT UNSIGNED|同作品内容标识|xj_content_key.id
+""", unique=[["product_revision_id", "content_id"]], rules="服务端校验同作品；每商品1–1000个不同key。")
+table("release_attempt", "预览审核与发布尝试", "目录", """
+version_id|BIGINT UNSIGNED|指定版本|xj_game_version.id
+operator_ref|VARCHAR(128) ASCII|既有管理员身份引用，不信客户端自报
+expected_revision|BIGINT UNSIGNED|发布前版本修订
+checks|JSON|静态检查、预览权限、隔离/兼容及正式资源验证结果
+state|VARCHAR(24)|ACCEPTED/REJECTED/PUBLISHED/UNKNOWN
+completed_at|DATETIME(6)?|实际发布生效
+""")
+
+table("guard", "账号作品并发守卫", "交易", """
+subject_id|BIGINT UNSIGNED|账号|xj_subject.id
+game_id|BIGINT UNSIGNED|作品|xj_game.id
+access_revision|BIGINT UNSIGNED|授予/撤销变化递增
+""", unique=[["subject_id", "game_id"]], rules="升级/退款/授予先取得环境门禁及适用的限制头/原操作守卫，再取得本守卫作为第一把业务锁，随后按来源id稳定顺序锁；不得反向再取门禁，不在事务内等渠道网络。")
+table("purchase_intent", "购买返回意图", "交易", """
+run_id|BIGINT UNSIGNED|原运行上下文|xj_run.id
+subject_id|BIGINT UNSIGNED?|匿名意图登录绑定前可空|xj_subject.id
+content_keys|JSON|所需内容范围，不含金额/权限事实
+resume_handle|TEXT|游戏自有不透明位置；限制长度且无凭据
+anonymous_binding|BINARY(32)?|防窃取intentId认领
+state|VARCHAR(24)|OPEN/BOUND/RETURNED/CANCELLED
+return_run_id|BIGINT UNSIGNED?|RT1服务端核验后绑定承接位置的新运行|xj_run.id
+return_issued_at|DATETIME(6)?|受控位置交付时刻；不写URL/日志
+""", unique=[["return_run_id"]], rules="intentId只是公开引用。仅当前可信会话和原匿名绑定可承接；首次成功绑定return_run后按稳定结果幂等返回，同一run不得回填多个意图。状态、主体、作品或版本不匹配拒绝，不回显handle，不将位置解释为权益。")
+table("quote", "服务端报价", "交易", """
+subject_id|BIGINT UNSIGNED|已验证账号|xj_subject.id
+product_revision_id|BIGINT UNSIGNED|目标商品承诺|xj_product_revision.id
+intent_id|BIGINT UNSIGNED?|购买返回意图|xj_purchase_intent.id
+sources_snapshot|JSON|合格现金来源、净额、覆盖、处置修订
+price_fen|BIGINT UNSIGNED|目标买断/商品价
+credit_fen|BIGINT UNSIGNED|去重抵扣，不超目标价
+due_fen|BIGINT UNSIGNED|应补非负；0时不走支付
+expires_at|DATETIME(6)|报价生成后10分钟展示有效，提交仍重核
+access_revision|BIGINT UNSIGNED|报价时守卫修订
+""")
+table("order", "需付款订单", "交易", """
+subject_id|BIGINT UNSIGNED|已验证账号|xj_subject.id
+game_id|BIGINT UNSIGNED|作品|xj_game.id
+quote_id|BIGINT UNSIGNED|唯一已确认报价|xj_quote.id
+promise_snapshot|JSON|名称/商品版/承诺/范围/币种/价格快照
+due_fen|BIGINT UNSIGNED|实际应付>0且≤999999
+currency|CHAR(3) ASCII|CNY
+payment_state|VARCHAR(24)|PENDING/VERIFYING/PAID/UNPAID_CLOSED/EXCEPTION
+delivery_state|VARCHAR(24)|NOT_DUE/PENDING/DELIVERED/EXCEPTION
+purpose|VARCHAR(16)|LIVE/TEST/PREVIEW不得混报
+revision|BIGINT UNSIGNED|并发状态
+""", unique=[["quote_id"]], rules="免费和零补款升级不用本表制造付费订单；真实异常收款不受下单输入上限截断。")
+table("order_scope", "已售覆盖快照", "交易", """
+order_id|BIGINT UNSIGNED|订单|xj_order.id
+content_id|BIGINT UNSIGNED|已售内容含义|xj_content_key.id
+meaning_snapshot|VARCHAR(1000)|当次承诺，后续不覆盖
+""", unique=[["order_id", "content_id"]])
+table("payment_attempt", "双渠道付款尝试", "交易", """
+order_id|BIGINT UNSIGNED|同一业务订单|xj_order.id
+channel|VARCHAR(16)|ALIPAY/WECHAT
+merchant_ref|VARCHAR(128) ASCII|环境中的非秘密商户配置引用
+method|VARCHAR(32)|首期PAGE/WAP/NATIVE/H5；JSAPI/小程序为后续候选，当前不接受
+out_trade_no|VARCHAR(64) ASCII|服务器生成且符合渠道长度/字符要求
+state|VARCHAR(24)|CREATING/WAITING/UNKNOWN/SUCCESS/CLOSED/FAILED
+close_state|VARCHAR(24)|NONE/REQUESTED/CONFIRMED/UNKNOWN
+expires_at|DATETIME(6)?|渠道受理的到期时间，不等同本地倒计时
+revision|BIGINT UNSIGNED|切渠道和关单守卫
+""", unique=[["channel", "merchant_ref", "out_trade_no"]])
+table("payment_notice", "通知查证收件", "交易", """
+attempt_id|BIGINT UNSIGNED?|已核对付款尝试|xj_payment_attempt.id
+channel|VARCHAR(16)|ALIPAY/WECHAT
+merchant_ref|VARCHAR(128) ASCII|核对应用/商户上下文
+notice_key|VARCHAR(128) ASCII|通知标识或规范摘要，不等于付款唯一号
+body_digest|BINARY(32)|原始字节摘要；敏感原文分类隔离非普通日志
+evidence_object_id|BIGINT UNSIGNED?|受限通知信封的精确版本；不返回前台|xj_storage_object.id
+verification_state|VARCHAR(24)|RECEIVED/VERIFIED/REJECTED/UNMATCHED
+processed_at|DATETIME(6)?|持久处理后才应答成功
+""", unique=[["channel", "merchant_ref", "notice_key"]], rules="非空证据须已核验AVAILABLE、bucket_role=EVIDENCE且上传计划归属本次可信收件作用域；对象保存原始body字节，明文摘要等于body_digest，通知信封元信息另存最小字段。未可靠持久化的异步处理不得确认收件成功。分类清理先按保留依据解除证据引用，保留最小摘要/核实事实。")
+table("cash_fact", "可信实收事实", "交易", """
+order_id|BIGINT UNSIGNED|原订单|xj_order.id
+attempt_id|BIGINT UNSIGNED|支付尝试|xj_payment_attempt.id
+channel|VARCHAR(16)|ALIPAY/WECHAT
+merchant_ref|VARCHAR(128) ASCII|非秘密商户引用
+channel_trade_no|VARCHAR(128) ASCII|渠道交易唯一号
+received_fen|BIGINT UNSIGNED|实际收款；异常超额仍完整保存
+currency|CHAR(3) ASCII|核实币种
+occurred_at|DATETIME(6)|可信渠道发生时刻
+verified_at|DATETIME(6)|核实时间，用于迟到修订
+refunded_fen|BIGINT UNSIGNED|已确认退款累计
+refund_reserved_fen|BIGINT UNSIGNED|未知/在途退款预留
+allocation_state|VARCHAR(24)|PRIMARY/DUPLICATE/AMOUNT_MISMATCH/REVIEW
+""", unique=[["channel", "merchant_ref", "channel_trade_no"]], rules="一单可有多笔真实实收；仅一份正常履约来源，多付不重复发权，逐笔核退。")
+table("refund", "现金退款与撤权", "交易", """
+cash_fact_id|BIGINT UNSIGNED|原路现金来源|xj_cash_fact.id
+support_id|BIGINT UNSIGNED|人工售后批准|xj_support_case.id
+out_refund_no|VARCHAR(64) ASCII|稳定商户退款号
+channel|VARCHAR(16)|原现金对应ALIPAY/WECHAT；服务端匹配
+merchant_ref|VARCHAR(128) ASCII|原现金商户引用；服务器核对
+amount_fen|BIGINT UNSIGNED|>0；已退+保留+本次不超该笔实收
+channel_refund_no|VARCHAR(128) ASCII?|渠道退款号
+cash_state|VARCHAR(24)|APPROVED/SENDING/UNKNOWN/SUCCEEDED/FAILED
+rights_state|VARCHAR(24)|PENDING/ADJUSTED/EXCEPTION
+rights_plan|JSON|获准撤哪份来源/范围及升级关联，不按金额比例删内容
+occurred_at|DATETIME(6)?|退款可信发生
+verified_at|DATETIME(6)?|退款核实
+revision|BIGINT UNSIGNED|批准/执行/核实并发修订
+""", unique=[["channel", "merchant_ref", "out_refund_no"]])
+table("fee_fact", "费用与调整事实", "交易", """
+cash_fact_id|BIGINT UNSIGNED|归属原付款|xj_cash_fact.id
+refund_id|BIGINT UNSIGNED?|可关联退款|xj_refund.id
+kind|VARCHAR(24)|FEE/FEE_RETURN/ADJUSTMENT
+amount_fen|BIGINT?|带方向金额；未知为空非0
+state|VARCHAR(16)|UNKNOWN/VERIFIED
+occurred_at|DATETIME(6)?|可信发生
+evidence_ref|VARCHAR(128)|受限账单/核实来源
+""")
+
+table("grant", "权益授予来源", "权益", """
+subject_id|BIGINT UNSIGNED|原主体|xj_subject.id
+game_id|BIGINT UNSIGNED|作品|xj_game.id
+source_kind|VARCHAR(16)|ORDER/FREE/UPGRADE/COMPENSATION
+source_ref|VARCHAR(128) ASCII|对应稳定业务编号，服务端检查类型与归属
+cash_fact_id|BIGINT UNSIGNED?|现金来源可空，免费/零补款不造付款|xj_cash_fact.id
+state|VARCHAR(24)|PENDING/ACTIVE/REVIEW/REVOKED
+revision|BIGINT UNSIGNED|来源处置并发
+reason|VARCHAR(1000)?|人工补偿/处置原因
+""", unique=[["source_kind", "source_ref"]], rules="多份有效来源范围取并集；已购完全覆盖不重复销售；退款仅处置对应来源。")
+table("grant_scope", "授予的稳定覆盖", "权益", """
+grant_id|BIGINT UNSIGNED|来源|xj_grant.id
+content_id|BIGINT UNSIGNED|同作品内容key|xj_content_key.id
+""", unique=[["grant_id", "content_id"]])
+table("upgrade", "差价/零补款升级", "权益", """
+subject_id|BIGINT UNSIGNED|已验证主体|xj_subject.id
+game_id|BIGINT UNSIGNED|作品|xj_game.id
+quote_id|BIGINT UNSIGNED|升级报价|xj_quote.id
+order_id|BIGINT UNSIGNED?|正补款关联订单；0补款为空|xj_order.id
+grant_id|BIGINT UNSIGNED?|核实交付后关联买断授予|xj_grant.id
+credit_fen|BIGINT UNSIGNED|合格来源去重抵扣
+due_fen|BIGINT UNSIGNED|新增实付，0不触渠道
+state|VARCHAR(24)|RESERVED/PENDING/DELIVERED/REVIEW/REVOKED
+""", unique=[["quote_id"]])
+table("upgrade_allocation", "抵扣保留与释放", "权益", """
+upgrade_id|BIGINT UNSIGNED|升级|xj_upgrade.id
+cash_fact_id|BIGINT UNSIGNED|原净实付来源|xj_cash_fact.id
+amount_fen|BIGINT UNSIGNED|该现金用于本次抵扣额
+state|VARCHAR(16)|RESERVED/COMMITTED/RELEASED
+released_at|DATETIME(6)?|仅撤升级/已核实关闭后释放
+""", unique=[["upgrade_id", "cash_fact_id"]], rules="同现金来源活跃抵扣总额不超可用净额；守卫锁检查，不以普通唯一键假装实现跨行求和约束。")
+
+table("run", "一次受限运行", "运行存档", """
+session_id|BIGINT UNSIGNED|当前宿主会话|xj_session.id
+subject_id|BIGINT UNSIGNED?|匿名试玩为空|xj_subject.id
+version_id|BIGINT UNSIGNED|实际游戏版本|xj_game_version.id
+mode|VARCHAR(16)|TRIAL/FREE/OWNED/PREVIEW
+state|VARCHAR(24)|AUTHORIZED/READY/EXITED/FAILED/REVOKED
+generation|BIGINT UNSIGNED|账号会话代次，变化即拒旧上下文
+ready_at|DATETIME(6)?|游戏确认可交互
+expires_at|DATETIME(6)|服务端有效边界
+""")
+table("save_blob", "不透明不可变档", "运行存档", """
+subject_id|BIGINT UNSIGNED|归属|xj_subject.id
+version_id|BIGINT UNSIGNED|产生版本|xj_game_version.id
+storage_object_id|BIGINT UNSIGNED|精确私人对象，不与其他主体去重共享|xj_storage_object.id
+format|VARCHAR(128) ASCII|游戏声明的格式
+state|VARCHAR(16)|STAGED/REFERENCED/ORPHAN/DELETED
+""", rules="对象须已核验AVAILABLE、bucket_role=SAVE且上传计划归属本主体/作品/保存操作；对象byte_size为约定编码后未压缩长度≤1048576；digest为该字节SHA-256。游戏version_id、对象storage_version_id与save_head.revision不得混用。DELETED墓碑在无引用且清理证据持久化后移除，不保留可定位私人正文的无限期引用。")
+table("save_head", "当前档与上一恢复点", "运行存档", """
+subject_id|BIGINT UNSIGNED|账号|xj_subject.id
+game_id|BIGINT UNSIGNED|作品|xj_game.id
+current_blob_id|BIGINT UNSIGNED?|当前档|xj_save_blob.id
+previous_blob_id|BIGINT UNSIGNED?|上一已确认恢复点|xj_save_blob.id
+revision|BIGINT UNSIGNED|CAS修订
+conflict_state|VARCHAR(16)|NONE/PENDING
+""", unique=[["subject_id", "game_id"]])
+table("save_operation", "可查询保存动作", "运行存档", """
+head_id|BIGINT UNSIGNED|账号作品档头|xj_save_head.id
+blob_id|BIGINT UNSIGNED?|候选源|xj_save_blob.id
+operation_key|VARCHAR(128) ASCII|同动作重试稳定，按主体/动作校验
+action|VARCHAR(16)|WRITE/IMPORT/RESTORE/RESTART；读取与兼容确认分别走专用接口
+base_revision|BIGINT UNSIGNED|玩家所见目标修订
+result_revision|BIGINT UNSIGNED?|核实成功后的修订
+state|VARCHAR(24)|ACCEPTED/PENDING/SUCCEEDED/CONFLICT/FAILED
+game_confirmed_at|DATETIME(6)?|恢复需游戏确认兼容，不把读出当成功
+""", unique=[["head_id", "operation_key"]])
+table("save_conflict", "双方冲突来源", "运行存档", """
+head_id|BIGINT UNSIGNED|被冻结普通替换的档头|xj_save_head.id
+left_blob_id|BIGINT UNSIGNED|已接收云端来源|xj_save_blob.id
+right_blob_id|BIGINT UNSIGNED|已接收候选来源|xj_save_blob.id
+state|VARCHAR(16)|OPEN/RESOLVED/DELETED
+resolution|VARCHAR(24)?|玩家明确选择及预期修订
+""", rules="单头最多一个OPEN冲突，锁头检查；第三源留来源端；注销分类清理覆盖双方。")
+
+table("storage_write", "可恢复上传计划", "对象存储", """
+reserved_object_id|CHAR(36) ASCII|上传前预留的稳定objectId；不是已核实可用对象关联
+principal_ref|VARCHAR(128) ASCII BINARY|服务端可信执行主体/匿名上下文，不信客户端自报
+business_type|VARCHAR(32) ASCII|GAME_VERSION/SAVE_OPERATION/PAYMENT_NOTICE
+business_ref|VARCHAR(128) ASCII BINARY|受控业务作用域；服务端核本人/作品/收件归属
+operation_key|VARCHAR(128) ASCII BINARY|同一逻辑上传重试稳定；资源按项区分
+plan_digest|BINARY(32)|包含归属、定位及预期元数据的规范计划SHA-256
+storage_profile_ref|VARCHAR(128) ASCII BINARY|上传前固定配置版本；不含凭据
+bucket_role|VARCHAR(16) ASCII BINARY|GAME/SAVE/EVIDENCE
+object_key|VARCHAR(1024) ASCII BINARY|上传前固定不透明key，一计划独占
+expected_meta|JSON|审核后的预期明文/上传字节长度与摘要、MIME及必要加密引用，无正文/密钥
+candidate_versions|JSON?|可能已落物的精确非null版本及核验结果；有界，异常超量隔离不截断丢证
+result_object_id|BIGINT UNSIGNED?|核验通过后唯一接受对象；未知时为空|xj_storage_object.id
+state|VARCHAR(24)|RESERVED/UPLOADING/UNKNOWN/VERIFIED/ABANDONED/CLEANUP_PENDING/COMPLETE/EXCEPTION
+writer_generation|BIGINT UNSIGNED|平台上传执行代次；不冒称可直接阻止底层旧流
+lease_until|DATETIME(6)?|任务认领租约；过期不证明旧写者停止
+verified_at|DATETIME(6)?|接受版本核验完成
+cleanup_receipt|JSON?|候选/迟到版本及未完成上传的精确处置回执
+revision|BIGINT UNSIGNED|上传核验/放弃/清理并发守卫
+""", unique=[["reserved_object_id"], ["principal_ref", "business_type", "business_ref", "operation_key"],
+             ["storage_profile_ref", "bucket_role", "object_key"], ["result_object_id"]],
+      rules="上传前持久计划再发对象请求；同操作同计划返回既有动作，异摘要拒绝。UNKNOWN不能因result为空被GC；按固定profile/role/key查证所有精确候选，逐版核验，不信同key最新。接受对象public_id须等于reserved_object_id、定位/元数据匹配计划；锁业务守卫→上传计划→对象行，创建/核验对象及结果关联同主库事务提交，计划不是可读资源。ABANDONED与UNKNOWN不等于底层无字节；先阻止旧代完成绑定，确认旧上传/分片不能迟到写入并清理全部候选，才COMPLETE。租约/代次字段不能代替实际关闭旧写通路。归属核验需要的计划及profile/密钥引用保留到有效对象、未决上传和备份窗口结束；分类清理后移除私人关联。")
+
+table("storage_object", "精确存储对象引用", "对象存储", """
+storage_profile_ref|VARCHAR(128) ASCII BINARY|不可变存储配置版本引用，无endpoint或凭据
+bucket_role|VARCHAR(16) ASCII BINARY|GAME/SAVE/EVIDENCE；映射私有桶，非实际桶名
+object_key|VARCHAR(1024) ASCII BINARY|服务端生成不透明key；不含邮箱或剧情
+storage_version_id|VARBINARY(1024)|存储返回的原始版本标识，非空且非字面null；超平台上限拒绝不截断
+digest|BINARY(32)|约定编码后未压缩明文字节SHA-256，非ETag
+byte_size|BIGINT UNSIGNED|约定编码后未压缩字节；SAVE≤1048576
+stored_digest|BINARY(32)|实际上传字节SHA-256；未变换时等于digest
+stored_byte_size|BIGINT UNSIGNED|实际上传字节数；不等同副本/备份物理占用
+mime|VARCHAR(128)|审核MIME及nosniff，不信上传者自报
+etag|VARBINARY(1024)?|存储条件比较令牌；不替代摘要或版本
+encryption_key_ref|VARCHAR(128) ASCII BINARY?|环境密钥版本引用；无真实密钥
+encryption_meta|JSON?|应用加密算法/nonce/tag等必要恢复元数据，无密钥
+state|VARCHAR(24)|STAGED/AVAILABLE/DELETE_PENDING/LOGICALLY_DELETED/PURGED
+verified_at|DATETIME(6)?|精确版本持久核验完成；AVAILABLE前必填
+purge_not_before|DATETIME(6)?|引用/重试/备份窗口综合下界，非到期自动删除
+cleanup_receipt|JSON?|最小精确清理计划、依赖结果及副本/备份消退证据，不含正文/密钥
+purged_at|DATETIME(6)?|全部适用消退证据核实；不是DELETE返回时间
+revision|BIGINT UNSIGNED|对象引用提交与清理共用的并发守卫
+""", unique=[["storage_profile_ref", "bucket_role", "object_key", "storage_version_id"]],
+      rules="OSF1：SeaweedFS社区私有桶首写前版本化，配置未知/暂停或空/null存储版本一律不提交有效引用。配置引用固定映射桶/集群，迁移须创建并核验新对象引用；不重定向旧profile。精确定位及摘要、长度、MIME、加密信息核验后不可变；每objectId只绑定一个接受版本，不以同key最新对象兜底。消费者事务锁上传计划及本行核归属/AVAILABLE/角色后加引用；清理锁同一计划/对象、核全消费者/未决操作/备份引用后转DELETE_PENDING，后续新引用拒绝。逻辑不可见只到LOGICALLY_DELETED；全部适用副本、底层回收及备份窗口消退后才PURGED。密文存储须记录密钥版本及完整性信息并验证可解密；未加密的两个加密字段同时为空。表记录不含用户归属，授权须沿资源/存档/证据及上传计划核归属；禁止跨私人主体复用。")
+
+table("support_case", "人工售后与非现金问题", "治理运营", """
+subject_id|BIGINT UNSIGNED|本人受控访问|xj_subject.id
+business_type|VARCHAR(16)|ORDER/GRANT/UPGRADE
+business_ref|VARCHAR(128) ASCII|类型与归属由后端核验；非现金允许无订单
+category|VARCHAR(32)|重复收款/交付/运行/主观/撤销等
+description|TEXT|1–1000码点，首版无附件，不收密码/完整存档
+state|VARCHAR(24)|ACCEPTED/REVIEWING/NEED_INFO/PROPOSED/EXECUTING/CLOSED
+first_human_at|DATETIME(6)?|人工首回，自动回执不算
+last_human_update_at|DATETIME(6)?|持续处理中更新
+next_review_at|DATETIME(6)|下一处理及逾期接手
+operator_ref|VARCHAR(128) ASCII?|受限后台处理者
+approved_plan|JSON?|受控售后方案；逐笔现金与撤销来源，非现金允许无退款
+plan_revision|BIGINT UNSIGNED?|批准方案修订；执行绑定此版不得擅自替换
+revision|BIGINT UNSIGNED|批准/执行并发守卫
+""")
+table("support_message", "售后对话与人工处理留痕", "治理运营", """
+support_id|BIGINT UNSIGNED|具体本人售后个案|xj_support_case.id
+role|VARCHAR(16)|PLAYER/OPERATOR/SYSTEM；由服务端识别
+operator_ref|VARCHAR(128) ASCII?|仅管理员消息的受限可信身份
+body|TEXT|1–1000码点；无附件，不记录密钥或完整存档
+""", rules="本人/获权处理者可读；实际人工消息更新工单人工回应时刻，SYSTEM回执不算人工首回。清理/必要保留随具体个案分类，不把所有对话永久保留。")
+table("cleanup_job", "分类清理与回执", "治理运营", """
+deletion_id|BIGINT UNSIGNED|AD1最终处理范围|xj_deletion_request.id
+category|VARCHAR(32)|PROFILE/SAVE/CONFLICT/EVENT/GAME_RECEIPT/BACKUP
+state|VARCHAR(24)|PENDING/RUNNING/BLOCKED/SUCCEEDED/EXCEPTION
+deadline_at|DATETIME(6)|按7日/30日等分类目标
+cursor|VARCHAR(512)?|最小重试游标，无剧情
+receipt|JSON?|实际删除/异常/保留范围
+""", unique=[["deletion_id", "category"]])
+table("retention_hold", "最小留存例外", "治理运营", """
+subject_id|BIGINT UNSIGNED|关联主体墓碑|xj_subject.id
+object_type|VARCHAR(32)|具体受限对象类别
+object_ref|VARCHAR(128)|具体对象，不冻结整个人数据
+basis|TEXT|处理目的/依据/权限
+review_at|DATETIME(6)|每90自然日复核
+released_at|DATETIME(6)?|必要性结束，按目标清理
+""")
+table("outbox", "可靠业务任务", "治理运营", """
+business_type|VARCHAR(32)|GRANT/REVOKE/RECONCILE/DELETE/RENDER/RESTRICTION
+business_ref|VARCHAR(128)|稳定业务标识
+business_revision|BIGINT UNSIGNED|同业务效果版本
+payload|JSON|最小参数，不含长期凭据/完整剧情
+state|VARCHAR(16)|READY/LEASED/DONE/RETRY/DEAD
+next_attempt_at|DATETIME(6)|可重试时刻
+lease_until|DATETIME(6)?|崩溃后可认领
+attempts|INT UNSIGNED|重试次数
+revision|BIGINT UNSIGNED|后台重试与任务认领并发修订
+""", unique=[["business_type", "business_ref", "business_revision"]])
+table("idempotency", "请求幂等结果", "治理运营", """
+principal_ref|VARCHAR(128)|可信主体或受控匿名上下文
+action|VARCHAR(128)|动作与对象作用域
+request_key|VARCHAR(128) ASCII|稳定客户端操作键
+payload_digest|BINARY(32)|规范化载荷摘要
+result_ref|VARCHAR(128)?|持久业务结果引用
+state|VARCHAR(16)|PENDING/SUCCEEDED/FAILED
+expires_at|DATETIME(6)?|结果缓存到期不废除持久唯一关系
+""", unique=[["principal_ref", "action", "request_key"]])
+table("audit_event", "受限操作审计", "治理运营", """
+operator_ref|VARCHAR(128)|可信后台/系统执行主体
+action|VARCHAR(128)|白名单动作
+business_type|VARCHAR(32)|对象类型
+business_ref|VARCHAR(128)|对象编号
+trace_id|VARCHAR(128) ASCII|不含密钥的关联
+result|VARCHAR(32)|实际结果
+reason|VARCHAR(1000)?|必要理由，禁止敏感整包日志
+""")
+table("analytics_event", "普通行为明细", "治理运营", """
+run_id|BIGINT UNSIGNED?|允许公开浏览事件无run|xj_run.id
+event_key|VARCHAR(128) ASCII|服务端绑定环境/来源/可信作用域与原event_ref的SHA256小写十六进制键，固定64字符；不是客户端原编号
+event_type|VARCHAR(128) ASCII|固定31项中获准来源事件
+subject_ref|VARCHAR(128)?|可关联标识，仍属待清理个人数据
+view_ref|VARCHAR(128)?|30分钟无活动会话，跨设备不猜合并
+fields|JSON|逐事件白名单，不存剧情/邮箱/存档
+occurred_at|DATETIME(6)|客户端观察或业务可信时刻有来源区分
+received_at|DATETIME(6)|服务端接收
+purpose|VARCHAR(16)|LIVE/TEST/PREVIEW
+""", unique=[["event_key"]], rules="去重算法及来源作用域见数据一致性部署与运营候选6.1；GAME绑定可信run，WEB绑定平台签发会话及作品，SERVER绑定持久业务事件。相同键同规范化事件返回重复，异载荷拒绝；event_type不加入唯一键，防同编号更换类型绕过。同库不使客户端事件成为现金事实。普通明细滚动30日；注销按7日目标，哈希键不视为匿名。")
+table("metric_snapshot", "区间指标修订", "治理运营", """
+metric|VARCHAR(16)|M-01至M-11
+period_start|DATETIME(6)|Asia/Shanghai转换后左边界
+period_end|DATETIME(6)|右开边界
+as_of|DATETIME(6)|本次核实截点
+definition_version|VARCHAR(128)|固定口径版本
+dimensions|JSON|游戏/币种/模式/测试排除及缺失覆盖
+result|JSON|成功/失败/未知/取消及样本/中位/P95，不编造运营值
+""")
+
+table("restriction_gate", "统一库安全写入门禁", "恢复控制", """
+environment_ref|VARCHAR(64) ASCII BINARY|逻辑环境；当前MCP库仅用于当前设计目标，不证明生产隔离
+authority_ref|CHAR(36) ASCII BINARY|同库限制链标识，随全库恢复；不能自证独立权威|xj_rl_head.authority_ref
+deployment_epoch|BIGINT UNSIGNED|当前运行代次；恢复后关闭外部入口再核新代次
+writer_identity_ref|VARCHAR(128) ASCII BINARY|受控平台写入身份引用，无凭据
+write_state|VARCHAR(16)|CLOSED/OPEN/FROZEN
+revision|BIGINT UNSIGNED|受限控制入口并发修订
+updated_at|DATETIME(6)|可信切换时刻，时间不代替代次
+""", unique=[["environment_ref"]],
+      rules="SD2：所有表落在xj_play。安全变更、授予、恢复账号/权益的事务先锁门禁，涉及限制记录时再锁日志头/原操作，然后取得业务守卫，核OPEN、epoch及可信数据库身份；单纯授予不伪造REVOKE事件。游戏后端不得直写平台表。门禁也随整库回滚，不能以恢复出的OPEN自认可开放；先在数据库外关闭服务入口并隔离旧连接/旧主。前缀不是权限，Redis锁/DNS不是旧写端隔离。")
+table("restriction_operation", "同库限制操作与幂等", "恢复控制", """
+operation_id|CHAR(36) ASCII BINARY|服务端稳定opId，同主体/动作/请求键重试查原结果
+gate_id|BIGINT UNSIGNED|本环境安全门禁|xj_restriction_gate.id
+head_id|BIGINT UNSIGNED|同环境限制链头|xj_rl_head.id
+initiator_ref|VARCHAR(128) ASCII BINARY|可信发起主体/系统身份的最小引用
+request_key|VARCHAR(128) ASCII BINARY|首次请求及重试稳定，不因超时换号
+action|VARCHAR(32) ASCII|DELETE_ACCOUNT/REVOKE_SESSION/REVOKE_GRANT/SUSPEND_GAME/CLEANUP
+scope_type|VARCHAR(32) ASCII|SUBJECT/GRANT/GAME/OBJECT白名单
+scope_ref|VARCHAR(128) ASCII BINARY|不透明作用域，不含邮箱/剧情
+expected_revision|BIGINT UNSIGNED|原业务计划的预期修订
+plan_schema|VARCHAR(32) ASCII|最小计划确定编码版本
+plan_digest|BINARY(32)|原计划确定字节摘要
+minimal_plan|MEDIUMBLOB|最小限制计划，无完整剧情/正文/密钥；受实际包长与配置额度限制
+deployment_epoch|BIGINT UNSIGNED|同一提交事务核验的代次
+applied_seq|BIGINT UNSIGNED|同事务APPLIED事件序号；检查点可承接，检查点承接原回执，不依赖永久事件行
+state|VARCHAR(16)|APPLIED；仅表示本次限制事务已提交，不表示清理/退款全部完成
+result_revision|BIGINT UNSIGNED|同事务提交后的业务修订
+outbox_id|BIGINT UNSIGNED?|同事务的分类清理/通知等后续任务|xj_outbox.id
+committed_at|DATETIME(6)|本地事务提交记录；不证明快照后没有记录
+""", unique=[["operation_id"], ["gate_id", "initiator_ref", "action", "request_key"]],
+      rules="合并原双库的操作镜像；不存在xj_rl_operation或跨库补写。门禁→头→原操作→相关业务守卫固定锁序，业务限制、操作结果、事件/连续头及必要outbox在同一InnoDB连接/事务全部提交。新操作只在成功事务产生APPLIED，失败整事务回滚，不另写PREPARED/ABORTED；在途结果对请求为UNKNOWN，不能回写成一个已提交终态。重试先核可信主体/动作/原键和原计划，相同返回原结果，异计划拒绝；不能先按旧expectedRevision拒掉已成功重试。提交未明查当前可信写端，旧恢复快照缺行不证明未执行，不能自动重发现金或解除限制。事务内不调用游戏HTTP、渠道或对象存储。")
+table("restriction_replay", "同库恢复核验与排除凭据", "恢复控制", """
+recovery_ref|CHAR(36) ASCII BINARY|一次隔离恢复/开放核验编号
+gate_id|BIGINT UNSIGNED|本环境保持关闭的安全门禁|xj_restriction_gate.id
+authority_ref|CHAR(36) ASCII BINARY|恢复出的链标识，不是未丢尾部证明
+deployment_epoch|BIGINT UNSIGNED|旧写端隔离后的新代次
+checkpoint_id|BIGINT UNSIGNED?|同库检查点；起始可用genesis|xj_rl_checkpoint.id
+target_head_seq|BIGINT UNSIGNED?|由库外可恢复证据核实的目标，未知须为空
+target_head_digest|BINARY(32)?|可信目标摘要，不能拿备份最大值自证
+verified_through_seq|BIGINT UNSIGNED|当前已核连续前缀
+verified_digest|BINARY(32)|对应前缀摘要
+excluded_scopes|JSON|有可信删除/消退依据的最小禁复活范围
+isolated_scopes|JSON|覆盖缺口或游戏清理未决范围；不由缺失反推删除
+evidence|JSON|备份/binlog/最后接受范围、隔离及开放依据；未知明确登记，无密钥
+state|VARCHAR(16)|VERIFYING/ISOLATED/READY/FAILED
+verified_at|DATETIME(6)?|核验时刻，不能自行打开业务入口
+revision|BIGINT UNSIGNED|恢复器并发守卫
+""", unique=[["recovery_ref"]],
+      rules="本表、操作/事件、头和检查点随同一个数据库一起回滚；无独立恢复保证。缺可恢复的快照后记录及完整范围证据时，不能从本表或链自洽推出限制已追平，READY禁止。现金按渠道另核；私人恢复/付费资源和未决scope保持隔离，不因其他公开页面可读而自动开放。")
+table("rl_head", "同库限制链持久头", "限制记录", """
+authority_ref|CHAR(36) ASCII BINARY|环境固定链标识；全库恢复也会恢复该值
+environment_ref|VARCHAR(64) ASCII BINARY|逻辑环境
+last_seq|BIGINT UNSIGNED|受行锁保护的事务计数器，genesis=0，非AUTO_INCREMENT
+head_digest|BINARY(32)|本库可见最后事件摘要，不证明没有丢失尾部
+checkpoint_id|BIGINT UNSIGNED?|同head已验证检查点|xj_rl_checkpoint.id
+compacted_through_seq|BIGINT UNSIGNED|可清理前缀，不超过已验证检查点
+revision|BIGINT UNSIGNED|头与压缩发布并发修订
+updated_at|DATETIME(6)|服务端时间，不用于事件排序
+""", unique=[["authority_ref"], ["environment_ref"]],
+      rules="同库业务事务锁头并使用last_seq+1，追加事件/操作及头同事务提交；回滚不推进头，同键重试不分配新号。检查点必须属于本head，不能引用另一环境。链只证明现存内容一致性，不能防止管理员或整库恢复删去自洽尾部。全局头会串行化安全写入，当前无吞吐承诺，后续压测再论证分片，不提前引入多库。")
+table("rl_event", "同库限制已提交事件", "限制记录", """
+head_id|BIGINT UNSIGNED|本事件链头|xj_rl_head.id
+operation_row_id|BIGINT UNSIGNED|已提交逻辑操作|xj_restriction_operation.id
+seq|BIGINT UNSIGNED|持头锁分配last_seq+1，与业务效果一起提交
+deployment_epoch|BIGINT UNSIGNED|提交事务已核验的代次
+phase|VARCHAR(16)|APPLIED；无跨库PREPARED/ABORTED阶段
+plan_digest|BINARY(32)|与操作和原确定记录匹配
+previous_digest|BINARY(32)|上一事件或已验证检查点末摘要
+event_digest|BINARY(32)|域分离哈希：链标识、seq、epoch、前摘要和确定记录
+canonical_record|MEDIUMBLOB|完整最小计划envelope及结果核验字段的确定字节，无剧情正文
+record_byte_size|BIGINT UNSIGNED|实际字节数，受配置额度及max_allowed_packet限制
+""", unique=[["head_id", "seq"], ["operation_row_id"]],
+      rules="业务限制/操作/事件/头/outbox在一个事务，event.head_id必须等于operation.head_id且门禁authority一致。同一操作最多一条APPLIED，错误整事务回滚，不用AUTO_INCREMENT或客户端时间作连续性证明。压缩后仍保留完整原回执或可靠承接，不能用当前epoch重造。事件不是独立现金事实，不能据此自动退款。")
+table("rl_checkpoint", "同库限制检查点与消退", "限制记录", """
+head_id|BIGINT UNSIGNED|所属限制链|xj_rl_head.id
+through_seq|BIGINT UNSIGNED|检查点承接的连续前缀末端
+through_digest|BINARY(32)|该前缀末摘要
+deployment_epoch|BIGINT UNSIGNED|一致快照代次
+canonical_state|MEDIUMBLOB|确定编码限制、必要计划/幂等映射、完整原回执及未决清理scope
+state_digest|BINARY(32)|绑定链标识、覆盖边界和原确定字节
+state_byte_size|BIGINT UNSIGNED|有界快照长度；超过配置或包长停止压缩
+backup_coverage|JSON|所有可复活数据的备份/对象版本/游戏表恢复窗口及消退依据
+recovery_evidence|JSON?|已验证备份/导出证据引用，无密钥；本表不是库外独立证据
+state|VARCHAR(16)|DRAFT/VERIFIED/RETIRED
+verified_at|DATETIME(6)?|内容与可恢复性核验完成
+retire_not_before|DATETIME(6)?|所有关联恢复窗口结束后的清理下界
+revision|BIGINT UNSIGNED|发布检查点与清理互斥
+""", unique=[["head_id", "through_seq"]],
+      rules="检查点和限制链在同一库，不能承诺整库回滚不丢限制。固定一致前缀，完整承接有效限制、必要计划/幂等映射和原authorityRef/epoch/seq/opId/phase/planDigest/eventDigest；后续检查点继续承接或保留唯一载体。验证可恢复副本后在头守卫下切指针再清前缀；未决游戏清理不因TTL丢失。没有可靠副本、超额度/包长就保留原事件，不截断或伪称压缩成功。")
+
+LOGICAL_RELATIONS = [
+    {"from": t["name"] + "." + c["name"], "to": c["references"],
+     "kind": "logical", "label": c["name"]}
+    for t in TABLES for c in t["columns"] if c.get("references")
+]
+
+model = {
+    "version": "0.1", "status": "阶段3物理设计草案，未建库/未运行",
+    "date": TODAY, "engineCandidate": "当前MCP：xj_play / MySQL 5.7.14 / InnoDB；未完成既有后端兼容验收",
+    "conventions": {
+        "encoding": "文本utf8mb4；ASCII标识二进制精确比较",
+        "time": "DATETIME(6)按UTC写入；报表显式Asia/Shanghai",
+        "tenant": "服务端固定平台上下文；新xj表由模块显式所有权隔离，逐表登记底座适配，拒绝客户端tenant",
+        "foreignKeyPolicy": "RK1：全部references/ref及ER连线只表达逻辑关联，不创建FOREIGN KEY或ON DELETE/UPDATE约束；保留主键、必要唯一键及查询索引",
+        "referenceIntegrity": "应用服务在写入事务内核目标存在、游戏/主体/环境归属与状态；关联写入和清理共用守卫及固定锁序，防并发检查后删除；导入/修复/批处理走同等校验，定期核孤儿/错域引用并隔离，不能凭孤儿自动补权益或删现金",
+        "idPolicy": "内部BIGINT服务端生成/需验证既有ID适配；公开UUID，任何ID均不代表访问权",
+        "indexes": "每个引用字段为索引候选；另按排序/待处理时间建复合索引，待EXPLAIN验证",
+        "ddl": "仅设计，未执行DDL；5.7不能依赖CHECK强制，使用服务端校验、事务守卫与主键/必要唯一键；不生成物理外键，DDL隐式提交须独立迁移",
+        "storage": "OSF1精确引用集中xj_storage_object；游戏版本、存储版本和业务revision分离；存储定位仅后端可见",
+        "storageIndex": "对象定位复合唯一键采用ASCII/二进制，候选最大2192字节；须随最终InnoDB页尺寸/行格式验证，不以JSON声明当已建约束",
+        "restrictionLog": "SD2覆盖LR1：所有表同在xj_play，限制/操作/事件/头/outbox同一短事务；整库回滚也回滚限制，恢复缺证保持隔离",
+        "namespace": "平台保留xj_及领域表名；独立游戏使用登记xjg_<gameKey>_前缀；底座固定前缀保持；同库不代表同权限或跨HTTP原子提交",
+        "restrictionHash": "确定编码、genesis、seq/epoch及事件哈希规范见部署资源与恢复规格7.4；整数不经JS浮点，旧自洽备份不自证尾部完整"
+    },
+    "stores": [{"id": "mysql", "label": "统一MySQL · xj_play", "database": "xj_play", "recovery": "所有平台/游戏表共享故障与恢复边界；同库限制不能独立防回滚"}],
+    "namespaces": [
+        {"owner": "平台", "prefix": "xj_", "status": "当前模型"},
+        {"owner": "每个独立游戏", "prefix": "xjg_<gameKey>_", "status": "预留命名规则，具体玩法表待独立游戏设计；不是已建游戏表"},
+        {"owner": "既有底座", "prefix": "system_/infra_等固定前缀", "status": "沿用源码约定，当前库未返回已有表；不代表已导入"},
+    ],
+    "logicalRelations": LOGICAL_RELATIONS,
+    "physicalForeignKeys": [],
+    "tables": TABLES,
+}
+out = BASE / "05-资料/物理数据模型-V0.1.json"
+out.write_text(json.dumps(model, ensure_ascii=False, indent=2) + "\n")
+lines = [
+    "# 物理数据字典与迁移草案", "",
+    f"V0.1；{TODAY}；状态：阶段3设计草案，未整体验收；未建表；已通过MCP只读核对xj_play元数据，未读业务数据。", "",
+    "唯一规格源：[物理模型](../05-资料/物理数据模型-V0.1.json)，由同目录生成脚本同步本字典。"
+    "不把设计表数或字段数当运行能力。两个支付渠道都在范围内；平台与游戏表均在xj_play，游戏玩法数据属于游戏前缀，不进入平台统一剧情模型。", "",
+    "## 公共约定", "",
+]
+lines += [f"- {k}：{v}。" for k, v in model["conventions"].items()]
+lines += ["", "## 统一库与业务前缀", "",
+          "SD2由用户明确指示：当前MCP数据库xj_play承载平台及未来每个独立游戏的表和表数据。"
+          "此前LR1双库与独立防回滚前提已被覆盖；同库限制和业务变更同一事务，不另建限制数据库。", "",
+          "| store | 用途 | 表数 |", "| --- | --- | --- |"]
+lines += [f"| `{s['id']}` | {s['label']}：{s['recovery']} | "
+          f"{sum(t['store'] == s['id'] for t in TABLES)} |" for s in model["stores"]]
+lines += ["", "平台表保留xj_；每游戏登记xjg_<gameKey>_命名空间，具体游戏表尚未设计/创建，不计入本次数量。"
+          "数据归属、接口权限、账号/付费信任边界保持独立；浏览器不连库。", ""]
+for t in TABLES:
+    lines += ["", f"## {t['name']} · {t['label']}", "",
+              f"存储：`{t['store']}`；领域：{t['domain']}；删除：{t['deletePolicy']}。", "",
+              "| 列 | SQL类型 | 可空 | 键/逻辑关联 | 语义 |",
+              "| --- | --- | --- | --- | --- |"]
+    for c in t["columns"]:
+        keys = ",".join(c.get("key", []))
+        if c.get("references"):
+            keys += " → " + c["references"]
+        lines.append(f"| `{c['name']}` | `{c['sqlType']}` | {'是' if c['nullable'] else '否'} | {keys or '—'} | {c['description']} |")
+    lines += ["", "唯一约束：" + "；".join("(" + ",".join(x) + ")" for x in t["unique"]) + "。"]
+    if t["rules"]:
+        lines += ["", t["rules"]]
+lines += ["", "## 迁移与回滚", "",
+          "1. 阶段3只交规格；实施阶段获准后先固定依赖/SQL方言，在已确认的xj_play核对迁移前置条件再创建新增xj表及底座所需表；验收/生产环境隔离另确认，不在本轮创建其他库。"
+          "既有system/infra保留；不默认导入原数据库，也不自动接通历史member/pay/mall页面。",
+          "2. 先扩展表/索引与兼容读，再接入业务并核对主键/唯一键及应用关联规则；不建立物理外键。数据迁移独立编号、摘要、执行/回退证据。"
+          "不可变承诺、现金事实、授予来源、保存引用分别验证。",
+          "3. 旧业务若后续确需导入，先只读映射及授权，使用受控合成/脱敏样本验证，不把同邮箱自动并成同主体。"
+          "存在缺失现金来源或商品承诺的旧数据进入待查证，不伪造已购。",
+          "4. 生产数据库不以回滚快照撤销真实渠道现金。发布故障优先兼容旧制品或前进修复；"
+          "灾备恢复先重放删除/撤权/晚到账核实后再开放业务。",
+          "5. 删档先切除合法引用、记录分类结果，再清对象；账本保留用最小主体墓碑，不保留邮箱/完整剧情。"
+          "跨行抵扣、退款额度、单开放冲突由事务守卫执行；普通唯一键不能证明这些求和约束。",
+          "6. 对象先有界上传到首写前已版本化私有桶，再按精确存储版本核长度、摘要及必要解密，创建AVAILABLE引用；"
+          "资源/存档/证据事务锁对象行并验证角色后引用。上传成功但结果未知不重写同key覆盖，按稳定objectId核查；"
+          "未核实上传仅是待查证候选，不制造有效对象行。未版本化历史对象不得直接导入，须另行核验重写为新非null版本后再映射。",
+          "7. 现有object_key/evidence_object_key是未执行的旧草案列，本轮在同一模型中以逻辑关联ID替换，不建立外键，不代表已迁移生产。"
+          "若后续发现真实历史库，需先提交独立映射与迁移审批；禁止猜存储versionId、用游戏version_id填充或按同名最新对象补齐。"
+          "存储配置跨集群/桶映射保持不可变，迁移创建新精确引用，并按备份窗口保留旧映射和必要密钥。",
+          "8. 清理须与新引用共用对象行锁/状态守卫，并核全部引用、未决操作及备份窗口；DELETE成功或GET缺失只证明逻辑结果。"
+          "LOGICALLY_DELETED与PURGED分开；消退证据与最小清理任务关联持久后才能删除私人定位记录，禁止用级联删除代替字节消退。"
+          "限制记录与对象引用也在xj_play，无法自证快照之后的删除覆盖；缺恢复证据时保持隔离。",
+          "9. 先在主库持久xj_storage_write上传计划，记录可信归属、固定profile/role/key、预留objectId及预期元数据；"
+          "未知结果查同一计划与精确候选版本，不能盲PUT。计划结果关联ID为空不代表没有底层字节。"
+          "核验及绑定共用计划守卫，迟到写者与未完成上传先隔离再清理；计划、候选、映射及必要密钥同时纳入恢复清单。"
+          "本上传计划随主库恢复，不能充当独立删除/撤权日志。",
+          "10. SD2合库只修改设计，不搬运数据：原双库限制操作镜像xj_rl_operation被合并，6张限制/恢复表均在xj_play；"
+          "门禁→头→原操作→业务守卫固定锁序，同事务提交业务限制、操作、事件、头与必要outbox，不再独立PREPARED/APPLIED补写。"
+          "先建立无检查点指针的头，再建立门禁及相关对象；head/checkpoint关联可空，由受控事务核同链与生命周期，不加外键。"
+          "MySQL5.7.14下不依赖CHECK、SKIP LOCKED、8.0专有排序规则；明确InnoDB行格式与索引字节预算，DDL不得当可回滚业务事务。",
+          "11. 每个游戏独立迁移清单在同库仅操作登记前缀；底座与平台迁移先核依赖。"
+          "禁止为一个游戏直接恢复整库或删除其他前缀；单游戏恢复到隔离暂存区核身份/权益/存档修订及删除覆盖后受控合入。"
+          "当前log_bin=OFF，无法据此执行基于该实例binlog的PITR；备份、连续覆盖和RPO/RTO仍待验证，不自动改服务配置。",
+          "", "## 本轮边界", "",
+          "本字典覆盖平台业务对象的逐列草案；不包含底座原有system/infra全部表，亦不是已执行的数据库。"
+          "密钥、商户证书、密码或本地配置均不在模型中。版本/容量/供应商与物理约束实测仍待后续规格冻结和授权验证。"]
+(BASE / "03-文档/物理数据字典与迁移草案-V0.1.md").write_text("\n".join(lines) + "\n")
+print(f"已生成{len(TABLES)}张设计表/{sum(len(t['columns']) for t in TABLES)}列；未连接数据库")

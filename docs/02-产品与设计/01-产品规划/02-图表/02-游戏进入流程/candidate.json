@@ -1,0 +1,77 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "候选：独立游戏游玩与购买的主要业务路径",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "docs/02-产品与设计/01-产品规划/02-图表/02-游戏进入流程/game-entry.html",
+    "legend": {
+      "entries": {
+        "frontend": { "label": "玩家操作" },
+        "backend": { "label": "平台业务处理" },
+        "security": { "label": "访问范围判定" },
+        "external": { "label": "独立游戏" },
+        "messagebus": { "label": "约定数据交互" }
+      }
+    }
+  },
+  "lanes": [
+    { "id": "player", "label": "玩家" },
+    { "id": "store", "label": "平台商店与权益" },
+    { "id": "trade", "label": "交易处理" },
+    { "id": "game", "label": "独立游戏程序" }
+  ],
+  "phases": [
+    { "id": "discover", "label": "发现与判断", "fromCol": 0, "toCol": 1 },
+    { "id": "access", "label": "体验范围与购买", "fromCol": 2, "toCol": 3 },
+    { "id": "play", "label": "独立运行与返回", "fromCol": 4, "toCol": 5 }
+  ],
+  "mainPath": ["browse", "details", "choose", "authorize", "run", "return"],
+  "nodes": [
+    { "id": "browse", "lane": "player", "col": 0, "type": "frontend", "icon": "person", "label": "发现游戏", "sublabel": "浏览或搜索" },
+    { "id": "details", "lane": "store", "col": 1, "type": "backend", "label": "说明作品范围", "sublabel": "玩法、设备与价格" },
+    { "id": "choose", "lane": "player", "col": 2, "type": "frontend", "icon": "decision", "label": "选择进入范围", "sublabel": "免费、试玩或正式" },
+    { "id": "order", "lane": "trade", "col": 2, "type": "backend", "label": "订单与支付", "sublabel": "场景、章节或买断" },
+    { "id": "paid", "lane": "trade", "col": 3, "type": "backend", "label": "核验并授予权益", "sublabel": "可信支付结果" },
+    { "id": "authorize", "lane": "store", "col": 3, "type": "security", "label": "确认访问范围", "sublabel": "身份、作品、版本" },
+    { "id": "denied", "lane": "store", "col": 4, "type": "security", "icon": "failure", "label": "说明不可进入", "sublabel": "拒绝或故障原因" },
+    { "id": "run", "lane": "game", "col": 4, "type": "external", "label": "独立运行玩法", "sublabel": "剧本或网页探索" },
+    { "id": "data", "lane": "game", "col": 5, "type": "messagebus", "label": "约定数据交互", "sublabel": "事件、存档范围待选" },
+    { "id": "return", "lane": "player", "col": 5, "type": "frontend", "icon": "person", "label": "返回与再进入", "sublabel": "权益与进度分别说明" }
+  ],
+  "edges": [
+    { "id": "discover-details", "from": "browse", "to": "details", "role": "main" },
+    { "id": "details-choose", "from": "details", "to": "choose", "role": "main" },
+    { "id": "free-or-owned", "from": "choose", "to": "authorize", "label": "免费、试玩或已购", "role": "main" },
+    { "id": "purchase-needed", "from": "choose", "to": "order", "label": "未购付费范围", "role": "branch" },
+    { "id": "verified-payment", "from": "order", "to": "paid", "label": "核验成功", "role": "branch" },
+    { "id": "entitled", "from": "paid", "to": "authorize", "label": "对应权益", "role": "branch" },
+    { "id": "payment-not-ready", "from": "order", "to": "return", "label": "取消、失败或待确认", "role": "error" },
+    { "id": "allowed", "from": "authorize", "to": "run", "label": "通过", "role": "main" },
+    { "id": "not-allowed", "from": "authorize", "to": "denied", "label": "不通过", "role": "error" },
+    { "id": "recover", "from": "denied", "to": "return", "label": "提示与返回", "role": "error" },
+    { "id": "report", "from": "run", "to": "data", "label": "按约定范围", "role": "branch" },
+    { "id": "leave", "from": "run", "to": "return", "label": "退出", "role": "main" }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "候选业务范围",
+      "items": [
+        "两类独立游戏保留自己的页面、玩法和内部内容标识。",
+        "三类计费都需论证；首期实施顺序与平台存档范围待确认。",
+        "图示不是技术架构，不决定托管、容器、SDK 或数据结构。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "可信与真实性边界",
+      "items": [
+        "游戏本地进度或事件不授予购买权益。",
+        "支付未确认不能当作成功；异常可返回查明。",
+        "当前未实现或运行验证此流程，详细异常见案例验收清单。"
+      ]
+    }
+  ]
+}
