@@ -1,0 +1,5269 @@
+{
+  "version": "0.1",
+  "status": "阶段3物理设计草案，未建库/未运行",
+  "date": "2026-10-26",
+  "engineCandidate": "当前MCP：xj_play / MySQL 5.7.14 / InnoDB；未完成既有后端兼容验收",
+  "conventions": {
+    "encoding": "文本utf8mb4；ASCII标识二进制精确比较",
+    "time": "DATETIME(6)按UTC写入；报表显式Asia/Shanghai",
+    "tenant": "服务端固定平台上下文；新xj表由模块显式所有权隔离，逐表登记底座适配，拒绝客户端tenant",
+    "foreignKeyPolicy": "RK1：全部references/ref及ER连线只表达逻辑关联，不创建FOREIGN KEY或ON DELETE/UPDATE约束；保留主键、必要唯一键及查询索引",
+    "referenceIntegrity": "应用服务在写入事务内核目标存在、游戏/主体/环境归属与状态；关联写入和清理共用守卫及固定锁序，防并发检查后删除；导入/修复/批处理走同等校验，定期核孤儿/错域引用并隔离，不能凭孤儿自动补权益或删现金",
+    "idPolicy": "内部BIGINT服务端生成/需验证既有ID适配；公开UUID，任何ID均不代表访问权",
+    "indexes": "每个引用字段为索引候选；另按排序/待处理时间建复合索引，待EXPLAIN验证",
+    "ddl": "仅设计，未执行DDL；5.7不能依赖CHECK强制，使用服务端校验、事务守卫与主键/必要唯一键；不生成物理外键，DDL隐式提交须独立迁移",
+    "storage": "OSF1精确引用集中xj_storage_object；游戏版本、存储版本和业务revision分离；存储定位仅后端可见",
+    "storageIndex": "对象定位复合唯一键采用ASCII/二进制，候选最大2192字节；须随最终InnoDB页尺寸/行格式验证，不以JSON声明当已建约束",
+    "restrictionLog": "SD2覆盖LR1：所有表同在xj_play，限制/操作/事件/头/outbox同一短事务；整库回滚也回滚限制，恢复缺证保持隔离",
+    "namespace": "平台保留xj_及领域表名；独立游戏使用登记xjg_<gameKey>_前缀；底座固定前缀保持；同库不代表同权限或跨HTTP原子提交",
+    "restrictionHash": "确定编码、genesis、seq/epoch及事件哈希规范见部署资源与恢复规格7.4；整数不经JS浮点，旧自洽备份不自证尾部完整"
+  },
+  "stores": [
+    {
+      "id": "mysql",
+      "label": "统一MySQL · xj_play",
+      "database": "xj_play",
+      "recovery": "所有平台/游戏表共享故障与恢复边界；同库限制不能独立防回滚"
+    }
+  ],
+  "namespaces": [
+    {
+      "owner": "平台",
+      "prefix": "xj_",
+      "status": "当前模型"
+    },
+    {
+      "owner": "每个独立游戏",
+      "prefix": "xjg_<gameKey>_",
+      "status": "预留命名规则，具体玩法表待独立游戏设计；不是已建游戏表"
+    },
+    {
+      "owner": "既有底座",
+      "prefix": "system_/infra_等固定前缀",
+      "status": "沿用源码约定，当前库未返回已有表；不代表已导入"
+    }
+  ],
+  "logicalRelations": [
+    {
+      "from": "xj_profile.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_session.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_identity_action.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_deletion_request.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_game_version.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_resource.version_id",
+      "to": "xj_game_version.id",
+      "kind": "logical",
+      "label": "version_id"
+    },
+    {
+      "from": "xj_resource.storage_object_id",
+      "to": "xj_storage_object.id",
+      "kind": "logical",
+      "label": "storage_object_id"
+    },
+    {
+      "from": "xj_content_key.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_product_revision.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_product_scope.product_revision_id",
+      "to": "xj_product_revision.id",
+      "kind": "logical",
+      "label": "product_revision_id"
+    },
+    {
+      "from": "xj_product_scope.content_id",
+      "to": "xj_content_key.id",
+      "kind": "logical",
+      "label": "content_id"
+    },
+    {
+      "from": "xj_release_attempt.version_id",
+      "to": "xj_game_version.id",
+      "kind": "logical",
+      "label": "version_id"
+    },
+    {
+      "from": "xj_guard.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_guard.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_purchase_intent.run_id",
+      "to": "xj_run.id",
+      "kind": "logical",
+      "label": "run_id"
+    },
+    {
+      "from": "xj_purchase_intent.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_purchase_intent.return_run_id",
+      "to": "xj_run.id",
+      "kind": "logical",
+      "label": "return_run_id"
+    },
+    {
+      "from": "xj_quote.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_quote.product_revision_id",
+      "to": "xj_product_revision.id",
+      "kind": "logical",
+      "label": "product_revision_id"
+    },
+    {
+      "from": "xj_quote.intent_id",
+      "to": "xj_purchase_intent.id",
+      "kind": "logical",
+      "label": "intent_id"
+    },
+    {
+      "from": "xj_order.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_order.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_order.quote_id",
+      "to": "xj_quote.id",
+      "kind": "logical",
+      "label": "quote_id"
+    },
+    {
+      "from": "xj_order_scope.order_id",
+      "to": "xj_order.id",
+      "kind": "logical",
+      "label": "order_id"
+    },
+    {
+      "from": "xj_order_scope.content_id",
+      "to": "xj_content_key.id",
+      "kind": "logical",
+      "label": "content_id"
+    },
+    {
+      "from": "xj_payment_attempt.order_id",
+      "to": "xj_order.id",
+      "kind": "logical",
+      "label": "order_id"
+    },
+    {
+      "from": "xj_payment_notice.attempt_id",
+      "to": "xj_payment_attempt.id",
+      "kind": "logical",
+      "label": "attempt_id"
+    },
+    {
+      "from": "xj_payment_notice.evidence_object_id",
+      "to": "xj_storage_object.id",
+      "kind": "logical",
+      "label": "evidence_object_id"
+    },
+    {
+      "from": "xj_cash_fact.order_id",
+      "to": "xj_order.id",
+      "kind": "logical",
+      "label": "order_id"
+    },
+    {
+      "from": "xj_cash_fact.attempt_id",
+      "to": "xj_payment_attempt.id",
+      "kind": "logical",
+      "label": "attempt_id"
+    },
+    {
+      "from": "xj_refund.cash_fact_id",
+      "to": "xj_cash_fact.id",
+      "kind": "logical",
+      "label": "cash_fact_id"
+    },
+    {
+      "from": "xj_refund.support_id",
+      "to": "xj_support_case.id",
+      "kind": "logical",
+      "label": "support_id"
+    },
+    {
+      "from": "xj_fee_fact.cash_fact_id",
+      "to": "xj_cash_fact.id",
+      "kind": "logical",
+      "label": "cash_fact_id"
+    },
+    {
+      "from": "xj_fee_fact.refund_id",
+      "to": "xj_refund.id",
+      "kind": "logical",
+      "label": "refund_id"
+    },
+    {
+      "from": "xj_grant.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_grant.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_grant.cash_fact_id",
+      "to": "xj_cash_fact.id",
+      "kind": "logical",
+      "label": "cash_fact_id"
+    },
+    {
+      "from": "xj_grant_scope.grant_id",
+      "to": "xj_grant.id",
+      "kind": "logical",
+      "label": "grant_id"
+    },
+    {
+      "from": "xj_grant_scope.content_id",
+      "to": "xj_content_key.id",
+      "kind": "logical",
+      "label": "content_id"
+    },
+    {
+      "from": "xj_upgrade.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_upgrade.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_upgrade.quote_id",
+      "to": "xj_quote.id",
+      "kind": "logical",
+      "label": "quote_id"
+    },
+    {
+      "from": "xj_upgrade.order_id",
+      "to": "xj_order.id",
+      "kind": "logical",
+      "label": "order_id"
+    },
+    {
+      "from": "xj_upgrade.grant_id",
+      "to": "xj_grant.id",
+      "kind": "logical",
+      "label": "grant_id"
+    },
+    {
+      "from": "xj_upgrade_allocation.upgrade_id",
+      "to": "xj_upgrade.id",
+      "kind": "logical",
+      "label": "upgrade_id"
+    },
+    {
+      "from": "xj_upgrade_allocation.cash_fact_id",
+      "to": "xj_cash_fact.id",
+      "kind": "logical",
+      "label": "cash_fact_id"
+    },
+    {
+      "from": "xj_run.session_id",
+      "to": "xj_session.id",
+      "kind": "logical",
+      "label": "session_id"
+    },
+    {
+      "from": "xj_run.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_run.version_id",
+      "to": "xj_game_version.id",
+      "kind": "logical",
+      "label": "version_id"
+    },
+    {
+      "from": "xj_save_blob.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_save_blob.version_id",
+      "to": "xj_game_version.id",
+      "kind": "logical",
+      "label": "version_id"
+    },
+    {
+      "from": "xj_save_blob.storage_object_id",
+      "to": "xj_storage_object.id",
+      "kind": "logical",
+      "label": "storage_object_id"
+    },
+    {
+      "from": "xj_save_head.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_save_head.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
+      "from": "xj_save_head.current_blob_id",
+      "to": "xj_save_blob.id",
+      "kind": "logical",
+      "label": "current_blob_id"
+    },
+    {
+      "from": "xj_save_head.previous_blob_id",
+      "to": "xj_save_blob.id",
+      "kind": "logical",
+      "label": "previous_blob_id"
+    },
+    {
+      "from": "xj_save_operation.head_id",
+      "to": "xj_save_head.id",
+      "kind": "logical",
+      "label": "head_id"
+    },
+    {
+      "from": "xj_save_operation.blob_id",
+      "to": "xj_save_blob.id",
+      "kind": "logical",
+      "label": "blob_id"
+    },
+    {
+      "from": "xj_save_conflict.head_id",
+      "to": "xj_save_head.id",
+      "kind": "logical",
+      "label": "head_id"
+    },
+    {
+      "from": "xj_save_conflict.left_blob_id",
+      "to": "xj_save_blob.id",
+      "kind": "logical",
+      "label": "left_blob_id"
+    },
+    {
+      "from": "xj_save_conflict.right_blob_id",
+      "to": "xj_save_blob.id",
+      "kind": "logical",
+      "label": "right_blob_id"
+    },
+    {
+      "from": "xj_storage_write.result_object_id",
+      "to": "xj_storage_object.id",
+      "kind": "logical",
+      "label": "result_object_id"
+    },
+    {
+      "from": "xj_support_case.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_support_message.support_id",
+      "to": "xj_support_case.id",
+      "kind": "logical",
+      "label": "support_id"
+    },
+    {
+      "from": "xj_cleanup_job.deletion_id",
+      "to": "xj_deletion_request.id",
+      "kind": "logical",
+      "label": "deletion_id"
+    },
+    {
+      "from": "xj_retention_hold.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
+    },
+    {
+      "from": "xj_analytics_event.run_id",
+      "to": "xj_run.id",
+      "kind": "logical",
+      "label": "run_id"
+    },
+    {
+      "from": "xj_restriction_gate.authority_ref",
+      "to": "xj_rl_head.authority_ref",
+      "kind": "logical",
+      "label": "authority_ref"
+    },
+    {
+      "from": "xj_restriction_operation.gate_id",
+      "to": "xj_restriction_gate.id",
+      "kind": "logical",
+      "label": "gate_id"
+    },
+    {
+      "from": "xj_restriction_operation.head_id",
+      "to": "xj_rl_head.id",
+      "kind": "logical",
+      "label": "head_id"
+    },
+    {
+      "from": "xj_restriction_operation.outbox_id",
+      "to": "xj_outbox.id",
+      "kind": "logical",
+      "label": "outbox_id"
+    },
+    {
+      "from": "xj_restriction_replay.gate_id",
+      "to": "xj_restriction_gate.id",
+      "kind": "logical",
+      "label": "gate_id"
+    },
+    {
+      "from": "xj_restriction_replay.checkpoint_id",
+      "to": "xj_rl_checkpoint.id",
+      "kind": "logical",
+      "label": "checkpoint_id"
+    },
+    {
+      "from": "xj_rl_head.checkpoint_id",
+      "to": "xj_rl_checkpoint.id",
+      "kind": "logical",
+      "label": "checkpoint_id"
+    },
+    {
+      "from": "xj_rl_event.head_id",
+      "to": "xj_rl_head.id",
+      "kind": "logical",
+      "label": "head_id"
+    },
+    {
+      "from": "xj_rl_event.operation_row_id",
+      "to": "xj_restriction_operation.id",
+      "kind": "logical",
+      "label": "operation_row_id"
+    },
+    {
+      "from": "xj_rl_checkpoint.head_id",
+      "to": "xj_rl_head.id",
+      "kind": "logical",
+      "label": "head_id"
+    }
+  ],
+  "physicalForeignKeys": [],
+  "tables": [
+    {
+      "name": "xj_subject",
+      "label": "玩家主体与最小归属",
+      "domain": "身份",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "lifecycle",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "ACTIVE/DELETION_REQUESTED/PROCESSING/DELETED/EXCEPTION"
+        },
+        {
+          "name": "email_verified",
+          "sqlType": "BOOLEAN",
+          "nullable": false,
+          "description": "与生命周期独立；后端维护"
+        },
+        {
+          "name": "session_generation",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "撤会话代次"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "乐观并发修订"
+        },
+        {
+          "name": "deleted_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "AD1最后确认时刻"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "主体无邮箱或剧情；注销后最小墓碑仅按必要履约/留存依据保留。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_profile",
+      "label": "私人账号资料",
+      "domain": "身份",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "账号主体",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "email_ciphertext",
+          "sqlType": "VARBINARY(2048)",
+          "nullable": false,
+          "description": "密钥管理环境加密邮箱"
+        },
+        {
+          "name": "email_lookup",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "规范化邮箱带密钥检索摘要；不得当匿名数据"
+        },
+        {
+          "name": "password_hash",
+          "sqlType": "VARCHAR(255)",
+          "nullable": false,
+          "description": "支持15–128码点的口令哈希；不裁剪"
+        },
+        {
+          "name": "nickname",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "1–24 Unicode码点；不作为身份"
+        },
+        {
+          "name": "updated_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端更新时刻"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "subject_id"
+        ],
+        [
+          "email_lookup"
+        ]
+      ],
+      "rules": "规范化只折叠域名大小写，local-part保守处理；注销清理释放旧邮箱但不转移旧主体。哈希算法/参数须在工具冻结与资源测试中确定。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_session",
+      "label": "受控玩家会话",
+      "domain": "身份",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "游客时为空",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "token_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "只保存会话令牌摘要"
+        },
+        {
+          "name": "generation",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "绑定主体撤销代次"
+        },
+        {
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端到期，不由客户端延长"
+        },
+        {
+          "name": "revoked_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "登出/重置/注销撤销"
+        },
+        {
+          "name": "purpose",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "PLAYER/GUEST/SUPPORT受限目的"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "token_digest"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_identity_action",
+      "label": "验证与找回动作",
+      "domain": "身份",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "防枚举响应可能无匹配主体",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "action_type",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "REGISTER/VERIFY/RESET/CHANGE_EMAIL/DELETE"
+        },
+        {
+          "name": "token_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": true,
+          "description": "一次性令牌摘要"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "ACCEPTED/SENT/SUCCEEDED/FAILED/UNKNOWN/EXPIRED"
+        },
+        {
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "成功发出的验证链接30分钟"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "成功重发切换有效动作代次"
+        },
+        {
+          "name": "completed_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "动作真正完成"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "邮件发送成功才失效旧链接；60秒/小时5次；重置成功撤会话；泛化外部反馈不暴露存在性。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_deletion_request",
+      "label": "AD1注销申请",
+      "domain": "身份",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原账号",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "REQUESTED/REVIEWING/AWAIT_CONFIRM/WITHDRAWN/PROCESSING/COMPLETE/EXCEPTION"
+        },
+        {
+          "name": "policy_version",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "已展示并确认的处理范围版本"
+        },
+        {
+          "name": "blocking_refs",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "具体在途业务和责任，不能冻结全部数据"
+        },
+        {
+          "name": "final_confirmed_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "T_delete；不可逆处理前最后确认"
+        },
+        {
+          "name": "next_review_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "个案下一复核"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "流程并发修订"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_game",
+      "label": "作品元数据",
+      "domain": "目录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "slug",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "公开路径标识"
+        },
+        {
+          "name": "title",
+          "sqlType": "VARCHAR(80)",
+          "nullable": false,
+          "description": "名称1–80码点"
+        },
+        {
+          "name": "summary",
+          "sqlType": "VARCHAR(160)",
+          "nullable": false,
+          "description": "短摘要1–160码点"
+        },
+        {
+          "name": "description",
+          "sqlType": "TEXT",
+          "nullable": false,
+          "description": "发布正文1–2000码点，安全渲染"
+        },
+        {
+          "name": "media",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "1封面/0–8截图；公开资源编号"
+        },
+        {
+          "name": "declarations",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "内容/设备/语言/声音/存档声明"
+        },
+        {
+          "name": "sale_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "DRAFT/ON_SALE/DELISTED"
+        },
+        {
+          "name": "runtime_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "AVAILABLE/SUSPENDED/TERMINATING/CLOSED"
+        },
+        {
+          "name": "data_namespace",
+          "sqlType": "VARCHAR(32) ASCII BINARY",
+          "nullable": true,
+          "description": "独立游戏表前缀登记，如xjg_ga_；未接入时空，登记后不可复用"
+        },
+        {
+          "name": "published_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "默认排序依据"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "运营修改并发"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "slug"
+        ],
+        [
+          "data_namespace"
+        ]
+      ],
+      "rules": "data_namespace为服务端登记的精确前缀，游戏key仅小写字母开头加字母数字且最长16位；空值仅未启用后端。前缀不是SQL权限或客户端可传表名，游戏账户逐表授权，禁止写xj_平台事实。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_game_version",
+      "label": "不可变游戏版本",
+      "domain": "目录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "所属作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "version",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "游戏自有版本标签"
+        },
+        {
+          "name": "manifest_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "审核manifest摘要"
+        },
+        {
+          "name": "package_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "资源包摘要"
+        },
+        {
+          "name": "entry_path",
+          "sqlType": "VARCHAR(512)",
+          "nullable": false,
+          "description": "已标准化入口"
+        },
+        {
+          "name": "protocol_range",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "消息协议兼容范围"
+        },
+        {
+          "name": "save_formats",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "写入及接受格式；游戏解释迁移"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "UPLOADED/CHECKING/REVIEW/PUBLISHED/REJECTED/DISABLED"
+        },
+        {
+          "name": "update_notes",
+          "sqlType": "TEXT",
+          "nullable": false,
+          "description": "发布1–1000码点"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "审核/发布修订，不修改包"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "game_id",
+          "version"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_resource",
+      "label": "私有资源索引",
+      "domain": "目录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "version_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "固定游戏版本",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game_version.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "path",
+          "sqlType": "VARCHAR(512)",
+          "nullable": false,
+          "description": "规范路径，拒穿越及碰撞"
+        },
+        {
+          "name": "storage_object_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "精确不可变对象；只在后端解析",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_storage_object.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "visibility",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "PUBLIC/PROTECTED"
+        },
+        {
+          "name": "required_keys",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "需要全部满足的本作品contentKey清单"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "version_id",
+          "path"
+        ]
+      ],
+      "rules": "对象须已核验AVAILABLE且bucket_role=GAME；初次绑定须核上传计划归属本游戏版本。长度、SHA-256及审核MIME从对象表读取，公开接口不返回存储定位。PUBLIC仅表示可经审核发布路径复制；源桶仍私有。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_content_key",
+      "label": "稳定内容标识",
+      "domain": "目录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "content_key",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "1–128 ASCII，作品内大小写精确"
+        },
+        {
+          "name": "meaning",
+          "sqlType": "VARCHAR(1000)",
+          "nullable": false,
+          "description": "已售含义/范围说明，不能复用缩减"
+        },
+        {
+          "name": "version_coverage",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "哪些不可变版本兑现该含义"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "game_id",
+          "content_key"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_product_revision",
+      "label": "商品承诺快照",
+      "domain": "目录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "product_key",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "逻辑商品"
+        },
+        {
+          "name": "revision_no",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "每版不可变承诺"
+        },
+        {
+          "name": "kind",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "BUYOUT/CHAPTER/SCENE/FREE"
+        },
+        {
+          "name": "price_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "CNY分；业务输入≤999999；FREE=0"
+        },
+        {
+          "name": "currency",
+          "sqlType": "CHAR(3) ASCII",
+          "nullable": false,
+          "description": "当前仅CNY"
+        },
+        {
+          "name": "promise",
+          "sqlType": "TEXT",
+          "nullable": false,
+          "description": "购买时明确承诺，不包含所有未来DLC"
+        },
+        {
+          "name": "sale_state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "DRAFT/ON_SALE/DELISTED"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "game_id",
+          "product_key",
+          "revision_no"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_product_scope",
+      "label": "商品内容覆盖",
+      "domain": "目录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "product_revision_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "不可变商品版",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_product_revision.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "content_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同作品内容标识",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_content_key.id",
+          "referenceKind": "logical"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "product_revision_id",
+          "content_id"
+        ]
+      ],
+      "rules": "服务端校验同作品；每商品1–1000个不同key。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_release_attempt",
+      "label": "预览审核与发布尝试",
+      "domain": "目录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "version_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "指定版本",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game_version.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "operator_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "既有管理员身份引用，不信客户端自报"
+        },
+        {
+          "name": "expected_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "发布前版本修订"
+        },
+        {
+          "name": "checks",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "静态检查、预览权限、隔离/兼容及正式资源验证结果"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "ACCEPTED/REJECTED/PUBLISHED/UNKNOWN"
+        },
+        {
+          "name": "completed_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "实际发布生效"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_guard",
+      "label": "账号作品并发守卫",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "账号",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "access_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "授予/撤销变化递增"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "subject_id",
+          "game_id"
+        ]
+      ],
+      "rules": "升级/退款/授予先取得环境门禁及适用的限制头/原操作守卫，再取得本守卫作为第一把业务锁，随后按来源id稳定顺序锁；不得反向再取门禁，不在事务内等渠道网络。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_purchase_intent",
+      "label": "购买返回意图",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "run_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原运行上下文",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_run.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "匿名意图登录绑定前可空",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "content_keys",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "所需内容范围，不含金额/权限事实"
+        },
+        {
+          "name": "resume_handle",
+          "sqlType": "TEXT",
+          "nullable": false,
+          "description": "游戏自有不透明位置；限制长度且无凭据"
+        },
+        {
+          "name": "anonymous_binding",
+          "sqlType": "BINARY(32)",
+          "nullable": true,
+          "description": "防窃取intentId认领"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "OPEN/BOUND/RETURNED/CANCELLED"
+        },
+        {
+          "name": "return_run_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "RT1服务端核验后绑定承接位置的新运行",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_run.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "return_issued_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "受控位置交付时刻；不写URL/日志"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "return_run_id"
+        ]
+      ],
+      "rules": "intentId只是公开引用。仅当前可信会话和原匿名绑定可承接；首次成功绑定return_run后按稳定结果幂等返回，同一run不得回填多个意图。状态、主体、作品或版本不匹配拒绝，不回显handle，不将位置解释为权益。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_quote",
+      "label": "服务端报价",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已验证账号",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "product_revision_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "目标商品承诺",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_product_revision.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "intent_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "购买返回意图",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_purchase_intent.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "sources_snapshot",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "合格现金来源、净额、覆盖、处置修订"
+        },
+        {
+          "name": "price_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "目标买断/商品价"
+        },
+        {
+          "name": "credit_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "去重抵扣，不超目标价"
+        },
+        {
+          "name": "due_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "应补非负；0时不走支付"
+        },
+        {
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "报价生成后10分钟展示有效，提交仍重核"
+        },
+        {
+          "name": "access_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "报价时守卫修订"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_order",
+      "label": "需付款订单",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已验证账号",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "quote_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "唯一已确认报价",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_quote.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "promise_snapshot",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "名称/商品版/承诺/范围/币种/价格快照"
+        },
+        {
+          "name": "due_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "实际应付>0且≤999999"
+        },
+        {
+          "name": "currency",
+          "sqlType": "CHAR(3) ASCII",
+          "nullable": false,
+          "description": "CNY"
+        },
+        {
+          "name": "payment_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "PENDING/VERIFYING/PAID/UNPAID_CLOSED/EXCEPTION"
+        },
+        {
+          "name": "delivery_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "NOT_DUE/PENDING/DELIVERED/EXCEPTION"
+        },
+        {
+          "name": "purpose",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "LIVE/TEST/PREVIEW不得混报"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "并发状态"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "quote_id"
+        ]
+      ],
+      "rules": "免费和零补款升级不用本表制造付费订单；真实异常收款不受下单输入上限截断。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_order_scope",
+      "label": "已售覆盖快照",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "order_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "订单",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_order.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "content_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已售内容含义",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_content_key.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "meaning_snapshot",
+          "sqlType": "VARCHAR(1000)",
+          "nullable": false,
+          "description": "当次承诺，后续不覆盖"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "order_id",
+          "content_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_payment_attempt",
+      "label": "双渠道付款尝试",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "order_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同一业务订单",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_order.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "channel",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "ALIPAY/WECHAT"
+        },
+        {
+          "name": "merchant_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "环境中的非秘密商户配置引用"
+        },
+        {
+          "name": "method",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "首期PAGE/WAP/NATIVE/H5；JSAPI/小程序为后续候选，当前不接受"
+        },
+        {
+          "name": "out_trade_no",
+          "sqlType": "VARCHAR(64) ASCII",
+          "nullable": false,
+          "description": "服务器生成且符合渠道长度/字符要求"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "CREATING/WAITING/UNKNOWN/SUCCESS/CLOSED/FAILED"
+        },
+        {
+          "name": "close_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "NONE/REQUESTED/CONFIRMED/UNKNOWN"
+        },
+        {
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "渠道受理的到期时间，不等同本地倒计时"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "切渠道和关单守卫"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "channel",
+          "merchant_ref",
+          "out_trade_no"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_payment_notice",
+      "label": "通知查证收件",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "attempt_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "已核对付款尝试",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_payment_attempt.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "channel",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "ALIPAY/WECHAT"
+        },
+        {
+          "name": "merchant_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "核对应用/商户上下文"
+        },
+        {
+          "name": "notice_key",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "通知标识或规范摘要，不等于付款唯一号"
+        },
+        {
+          "name": "body_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "原始字节摘要；敏感原文分类隔离非普通日志"
+        },
+        {
+          "name": "evidence_object_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "受限通知信封的精确版本；不返回前台",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_storage_object.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "verification_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "RECEIVED/VERIFIED/REJECTED/UNMATCHED"
+        },
+        {
+          "name": "processed_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "持久处理后才应答成功"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "channel",
+          "merchant_ref",
+          "notice_key"
+        ]
+      ],
+      "rules": "非空证据须已核验AVAILABLE、bucket_role=EVIDENCE且上传计划归属本次可信收件作用域；对象保存原始body字节，明文摘要等于body_digest，通知信封元信息另存最小字段。未可靠持久化的异步处理不得确认收件成功。分类清理先按保留依据解除证据引用，保留最小摘要/核实事实。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_cash_fact",
+      "label": "可信实收事实",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "order_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原订单",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_order.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "attempt_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "支付尝试",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_payment_attempt.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "channel",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "ALIPAY/WECHAT"
+        },
+        {
+          "name": "merchant_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "非秘密商户引用"
+        },
+        {
+          "name": "channel_trade_no",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "渠道交易唯一号"
+        },
+        {
+          "name": "received_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "实际收款；异常超额仍完整保存"
+        },
+        {
+          "name": "currency",
+          "sqlType": "CHAR(3) ASCII",
+          "nullable": false,
+          "description": "核实币种"
+        },
+        {
+          "name": "occurred_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "可信渠道发生时刻"
+        },
+        {
+          "name": "verified_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "核实时间，用于迟到修订"
+        },
+        {
+          "name": "refunded_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已确认退款累计"
+        },
+        {
+          "name": "refund_reserved_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "未知/在途退款预留"
+        },
+        {
+          "name": "allocation_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "PRIMARY/DUPLICATE/AMOUNT_MISMATCH/REVIEW"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "channel",
+          "merchant_ref",
+          "channel_trade_no"
+        ]
+      ],
+      "rules": "一单可有多笔真实实收；仅一份正常履约来源，多付不重复发权，逐笔核退。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_refund",
+      "label": "现金退款与撤权",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "cash_fact_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原路现金来源",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_cash_fact.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "support_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "人工售后批准",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_support_case.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "out_refund_no",
+          "sqlType": "VARCHAR(64) ASCII",
+          "nullable": false,
+          "description": "稳定商户退款号"
+        },
+        {
+          "name": "channel",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "原现金对应ALIPAY/WECHAT；服务端匹配"
+        },
+        {
+          "name": "merchant_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "原现金商户引用；服务器核对"
+        },
+        {
+          "name": "amount_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": ">0；已退+保留+本次不超该笔实收"
+        },
+        {
+          "name": "channel_refund_no",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": true,
+          "description": "渠道退款号"
+        },
+        {
+          "name": "cash_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "APPROVED/SENDING/UNKNOWN/SUCCEEDED/FAILED"
+        },
+        {
+          "name": "rights_state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "PENDING/ADJUSTED/EXCEPTION"
+        },
+        {
+          "name": "rights_plan",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "获准撤哪份来源/范围及升级关联，不按金额比例删内容"
+        },
+        {
+          "name": "occurred_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "退款可信发生"
+        },
+        {
+          "name": "verified_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "退款核实"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "批准/执行/核实并发修订"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "channel",
+          "merchant_ref",
+          "out_refund_no"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_fee_fact",
+      "label": "费用与调整事实",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "cash_fact_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "归属原付款",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_cash_fact.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "refund_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "可关联退款",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_refund.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "kind",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "FEE/FEE_RETURN/ADJUSTMENT"
+        },
+        {
+          "name": "amount_fen",
+          "sqlType": "BIGINT",
+          "nullable": true,
+          "description": "带方向金额；未知为空非0"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "UNKNOWN/VERIFIED"
+        },
+        {
+          "name": "occurred_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "可信发生"
+        },
+        {
+          "name": "evidence_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "受限账单/核实来源"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_grant",
+      "label": "权益授予来源",
+      "domain": "权益",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原主体",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "source_kind",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "ORDER/FREE/UPGRADE/COMPENSATION"
+        },
+        {
+          "name": "source_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "对应稳定业务编号，服务端检查类型与归属"
+        },
+        {
+          "name": "cash_fact_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "现金来源可空，免费/零补款不造付款",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_cash_fact.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "PENDING/ACTIVE/REVIEW/REVOKED"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "来源处置并发"
+        },
+        {
+          "name": "reason",
+          "sqlType": "VARCHAR(1000)",
+          "nullable": true,
+          "description": "人工补偿/处置原因"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "source_kind",
+          "source_ref"
+        ]
+      ],
+      "rules": "多份有效来源范围取并集；已购完全覆盖不重复销售；退款仅处置对应来源。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_grant_scope",
+      "label": "授予的稳定覆盖",
+      "domain": "权益",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "grant_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "来源",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_grant.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "content_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同作品内容key",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_content_key.id",
+          "referenceKind": "logical"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "grant_id",
+          "content_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_upgrade",
+      "label": "差价/零补款升级",
+      "domain": "权益",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已验证主体",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "quote_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "升级报价",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_quote.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "order_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "正补款关联订单；0补款为空",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_order.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "grant_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "核实交付后关联买断授予",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_grant.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "credit_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "合格来源去重抵扣"
+        },
+        {
+          "name": "due_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "新增实付，0不触渠道"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "RESERVED/PENDING/DELIVERED/REVIEW/REVOKED"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "quote_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_upgrade_allocation",
+      "label": "抵扣保留与释放",
+      "domain": "权益",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "upgrade_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "升级",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_upgrade.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "cash_fact_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原净实付来源",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_cash_fact.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "amount_fen",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "该现金用于本次抵扣额"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "RESERVED/COMMITTED/RELEASED"
+        },
+        {
+          "name": "released_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "仅撤升级/已核实关闭后释放"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "upgrade_id",
+          "cash_fact_id"
+        ]
+      ],
+      "rules": "同现金来源活跃抵扣总额不超可用净额；守卫锁检查，不以普通唯一键假装实现跨行求和约束。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_run",
+      "label": "一次受限运行",
+      "domain": "运行存档",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "session_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "当前宿主会话",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_session.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "匿名试玩为空",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "version_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "实际游戏版本",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game_version.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "mode",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "TRIAL/FREE/OWNED/PREVIEW"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "AUTHORIZED/READY/EXITED/FAILED/REVOKED"
+        },
+        {
+          "name": "generation",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "账号会话代次，变化即拒旧上下文"
+        },
+        {
+          "name": "ready_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "游戏确认可交互"
+        },
+        {
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端有效边界"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_save_blob",
+      "label": "不透明不可变档",
+      "domain": "运行存档",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "归属",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "version_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "产生版本",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game_version.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "storage_object_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "精确私人对象，不与其他主体去重共享",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_storage_object.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "format",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "游戏声明的格式"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "STAGED/REFERENCED/ORPHAN/DELETED"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "对象须已核验AVAILABLE、bucket_role=SAVE且上传计划归属本主体/作品/保存操作；对象byte_size为约定编码后未压缩长度≤1048576；digest为该字节SHA-256。游戏version_id、对象storage_version_id与save_head.revision不得混用。DELETED墓碑在无引用且清理证据持久化后移除，不保留可定位私人正文的无限期引用。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_save_head",
+      "label": "当前档与上一恢复点",
+      "domain": "运行存档",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "账号",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "作品",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "current_blob_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "当前档",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_save_blob.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "previous_blob_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "上一已确认恢复点",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_save_blob.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "CAS修订"
+        },
+        {
+          "name": "conflict_state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "NONE/PENDING"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "subject_id",
+          "game_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_save_operation",
+      "label": "可查询保存动作",
+      "domain": "运行存档",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "head_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "账号作品档头",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_save_head.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "blob_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "候选源",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_save_blob.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "operation_key",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "同动作重试稳定，按主体/动作校验"
+        },
+        {
+          "name": "action",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "WRITE/IMPORT/RESTORE/RESTART；读取与兼容确认分别走专用接口"
+        },
+        {
+          "name": "base_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "玩家所见目标修订"
+        },
+        {
+          "name": "result_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "核实成功后的修订"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "ACCEPTED/PENDING/SUCCEEDED/CONFLICT/FAILED"
+        },
+        {
+          "name": "game_confirmed_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "恢复需游戏确认兼容，不把读出当成功"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "head_id",
+          "operation_key"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_save_conflict",
+      "label": "双方冲突来源",
+      "domain": "运行存档",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "head_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "被冻结普通替换的档头",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_save_head.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "left_blob_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已接收云端来源",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_save_blob.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "right_blob_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已接收候选来源",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_save_blob.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "OPEN/RESOLVED/DELETED"
+        },
+        {
+          "name": "resolution",
+          "sqlType": "VARCHAR(24)",
+          "nullable": true,
+          "description": "玩家明确选择及预期修订"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "单头最多一个OPEN冲突，锁头检查；第三源留来源端；注销分类清理覆盖双方。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_storage_write",
+      "label": "可恢复上传计划",
+      "domain": "对象存储",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "reserved_object_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "description": "上传前预留的稳定objectId；不是已核实可用对象关联"
+        },
+        {
+          "name": "principal_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "服务端可信执行主体/匿名上下文，不信客户端自报"
+        },
+        {
+          "name": "business_type",
+          "sqlType": "VARCHAR(32) ASCII",
+          "nullable": false,
+          "description": "GAME_VERSION/SAVE_OPERATION/PAYMENT_NOTICE"
+        },
+        {
+          "name": "business_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "受控业务作用域；服务端核本人/作品/收件归属"
+        },
+        {
+          "name": "operation_key",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "同一逻辑上传重试稳定；资源按项区分"
+        },
+        {
+          "name": "plan_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "包含归属、定位及预期元数据的规范计划SHA-256"
+        },
+        {
+          "name": "storage_profile_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "上传前固定配置版本；不含凭据"
+        },
+        {
+          "name": "bucket_role",
+          "sqlType": "VARCHAR(16) ASCII BINARY",
+          "nullable": false,
+          "description": "GAME/SAVE/EVIDENCE"
+        },
+        {
+          "name": "object_key",
+          "sqlType": "VARCHAR(1024) ASCII BINARY",
+          "nullable": false,
+          "description": "上传前固定不透明key，一计划独占"
+        },
+        {
+          "name": "expected_meta",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "审核后的预期明文/上传字节长度与摘要、MIME及必要加密引用，无正文/密钥"
+        },
+        {
+          "name": "candidate_versions",
+          "sqlType": "JSON",
+          "nullable": true,
+          "description": "可能已落物的精确非null版本及核验结果；有界，异常超量隔离不截断丢证"
+        },
+        {
+          "name": "result_object_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "核验通过后唯一接受对象；未知时为空",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_storage_object.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "RESERVED/UPLOADING/UNKNOWN/VERIFIED/ABANDONED/CLEANUP_PENDING/COMPLETE/EXCEPTION"
+        },
+        {
+          "name": "writer_generation",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "平台上传执行代次；不冒称可直接阻止底层旧流"
+        },
+        {
+          "name": "lease_until",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "任务认领租约；过期不证明旧写者停止"
+        },
+        {
+          "name": "verified_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "接受版本核验完成"
+        },
+        {
+          "name": "cleanup_receipt",
+          "sqlType": "JSON",
+          "nullable": true,
+          "description": "候选/迟到版本及未完成上传的精确处置回执"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "上传核验/放弃/清理并发守卫"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "reserved_object_id"
+        ],
+        [
+          "principal_ref",
+          "business_type",
+          "business_ref",
+          "operation_key"
+        ],
+        [
+          "storage_profile_ref",
+          "bucket_role",
+          "object_key"
+        ],
+        [
+          "result_object_id"
+        ]
+      ],
+      "rules": "上传前持久计划再发对象请求；同操作同计划返回既有动作，异摘要拒绝。UNKNOWN不能因result为空被GC；按固定profile/role/key查证所有精确候选，逐版核验，不信同key最新。接受对象public_id须等于reserved_object_id、定位/元数据匹配计划；锁业务守卫→上传计划→对象行，创建/核验对象及结果关联同主库事务提交，计划不是可读资源。ABANDONED与UNKNOWN不等于底层无字节；先阻止旧代完成绑定，确认旧上传/分片不能迟到写入并清理全部候选，才COMPLETE。租约/代次字段不能代替实际关闭旧写通路。归属核验需要的计划及profile/密钥引用保留到有效对象、未决上传和备份窗口结束；分类清理后移除私人关联。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_storage_object",
+      "label": "精确存储对象引用",
+      "domain": "对象存储",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "storage_profile_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "不可变存储配置版本引用，无endpoint或凭据"
+        },
+        {
+          "name": "bucket_role",
+          "sqlType": "VARCHAR(16) ASCII BINARY",
+          "nullable": false,
+          "description": "GAME/SAVE/EVIDENCE；映射私有桶，非实际桶名"
+        },
+        {
+          "name": "object_key",
+          "sqlType": "VARCHAR(1024) ASCII BINARY",
+          "nullable": false,
+          "description": "服务端生成不透明key；不含邮箱或剧情"
+        },
+        {
+          "name": "storage_version_id",
+          "sqlType": "VARBINARY(1024)",
+          "nullable": false,
+          "description": "存储返回的原始版本标识，非空且非字面null；超平台上限拒绝不截断"
+        },
+        {
+          "name": "digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "约定编码后未压缩明文字节SHA-256，非ETag"
+        },
+        {
+          "name": "byte_size",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "约定编码后未压缩字节；SAVE≤1048576"
+        },
+        {
+          "name": "stored_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "实际上传字节SHA-256；未变换时等于digest"
+        },
+        {
+          "name": "stored_byte_size",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "实际上传字节数；不等同副本/备份物理占用"
+        },
+        {
+          "name": "mime",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "审核MIME及nosniff，不信上传者自报"
+        },
+        {
+          "name": "etag",
+          "sqlType": "VARBINARY(1024)",
+          "nullable": true,
+          "description": "存储条件比较令牌；不替代摘要或版本"
+        },
+        {
+          "name": "encryption_key_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": true,
+          "description": "环境密钥版本引用；无真实密钥"
+        },
+        {
+          "name": "encryption_meta",
+          "sqlType": "JSON",
+          "nullable": true,
+          "description": "应用加密算法/nonce/tag等必要恢复元数据，无密钥"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "STAGED/AVAILABLE/DELETE_PENDING/LOGICALLY_DELETED/PURGED"
+        },
+        {
+          "name": "verified_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "精确版本持久核验完成；AVAILABLE前必填"
+        },
+        {
+          "name": "purge_not_before",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "引用/重试/备份窗口综合下界，非到期自动删除"
+        },
+        {
+          "name": "cleanup_receipt",
+          "sqlType": "JSON",
+          "nullable": true,
+          "description": "最小精确清理计划、依赖结果及副本/备份消退证据，不含正文/密钥"
+        },
+        {
+          "name": "purged_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "全部适用消退证据核实；不是DELETE返回时间"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "对象引用提交与清理共用的并发守卫"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "storage_profile_ref",
+          "bucket_role",
+          "object_key",
+          "storage_version_id"
+        ]
+      ],
+      "rules": "OSF1：SeaweedFS社区私有桶首写前版本化，配置未知/暂停或空/null存储版本一律不提交有效引用。配置引用固定映射桶/集群，迁移须创建并核验新对象引用；不重定向旧profile。精确定位及摘要、长度、MIME、加密信息核验后不可变；每objectId只绑定一个接受版本，不以同key最新对象兜底。消费者事务锁上传计划及本行核归属/AVAILABLE/角色后加引用；清理锁同一计划/对象、核全消费者/未决操作/备份引用后转DELETE_PENDING，后续新引用拒绝。逻辑不可见只到LOGICALLY_DELETED；全部适用副本、底层回收及备份窗口消退后才PURGED。密文存储须记录密钥版本及完整性信息并验证可解密；未加密的两个加密字段同时为空。表记录不含用户归属，授权须沿资源/存档/证据及上传计划核归属；禁止跨私人主体复用。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_support_case",
+      "label": "人工售后与非现金问题",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "本人受控访问",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "business_type",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "ORDER/GRANT/UPGRADE"
+        },
+        {
+          "name": "business_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "类型与归属由后端核验；非现金允许无订单"
+        },
+        {
+          "name": "category",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "重复收款/交付/运行/主观/撤销等"
+        },
+        {
+          "name": "description",
+          "sqlType": "TEXT",
+          "nullable": false,
+          "description": "1–1000码点，首版无附件，不收密码/完整存档"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "ACCEPTED/REVIEWING/NEED_INFO/PROPOSED/EXECUTING/CLOSED"
+        },
+        {
+          "name": "first_human_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "人工首回，自动回执不算"
+        },
+        {
+          "name": "last_human_update_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "持续处理中更新"
+        },
+        {
+          "name": "next_review_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "下一处理及逾期接手"
+        },
+        {
+          "name": "operator_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": true,
+          "description": "受限后台处理者"
+        },
+        {
+          "name": "approved_plan",
+          "sqlType": "JSON",
+          "nullable": true,
+          "description": "受控售后方案；逐笔现金与撤销来源，非现金允许无退款"
+        },
+        {
+          "name": "plan_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "批准方案修订；执行绑定此版不得擅自替换"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "批准/执行并发守卫"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_support_message",
+      "label": "售后对话与人工处理留痕",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "support_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "具体本人售后个案",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_support_case.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "role",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "PLAYER/OPERATOR/SYSTEM；由服务端识别"
+        },
+        {
+          "name": "operator_ref",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": true,
+          "description": "仅管理员消息的受限可信身份"
+        },
+        {
+          "name": "body",
+          "sqlType": "TEXT",
+          "nullable": false,
+          "description": "1–1000码点；无附件，不记录密钥或完整存档"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "本人/获权处理者可读；实际人工消息更新工单人工回应时刻，SYSTEM回执不算人工首回。清理/必要保留随具体个案分类，不把所有对话永久保留。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_cleanup_job",
+      "label": "分类清理与回执",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "deletion_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "AD1最终处理范围",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_deletion_request.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "category",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "PROFILE/SAVE/CONFLICT/EVENT/GAME_RECEIPT/BACKUP"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(24)",
+          "nullable": false,
+          "description": "PENDING/RUNNING/BLOCKED/SUCCEEDED/EXCEPTION"
+        },
+        {
+          "name": "deadline_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "按7日/30日等分类目标"
+        },
+        {
+          "name": "cursor",
+          "sqlType": "VARCHAR(512)",
+          "nullable": true,
+          "description": "最小重试游标，无剧情"
+        },
+        {
+          "name": "receipt",
+          "sqlType": "JSON",
+          "nullable": true,
+          "description": "实际删除/异常/保留范围"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "deletion_id",
+          "category"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_retention_hold",
+      "label": "最小留存例外",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "关联主体墓碑",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "object_type",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "具体受限对象类别"
+        },
+        {
+          "name": "object_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "具体对象，不冻结整个人数据"
+        },
+        {
+          "name": "basis",
+          "sqlType": "TEXT",
+          "nullable": false,
+          "description": "处理目的/依据/权限"
+        },
+        {
+          "name": "review_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "每90自然日复核"
+        },
+        {
+          "name": "released_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "必要性结束，按目标清理"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_outbox",
+      "label": "可靠业务任务",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "business_type",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "GRANT/REVOKE/RECONCILE/DELETE/RENDER/RESTRICTION"
+        },
+        {
+          "name": "business_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "稳定业务标识"
+        },
+        {
+          "name": "business_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同业务效果版本"
+        },
+        {
+          "name": "payload",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "最小参数，不含长期凭据/完整剧情"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "READY/LEASED/DONE/RETRY/DEAD"
+        },
+        {
+          "name": "next_attempt_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "可重试时刻"
+        },
+        {
+          "name": "lease_until",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "崩溃后可认领"
+        },
+        {
+          "name": "attempts",
+          "sqlType": "INT UNSIGNED",
+          "nullable": false,
+          "description": "重试次数"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "后台重试与任务认领并发修订"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "business_type",
+          "business_ref",
+          "business_revision"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_idempotency",
+      "label": "请求幂等结果",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "principal_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "可信主体或受控匿名上下文"
+        },
+        {
+          "name": "action",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "动作与对象作用域"
+        },
+        {
+          "name": "request_key",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "稳定客户端操作键"
+        },
+        {
+          "name": "payload_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "规范化载荷摘要"
+        },
+        {
+          "name": "result_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": true,
+          "description": "持久业务结果引用"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "PENDING/SUCCEEDED/FAILED"
+        },
+        {
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "结果缓存到期不废除持久唯一关系"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "principal_ref",
+          "action",
+          "request_key"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_audit_event",
+      "label": "受限操作审计",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "operator_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "可信后台/系统执行主体"
+        },
+        {
+          "name": "action",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "白名单动作"
+        },
+        {
+          "name": "business_type",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "对象类型"
+        },
+        {
+          "name": "business_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "对象编号"
+        },
+        {
+          "name": "trace_id",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "不含密钥的关联"
+        },
+        {
+          "name": "result",
+          "sqlType": "VARCHAR(32)",
+          "nullable": false,
+          "description": "实际结果"
+        },
+        {
+          "name": "reason",
+          "sqlType": "VARCHAR(1000)",
+          "nullable": true,
+          "description": "必要理由，禁止敏感整包日志"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_analytics_event",
+      "label": "普通行为明细",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "run_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "允许公开浏览事件无run",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_run.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "event_key",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "服务端绑定环境/来源/可信作用域与原event_ref的SHA256小写十六进制键，固定64字符；不是客户端原编号"
+        },
+        {
+          "name": "event_type",
+          "sqlType": "VARCHAR(128) ASCII",
+          "nullable": false,
+          "description": "固定31项中获准来源事件"
+        },
+        {
+          "name": "subject_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": true,
+          "description": "可关联标识，仍属待清理个人数据"
+        },
+        {
+          "name": "view_ref",
+          "sqlType": "VARCHAR(128)",
+          "nullable": true,
+          "description": "30分钟无活动会话，跨设备不猜合并"
+        },
+        {
+          "name": "fields",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "逐事件白名单，不存剧情/邮箱/存档"
+        },
+        {
+          "name": "occurred_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "客户端观察或业务可信时刻有来源区分"
+        },
+        {
+          "name": "received_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端接收"
+        },
+        {
+          "name": "purpose",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "LIVE/TEST/PREVIEW"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "event_key"
+        ]
+      ],
+      "rules": "去重算法及来源作用域见数据一致性部署与运营候选6.1；GAME绑定可信run，WEB绑定平台签发会话及作品，SERVER绑定持久业务事件。相同键同规范化事件返回重复，异载荷拒绝；event_type不加入唯一键，防同编号更换类型绕过。同库不使客户端事件成为现金事实。普通明细滚动30日；注销按7日目标，哈希键不视为匿名。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_metric_snapshot",
+      "label": "区间指标修订",
+      "domain": "治理运营",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "metric",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "M-01至M-11"
+        },
+        {
+          "name": "period_start",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "Asia/Shanghai转换后左边界"
+        },
+        {
+          "name": "period_end",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "右开边界"
+        },
+        {
+          "name": "as_of",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "本次核实截点"
+        },
+        {
+          "name": "definition_version",
+          "sqlType": "VARCHAR(128)",
+          "nullable": false,
+          "description": "固定口径版本"
+        },
+        {
+          "name": "dimensions",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "游戏/币种/模式/测试排除及缺失覆盖"
+        },
+        {
+          "name": "result",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "成功/失败/未知/取消及样本/中位/P95，不编造运营值"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ]
+      ],
+      "rules": "",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_restriction_gate",
+      "label": "统一库安全写入门禁",
+      "domain": "恢复控制",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "environment_ref",
+          "sqlType": "VARCHAR(64) ASCII BINARY",
+          "nullable": false,
+          "description": "逻辑环境；当前MCP库仅用于当前设计目标，不证明生产隔离"
+        },
+        {
+          "name": "authority_ref",
+          "sqlType": "CHAR(36) ASCII BINARY",
+          "nullable": false,
+          "description": "同库限制链标识，随全库恢复；不能自证独立权威",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_rl_head.authority_ref",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "deployment_epoch",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "当前运行代次；恢复后关闭外部入口再核新代次"
+        },
+        {
+          "name": "writer_identity_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "受控平台写入身份引用，无凭据"
+        },
+        {
+          "name": "write_state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "CLOSED/OPEN/FROZEN"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "受限控制入口并发修订"
+        },
+        {
+          "name": "updated_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "可信切换时刻，时间不代替代次"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "environment_ref"
+        ]
+      ],
+      "rules": "SD2：所有表落在xj_play。安全变更、授予、恢复账号/权益的事务先锁门禁，涉及限制记录时再锁日志头/原操作，然后取得业务守卫，核OPEN、epoch及可信数据库身份；单纯授予不伪造REVOKE事件。游戏后端不得直写平台表。门禁也随整库回滚，不能以恢复出的OPEN自认可开放；先在数据库外关闭服务入口并隔离旧连接/旧主。前缀不是权限，Redis锁/DNS不是旧写端隔离。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_restriction_operation",
+      "label": "同库限制操作与幂等",
+      "domain": "恢复控制",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "operation_id",
+          "sqlType": "CHAR(36) ASCII BINARY",
+          "nullable": false,
+          "description": "服务端稳定opId，同主体/动作/请求键重试查原结果"
+        },
+        {
+          "name": "gate_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "本环境安全门禁",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_restriction_gate.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "head_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同环境限制链头",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_rl_head.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "initiator_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "可信发起主体/系统身份的最小引用"
+        },
+        {
+          "name": "request_key",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "首次请求及重试稳定，不因超时换号"
+        },
+        {
+          "name": "action",
+          "sqlType": "VARCHAR(32) ASCII",
+          "nullable": false,
+          "description": "DELETE_ACCOUNT/REVOKE_SESSION/REVOKE_GRANT/SUSPEND_GAME/CLEANUP"
+        },
+        {
+          "name": "scope_type",
+          "sqlType": "VARCHAR(32) ASCII",
+          "nullable": false,
+          "description": "SUBJECT/GRANT/GAME/OBJECT白名单"
+        },
+        {
+          "name": "scope_ref",
+          "sqlType": "VARCHAR(128) ASCII BINARY",
+          "nullable": false,
+          "description": "不透明作用域，不含邮箱/剧情"
+        },
+        {
+          "name": "expected_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原业务计划的预期修订"
+        },
+        {
+          "name": "plan_schema",
+          "sqlType": "VARCHAR(32) ASCII",
+          "nullable": false,
+          "description": "最小计划确定编码版本"
+        },
+        {
+          "name": "plan_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "原计划确定字节摘要"
+        },
+        {
+          "name": "minimal_plan",
+          "sqlType": "MEDIUMBLOB",
+          "nullable": false,
+          "description": "最小限制计划，无完整剧情/正文/密钥；受实际包长与配置额度限制"
+        },
+        {
+          "name": "deployment_epoch",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同一提交事务核验的代次"
+        },
+        {
+          "name": "applied_seq",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同事务APPLIED事件序号；检查点可承接，检查点承接原回执，不依赖永久事件行"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "APPLIED；仅表示本次限制事务已提交，不表示清理/退款全部完成"
+        },
+        {
+          "name": "result_revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同事务提交后的业务修订"
+        },
+        {
+          "name": "outbox_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "同事务的分类清理/通知等后续任务",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_outbox.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "committed_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "本地事务提交记录；不证明快照后没有记录"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "operation_id"
+        ],
+        [
+          "gate_id",
+          "initiator_ref",
+          "action",
+          "request_key"
+        ]
+      ],
+      "rules": "合并原双库的操作镜像；不存在xj_rl_operation或跨库补写。门禁→头→原操作→相关业务守卫固定锁序，业务限制、操作结果、事件/连续头及必要outbox在同一InnoDB连接/事务全部提交。新操作只在成功事务产生APPLIED，失败整事务回滚，不另写PREPARED/ABORTED；在途结果对请求为UNKNOWN，不能回写成一个已提交终态。重试先核可信主体/动作/原键和原计划，相同返回原结果，异计划拒绝；不能先按旧expectedRevision拒掉已成功重试。提交未明查当前可信写端，旧恢复快照缺行不证明未执行，不能自动重发现金或解除限制。事务内不调用游戏HTTP、渠道或对象存储。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_restriction_replay",
+      "label": "同库恢复核验与排除凭据",
+      "domain": "恢复控制",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "recovery_ref",
+          "sqlType": "CHAR(36) ASCII BINARY",
+          "nullable": false,
+          "description": "一次隔离恢复/开放核验编号"
+        },
+        {
+          "name": "gate_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "本环境保持关闭的安全门禁",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_restriction_gate.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "authority_ref",
+          "sqlType": "CHAR(36) ASCII BINARY",
+          "nullable": false,
+          "description": "恢复出的链标识，不是未丢尾部证明"
+        },
+        {
+          "name": "deployment_epoch",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "旧写端隔离后的新代次"
+        },
+        {
+          "name": "checkpoint_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "同库检查点；起始可用genesis",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_rl_checkpoint.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "target_head_seq",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "由库外可恢复证据核实的目标，未知须为空"
+        },
+        {
+          "name": "target_head_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": true,
+          "description": "可信目标摘要，不能拿备份最大值自证"
+        },
+        {
+          "name": "verified_through_seq",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "当前已核连续前缀"
+        },
+        {
+          "name": "verified_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "对应前缀摘要"
+        },
+        {
+          "name": "excluded_scopes",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "有可信删除/消退依据的最小禁复活范围"
+        },
+        {
+          "name": "isolated_scopes",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "覆盖缺口或游戏清理未决范围；不由缺失反推删除"
+        },
+        {
+          "name": "evidence",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "备份/binlog/最后接受范围、隔离及开放依据；未知明确登记，无密钥"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "VERIFYING/ISOLATED/READY/FAILED"
+        },
+        {
+          "name": "verified_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "核验时刻，不能自行打开业务入口"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "恢复器并发守卫"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "recovery_ref"
+        ]
+      ],
+      "rules": "本表、操作/事件、头和检查点随同一个数据库一起回滚；无独立恢复保证。缺可恢复的快照后记录及完整范围证据时，不能从本表或链自洽推出限制已追平，READY禁止。现金按渠道另核；私人恢复/付费资源和未决scope保持隔离，不因其他公开页面可读而自动开放。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_rl_head",
+      "label": "同库限制链持久头",
+      "domain": "限制记录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "authority_ref",
+          "sqlType": "CHAR(36) ASCII BINARY",
+          "nullable": false,
+          "description": "环境固定链标识；全库恢复也会恢复该值"
+        },
+        {
+          "name": "environment_ref",
+          "sqlType": "VARCHAR(64) ASCII BINARY",
+          "nullable": false,
+          "description": "逻辑环境"
+        },
+        {
+          "name": "last_seq",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "受行锁保护的事务计数器，genesis=0，非AUTO_INCREMENT"
+        },
+        {
+          "name": "head_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "本库可见最后事件摘要，不证明没有丢失尾部"
+        },
+        {
+          "name": "checkpoint_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "同head已验证检查点",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_rl_checkpoint.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "compacted_through_seq",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "可清理前缀，不超过已验证检查点"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "头与压缩发布并发修订"
+        },
+        {
+          "name": "updated_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端时间，不用于事件排序"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "authority_ref"
+        ],
+        [
+          "environment_ref"
+        ]
+      ],
+      "rules": "同库业务事务锁头并使用last_seq+1，追加事件/操作及头同事务提交；回滚不推进头，同键重试不分配新号。检查点必须属于本head，不能引用另一环境。链只证明现存内容一致性，不能防止管理员或整库恢复删去自洽尾部。全局头会串行化安全写入，当前无吞吐承诺，后续压测再论证分片，不提前引入多库。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_rl_event",
+      "label": "同库限制已提交事件",
+      "domain": "限制记录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "head_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "本事件链头",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_rl_head.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "operation_row_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "已提交逻辑操作",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_restriction_operation.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "seq",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "持头锁分配last_seq+1，与业务效果一起提交"
+        },
+        {
+          "name": "deployment_epoch",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "提交事务已核验的代次"
+        },
+        {
+          "name": "phase",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "APPLIED；无跨库PREPARED/ABORTED阶段"
+        },
+        {
+          "name": "plan_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "与操作和原确定记录匹配"
+        },
+        {
+          "name": "previous_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "上一事件或已验证检查点末摘要"
+        },
+        {
+          "name": "event_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "域分离哈希：链标识、seq、epoch、前摘要和确定记录"
+        },
+        {
+          "name": "canonical_record",
+          "sqlType": "MEDIUMBLOB",
+          "nullable": false,
+          "description": "完整最小计划envelope及结果核验字段的确定字节，无剧情正文"
+        },
+        {
+          "name": "record_byte_size",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "实际字节数，受配置额度及max_allowed_packet限制"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "head_id",
+          "seq"
+        ],
+        [
+          "operation_row_id"
+        ]
+      ],
+      "rules": "业务限制/操作/事件/头/outbox在一个事务，event.head_id必须等于operation.head_id且门禁authority一致。同一操作最多一条APPLIED，错误整事务回滚，不用AUTO_INCREMENT或客户端时间作连续性证明。压缩后仍保留完整原回执或可靠承接，不能用当前epoch重造。事件不是独立现金事实，不能据此自动退款。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    },
+    {
+      "name": "xj_rl_checkpoint",
+      "label": "同库限制检查点与消退",
+      "domain": "限制记录",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "head_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "所属限制链",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_rl_head.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "through_seq",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "检查点承接的连续前缀末端"
+        },
+        {
+          "name": "through_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "该前缀末摘要"
+        },
+        {
+          "name": "deployment_epoch",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "一致快照代次"
+        },
+        {
+          "name": "canonical_state",
+          "sqlType": "MEDIUMBLOB",
+          "nullable": false,
+          "description": "确定编码限制、必要计划/幂等映射、完整原回执及未决清理scope"
+        },
+        {
+          "name": "state_digest",
+          "sqlType": "BINARY(32)",
+          "nullable": false,
+          "description": "绑定链标识、覆盖边界和原确定字节"
+        },
+        {
+          "name": "state_byte_size",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "有界快照长度；超过配置或包长停止压缩"
+        },
+        {
+          "name": "backup_coverage",
+          "sqlType": "JSON",
+          "nullable": false,
+          "description": "所有可复活数据的备份/对象版本/游戏表恢复窗口及消退依据"
+        },
+        {
+          "name": "recovery_evidence",
+          "sqlType": "JSON",
+          "nullable": true,
+          "description": "已验证备份/导出证据引用，无密钥；本表不是库外独立证据"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "DRAFT/VERIFIED/RETIRED"
+        },
+        {
+          "name": "verified_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "内容与可恢复性核验完成"
+        },
+        {
+          "name": "retire_not_before",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "所有关联恢复窗口结束后的清理下界"
+        },
+        {
+          "name": "revision",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "发布检查点与清理互斥"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "head_id",
+          "through_seq"
+        ]
+      ],
+      "rules": "检查点和限制链在同一库，不能承诺整库回滚不丢限制。固定一致前缀，完整承接有效限制、必要计划/幂等映射和原authorityRef/epoch/seq/opId/phase/planDigest/eventDigest；后续检查点继续承接或保留唯一载体。验证可恢复副本后在头守卫下切指针再清前缀；未决游戏清理不因TTL丢失。没有可靠副本、超额度/包长就保留原事件，不截断或伪称压缩成功。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+    }
+  ]
+}

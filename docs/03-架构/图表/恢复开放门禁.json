@@ -1,0 +1,202 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "恢复开放门禁｜阶段3草案，未演练",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "docs/03-架构/图表/恢复开放门禁.html"
+  },
+  "lanes": [
+    {
+      "id": "control",
+      "label": "隔离恢复与业务入口"
+    },
+    {
+      "id": "verify",
+      "label": "业务事实与限制核验"
+    },
+    {
+      "id": "exception",
+      "label": "失败处置",
+      "variant": "exception"
+    }
+  ],
+  "mainPath": [
+    "isolate",
+    "select",
+    "restore",
+    "replay",
+    "cash",
+    "rights",
+    "gate",
+    "open"
+  ],
+  "nodes": [
+    {
+      "id": "isolate",
+      "lane": "control",
+      "col": 0,
+      "type": "security",
+      "label": "库外关闭入口",
+      "sublabel": "隔离旧主、连接与任务"
+    },
+    {
+      "id": "select",
+      "lane": "control",
+      "col": 1,
+      "type": "database",
+      "label": "核恢复证据",
+      "sublabel": "最后接受范围与完整计划"
+    },
+    {
+      "id": "restore",
+      "lane": "control",
+      "col": 2,
+      "type": "backend",
+      "label": "隔离恢复同库",
+      "sublabel": "先核删除排除再核对象"
+    },
+    {
+      "id": "replay",
+      "lane": "verify",
+      "col": 2,
+      "type": "security",
+      "label": "核同库限制覆盖",
+      "sublabel": "尾部缺证仍隔离"
+    },
+    {
+      "id": "cash",
+      "lane": "verify",
+      "col": 3,
+      "type": "backend",
+      "label": "渠道查证",
+      "sublabel": "逐笔实收与退款"
+    },
+    {
+      "id": "rights",
+      "lane": "verify",
+      "col": 4,
+      "type": "backend",
+      "label": "重算权益",
+      "sublabel": "来源、存档、暂停"
+    },
+    {
+      "id": "gate",
+      "lane": "verify",
+      "col": 5,
+      "type": "security",
+      "label": "开放证据核验",
+      "sublabel": "新身份、代次与安全范围"
+    },
+    {
+      "id": "open",
+      "lane": "control",
+      "col": 5,
+      "type": "frontend",
+      "label": "按范围开放",
+      "sublabel": "重建监控与备份"
+    },
+    {
+      "id": "hold",
+      "lane": "exception",
+      "col": 5,
+      "type": "security",
+      "label": "保持隔离",
+      "sublabel": "补证后重新选点"
+    }
+  ],
+  "edges": [
+    {
+      "id": "main-0",
+      "from": "isolate",
+      "to": "select",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "main-1",
+      "from": "select",
+      "to": "restore",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "main-2",
+      "from": "restore",
+      "to": "replay",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "main-3",
+      "from": "replay",
+      "to": "cash",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "main-4",
+      "from": "cash",
+      "to": "rights",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "main-5",
+      "from": "rights",
+      "to": "gate",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "main-6",
+      "from": "gate",
+      "to": "open",
+      "variant": "emphasis",
+      "role": "main",
+      "label": "通过"
+    },
+    {
+      "id": "failed",
+      "from": "gate",
+      "to": "hold",
+      "label": "未通过",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "retry",
+      "from": "hold",
+      "to": "select",
+      "label": "补证重选",
+      "variant": "dashed",
+      "role": "return",
+      "route": "bottom-channel",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "CR1是待验证目标",
+      "items": [
+        "RPO 15分钟：库、对象与制品一致",
+        "RTO 4小时：从中断起点到开放门禁",
+        "没有演练、资源报价或达标承诺"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "SD2共享恢复边界",
+      "items": [
+        "限制与每个游戏表均在xj_play",
+        "恢复出的OPEN与自洽旧链不能自证安全",
+        "当前log_bin关闭；不能宣称PITR可用",
+        "缺删除覆盖或完整尾部，相关范围保持隔离",
+        "RPO/RTO仅为待验证目标，未恢复演练"
+      ]
+    }
+  ]
+}

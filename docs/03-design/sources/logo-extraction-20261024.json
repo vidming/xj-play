@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-24",
+  "source": "docs/01-产品专家/游戏平台高保真.html",
+  "source_sha256": "62c4ecbcbf713f47f8e414ac53393f2a426ae4bfe45da1c1a65e375c92d38bce",
+  "markup": "<button class=\"brand\" data-view=\"home\">间隙 <i>PLAY</i></button>",
+  "css": ".brand{border:0;background:none;font-size:23px;font-weight:800;letter-spacing:-.05em}.brand i{color:var(--coral);font-style:normal}",
+  "font": "Inherited: -apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",sans-serif; 23px,800,-.05em; original mobile <=440px 20px",
+  "colors": {
+    "ink": "#24252b",
+    "coral": "#df5a4e"
+  },
+  "found": "Text/CSS wordmark; no separate logo image or bundled typeface in this file",
+  "status": "Original source preserved; browser verification pending; no redesign"
+}

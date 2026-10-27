@@ -1,0 +1,2592 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.invalid/xj/events/1.0",
+  "title": "固定31事件及可信来源",
+  "$defs": {
+    "BusinessRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "order",
+            "grant",
+            "upgrade"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ]
+    },
+    "Event_game_detail_expose": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_detail_expose"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "game_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "view_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "game_ref",
+            "view_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "WEB",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_launch_authorize_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_launch_authorize_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "run_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "entry_mode": {
+              "type": "string",
+              "enum": [
+                "TRIAL",
+                "FREE",
+                "OWNED",
+                "PREVIEW"
+              ]
+            }
+          },
+          "required": [
+            "run_ref",
+            "entry_mode"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_trial_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_trial_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "run_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "entry_mode": {
+              "type": "string",
+              "enum": [
+                "TRIAL",
+                "FREE",
+                "OWNED",
+                "PREVIEW"
+              ]
+            }
+          },
+          "required": [
+            "run_ref",
+            "entry_mode"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields",
+        "game_ref",
+        "version_ref",
+        "run_ref"
+      ],
+      "x-trusted-source": "GAME",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_order_payment_click": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "order_payment_click"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "order_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_order_payment_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "order_payment_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "payment_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "order_ref",
+            "payment_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_order_payment_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "order_payment_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "order_ref",
+            "failure_category"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_entitlement_delivery_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "entitlement_delivery_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scope_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "scope_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_entitlement_delivery_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "entitlement_delivery_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "order_ref",
+            "failure_category"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_launch_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_launch_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "run_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "entry_mode": {
+              "type": "string",
+              "enum": [
+                "TRIAL",
+                "FREE",
+                "OWNED",
+                "PREVIEW"
+              ]
+            }
+          },
+          "required": [
+            "run_ref",
+            "entry_mode"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields",
+        "game_ref",
+        "version_ref",
+        "run_ref"
+      ],
+      "x-trusted-source": "GAME",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_launch_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_launch_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "run_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "run_ref",
+            "failure_category"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields",
+        "game_ref",
+        "version_ref",
+        "run_ref"
+      ],
+      "x-trusted-source": "GAME",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_access_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_access_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "scope_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "failure_category"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_save_write_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "save_write_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "save_revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "save_revision",
+            "operation_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_save_write_accept_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "save_write_accept_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "operation_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_save_write_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "save_write_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "failure_category",
+            "operation_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_save_restore_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "save_restore_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "save_revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "save_revision",
+            "operation_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields",
+        "game_ref",
+        "version_ref",
+        "run_ref"
+      ],
+      "x-trusted-source": "GAME",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_save_restore_accept_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "save_restore_accept_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "operation_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_save_restore_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "save_restore_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "save_revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 20,
+              "pattern": "^(0|[1-9][0-9]{0,19})$"
+            }
+          },
+          "required": [
+            "failure_category",
+            "operation_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields",
+        "game_ref",
+        "version_ref",
+        "run_ref"
+      ],
+      "x-trusted-source": "GAME",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_release_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_release_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "version_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "release_attempt_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "version_ref",
+            "release_attempt_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_release_accept_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_release_accept_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "release_attempt_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "version_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "release_attempt_ref",
+            "version_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_release_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_release_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "version_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "release_attempt_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "version_ref",
+            "failure_category",
+            "release_attempt_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_support_request_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "support_request_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "businessRef": {
+              "$ref": "#/$defs/BusinessRef"
+            },
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "refund_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "businessRef"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_order_refund_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "order_refund_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "refund_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "refund_ref",
+            "order_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_order_refund_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "order_refund_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "refund_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "refund_ref",
+            "order_ref",
+            "failure_category"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_account_action_accept_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "account_action_accept_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "action_type": {
+              "type": "string",
+              "enum": [
+                "register",
+                "verify",
+                "reset",
+                "delete",
+                "change_email"
+              ]
+            }
+          },
+          "required": [
+            "operation_ref",
+            "action_type"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_account_action_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "account_action_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "action_type": {
+              "type": "string",
+              "enum": [
+                "register",
+                "verify",
+                "reset",
+                "delete",
+                "change_email"
+              ]
+            }
+          },
+          "required": [
+            "operation_ref",
+            "action_type"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_account_action_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "account_action_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "action_type": {
+              "type": "string",
+              "enum": [
+                "register",
+                "verify",
+                "reset",
+                "delete",
+                "change_email"
+              ]
+            },
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "operation_ref",
+            "action_type",
+            "failure_category"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_order_create_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "order_create_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "scope_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "order_ref",
+            "scope_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_free_claim_accept_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "free_claim_accept_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "game_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "operation_ref",
+            "game_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_free_claim_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "free_claim_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "scope_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "operation_ref",
+            "scope_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_free_claim_fail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "free_claim_fail"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operation_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "failure_category": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "operation_ref",
+            "failure_category"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event_game_upgrade_success": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$",
+          "description": "原事件实例编号；同次重试保持编号及载荷；不是数据库全局唯一键或可信付款证明"
+        },
+        "type": {
+          "const": "game_upgrade_success"
+        },
+        "occurred_at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "format": "date-time"
+        },
+        "game_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "version_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "run_ref": {
+          "type": "string",
+          "minLength": 36,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "account_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "upgrade_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "scope_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            }
+          },
+          "required": [
+            "upgrade_ref",
+            "scope_ref"
+          ]
+        }
+      },
+      "required": [
+        "event_ref",
+        "type",
+        "occurred_at",
+        "fields"
+      ],
+      "x-trusted-source": "SERVER",
+      "x-server-canonicalization": "归属/模式/来源由服务端核定；event_key按环境和可信作用域派生，GAME绑定run、WEB绑定平台会话及作品、SERVER绑定持久事件；同键异载荷拒绝，详见数据与运营6.1；游戏结果不证明现金或权益"
+    },
+    "Event": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Event_game_detail_expose"
+        },
+        {
+          "$ref": "#/$defs/Event_game_launch_authorize_success"
+        },
+        {
+          "$ref": "#/$defs/Event_game_trial_success"
+        },
+        {
+          "$ref": "#/$defs/Event_order_payment_click"
+        },
+        {
+          "$ref": "#/$defs/Event_order_payment_success"
+        },
+        {
+          "$ref": "#/$defs/Event_order_payment_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_entitlement_delivery_success"
+        },
+        {
+          "$ref": "#/$defs/Event_entitlement_delivery_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_game_launch_success"
+        },
+        {
+          "$ref": "#/$defs/Event_game_launch_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_game_access_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_save_write_success"
+        },
+        {
+          "$ref": "#/$defs/Event_save_write_accept_success"
+        },
+        {
+          "$ref": "#/$defs/Event_save_write_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_save_restore_success"
+        },
+        {
+          "$ref": "#/$defs/Event_save_restore_accept_success"
+        },
+        {
+          "$ref": "#/$defs/Event_save_restore_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_game_release_success"
+        },
+        {
+          "$ref": "#/$defs/Event_game_release_accept_success"
+        },
+        {
+          "$ref": "#/$defs/Event_game_release_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_support_request_success"
+        },
+        {
+          "$ref": "#/$defs/Event_order_refund_success"
+        },
+        {
+          "$ref": "#/$defs/Event_order_refund_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_account_action_accept_success"
+        },
+        {
+          "$ref": "#/$defs/Event_account_action_success"
+        },
+        {
+          "$ref": "#/$defs/Event_account_action_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_order_create_success"
+        },
+        {
+          "$ref": "#/$defs/Event_free_claim_accept_success"
+        },
+        {
+          "$ref": "#/$defs/Event_free_claim_success"
+        },
+        {
+          "$ref": "#/$defs/Event_free_claim_fail"
+        },
+        {
+          "$ref": "#/$defs/Event_game_upgrade_success"
+        }
+      ]
+    },
+    "EventReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._:-]+$"
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "duplicates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._:-]+$"
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "rejected": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "eventRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9._:-]+$"
+              },
+              "code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9._:-]+$"
+              }
+            },
+            "required": [
+              "eventRef",
+              "code"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 20
+        }
+      },
+      "required": [
+        "accepted",
+        "duplicates",
+        "rejected"
+      ]
+    }
+  },
+  "$ref": "#/$defs/Event"
+}

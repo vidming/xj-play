@@ -1,0 +1,3419 @@
+{
+  "date": "2026-10-26",
+  "status": "阶段3静态契约与模型检查通过；完整ER已渲染但全图视觉未验收；完整架构尚未整体验收",
+  "scope": "继续阶段3架构方向收口与静态验证；已承接GB1／RC1／RT1／CL1；未读取保护配置、未安装/解析/编译、未连接业务服务、未建表、未修改源码、未采购或部署",
+  "cleanup": {
+    "date": "2026-10-25",
+    "backup": "/Users/hzmking/.codex/backups/xj-play/文档整理前-20261025-173257.tar.gz",
+    "sha256": "eb2bf63e968a8cb6d8ab8de852134c4340083cd0f9c44437965774a5656acf06",
+    "removed": 384,
+    "verifiedBeforeDelete": true,
+    "additionalRemoved": [
+      "docs/10-项目规则/前后端项目启动规则.md",
+      "docs/10-项目规则/项目整体规则.md",
+      "docs/10-项目规则/浏览器自动化规则.md",
+      "docs/.DS_Store",
+      "docs/01-产品专家/02-竞品分析/.DS_Store",
+      "docs/01-产品专家/05-原型/.DS_Store",
+      "docs/01-产品专家/03-需求调研/.DS_Store",
+      "docs/01-产品专家/04-PRD/.DS_Store",
+      "docs/01-产品专家/07-剧本设计/.DS_Store",
+      "docs/01-产品专家/01-品牌启动/.DS_Store",
+      "docs/02-UI设计/.DS_Store",
+      "docs/08-变更与复盘/.DS_Store",
+      "docs/00-项目管理/.DS_Store",
+      "docs/09-工具/mcp.json.backup-timeout-20261023-232655",
+      "docs/09-工具/mcp.json.backup-dbname-20261023-232914",
+      "docs/03-架构/文档/渲染工具部署与恢复选项-V0.1.md",
+      "docs/00-governance/approvals/阶段1-产品整体验收记录-V0.2.md",
+      "docs/00-governance/approvals/阶段2-UI整体验收记录-V0.6.md"
+    ]
+  },
+  "preservation": {
+    "unchangedDesignAndProtocolArtifacts": 25,
+    "files": [
+      "docs/03-design/demos/platform-demo-refined/index.html",
+      "docs/03-design/demos/platform-demo-refined/styles.css",
+      "docs/03-design/demos/platform-demo-refined/tokens.css",
+      "docs/03-design/demos/platform-demo-refined/README.md",
+      "docs/03-design/demos/platform-demo-refined/front.js",
+      "docs/03-design/demos/platform-demo-refined/data.js",
+      "docs/03-design/demos/platform-demo-refined/admin.js",
+      "docs/03-design/demos/platform-demo-refined/app.js",
+      "docs/03-design/assets/logo-original/logo-original.html",
+      "docs/03-design/assets/logo-original/logo-original.css",
+      "docs/03-design/assets/concepts/telephone-concept.png",
+      "docs/01-产品专家/游戏平台高保真.html",
+      "docs/01-产品专家/第七位来电者-单文件试玩.html",
+      "docs/03-架构/资料/OpenAPI官方元模式-20250915.json",
+      "docs/03-架构/资料/平台OpenAPI-V0.1.json",
+      "docs/03-架构/资料/物理数据模型-V0.1.json",
+      "docs/03-架构/资料/游戏消息桥Schema-V0.1.json",
+      "docs/03-架构/资料/游戏Manifest-Schema-V0.1.json",
+      "docs/03-架构/资料/平台事件Schema-V0.1.json",
+      "docs/03-架构/图表/完整物理ER-V0.1.mmd",
+      "docs/03-架构/图表/完整物理ER-V0.1.svg",
+      "docs/03-架构/图表/完整物理ER-V0.1.dot",
+      "docs/03-架构/图表/物理模型审阅页.html",
+      "docs/03-design/sources/design-tokens-refined-v1.2.json",
+      "docs/03-design/sources/page-state-inventory-refined-v1.2.json"
+    ],
+    "PRD核心功能段落": "第1至6节在归一化Markdown引用标签/地址后内容一致；引用已改为当前决策。顶部及后续阶段说明同步实际验收状态",
+    "scope": "25项字节未变仅指前轮资料清理时的保护检查；本轮按当前设计更新了OpenAPI、桥Schema及模型页说明，不主张它们仍与清理前字节相同"
+  },
+  "architectureStatic": {
+    "date": "2026-10-26",
+    "status": "静态契约检查通过；完整ER已渲染，全图视觉验收未完成",
+    "checks": {
+      "OpenAPI官方元模式与引用": "通过；82个唯一操作；未运行服务",
+      "异步受理形状": "仅显式声明的存档提交使用202/SaveOperation，按id查询；资源读取只返回二进制或错误，无悬空202",
+      "限制完成语义": "6个现有操作（含重置口令撤会话）注明SD2同库提交与未明语义；不新增内部日志API或游戏RPC；仅静态文案检查",
+      "官方元模式来源": "https://spec.openapis.org/oas/3.1/schema/2025-09-15；2026-10-25实际HTTP200读取",
+      "Schema结构": "OpenAPI 119个schema＋3份独立Schema元模式与本地引用通过",
+      "产品事件对应": "31项名称与固定PRD完全对应；businessRef按实际确认追加",
+      "桥契约边界": "保持17个业务RPC；补固定版本资源索引和分块控制形状；不验证实际ArrayBuffer、顺序、ACK背压、摘要或宿主确认",
+      "代表性载荷": [
+        {
+          "schema": "PaymentCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "PaymentCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "PaymentCreate",
+          "expectedValid": false
+        },
+        {
+          "schema": "PaymentCreate",
+          "expectedValid": false
+        },
+        {
+          "schema": "PaymentCreate",
+          "expectedValid": false
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": false
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunResume",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunResume",
+          "expectedValid": false
+        },
+        {
+          "schema": "RunResume",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunResume",
+          "expectedValid": false
+        },
+        {
+          "schema": "ContinueSummary",
+          "expectedValid": true
+        },
+        {
+          "schema": "ContinueSummary",
+          "expectedValid": false
+        },
+        {
+          "schema": "ContinueSummary",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": false
+        },
+        {
+          "schema": "Upgrade",
+          "expectedValid": true
+        },
+        {
+          "schema": "Upgrade",
+          "expectedValid": false
+        },
+        {
+          "schema": "Upgrade",
+          "expectedValid": false
+        },
+        {
+          "schema": "Upgrade",
+          "expectedValid": false
+        },
+        {
+          "schema": "Upgrade",
+          "expectedValid": false
+        },
+        {
+          "schema": "Upgrade",
+          "expectedValid": true
+        },
+        {
+          "schema": "SaveWrite",
+          "expectedValid": false
+        },
+        {
+          "schema": "SaveWrite",
+          "expectedValid": true
+        },
+        {
+          "schema": "SaveWrite",
+          "expectedValid": false
+        },
+        {
+          "schema": "SaveWrite",
+          "expectedValid": true
+        },
+        {
+          "schema": "SaveWrite",
+          "expectedValid": false
+        },
+        {
+          "schema": "SupportCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "SupportCreate",
+          "expectedValid": false
+        },
+        {
+          "schema": "Event",
+          "expectedValid": true
+        },
+        {
+          "schema": "GameEvents",
+          "expectedValid": false
+        },
+        {
+          "schema": "Event",
+          "expectedValid": true
+        },
+        {
+          "schema": "Event",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏Manifest-Schema-V0.1.json",
+          "expectedValid": true
+        },
+        {
+          "schema": "游戏Manifest-Schema-V0.1.json",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏Manifest-Schema-V0.1.json",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": true
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": false
+        },
+        {
+          "schema": "Run",
+          "expectedValid": true
+        },
+        {
+          "schema": "Run",
+          "expectedValid": false
+        },
+        {
+          "schema": "Run",
+          "expectedValid": false
+        },
+        {
+          "schema": "Run",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": true
+        },
+        {
+          "schema": "Bridge.ResourceTransfer",
+          "expectedValid": true
+        },
+        {
+          "schema": "Bridge.ResourceTransfer",
+          "expectedValid": false
+        },
+        {
+          "schema": "Bridge.ResourceTransfer",
+          "expectedValid": false
+        },
+        {
+          "schema": "Bridge.ResourceChunkHeader",
+          "expectedValid": true
+        },
+        {
+          "schema": "Bridge.ResourceChunkHeader",
+          "expectedValid": false
+        },
+        {
+          "schema": "Bridge.ResourceChunkHeader",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": true
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": true
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": true
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": false
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": true
+        },
+        {
+          "schema": "游戏消息桥Schema-V0.1.json",
+          "expectedValid": false
+        }
+      ],
+      "载荷限制": "仅静态结构样本；来源、实际字节、加密、跨字段安全与事务均需实施验证",
+      "首期支付与存档动作": "PT1机器契约拒绝JSAPI；存档动作移除READ_RESTORE，读取/恢复确认仍由专用接口承担；仅静态拒绝样本",
+      "已确认购买返回与继续契约": "RT1：RunCreate.intentId可选、Run.resume受控交付且意图错误稳定拒绝；CL1：LibraryItem.continue只含摘要；PurchaseIntent不回显handle；仅静态结构检查，跨浏览器/版本/权限语义未运行",
+      "事件去重规格": "服务端按可信作用域派生event_key并单列唯一；不以客户端原编号或event_type组合冒充作用域；仅静态模型检查",
+      "物理模型": {
+        "tables": 48,
+        "columns": 533,
+        "physicalForeignKeys": 0,
+        "logicalRelations": 77,
+        "stores": {
+          "mysql": 48
+        }
+      },
+      "完整ER导出": "Graphviz已实际渲染DOT/SVG；文本与48表、77逻辑关联一致，物理外键0条",
+      "完整ER限制": "Graphviz成功渲染不等于全图人工视觉验收通过；非ASCII字宽警告及大画幅审阅限制仍须如实保留。",
+      "当前资料指纹": "122份当前文件一致；这是整理后快照，不是新业务验收",
+      "本地文档链接": "通过",
+      "源码保护": "前端干净；后端仅已知本地配置改动；未读取内容或diff"
+    }
+  },
+  "modelBrowser": {
+    "date": "2026-10-26",
+    "status": "文档浏览器检查通过",
+    "htmlSha256": "a10c6c8c9b8626646eb80c0b31cb0ddd5d236ccd280ab2b78db904b78695d293",
+    "svgSha256": "c3c7974f3f6fbe13ca4c03d2bb940399f03b8cf9e392670d84e38faa9c5a098a",
+    "checks": {
+      "tables": 48,
+      "columns": 533,
+      "stores": [
+        {
+          "id": "mysql",
+          "tables": 48
+        }
+      ],
+      "logicalRelations": 77,
+      "physicalForeignKeys": 0,
+      "viewports": [
+        320,
+        736,
+        1440
+      ],
+      "filter": "字段/表名过滤与引用导航通过",
+      "sameRowTextOverlaps": 0,
+      "pageErrors": []
+    },
+    "limitations": "离线文档检查；SVG为大画幅，未完成全图人工视觉审阅；未测试真实平台/交易/存储"
+  },
+  "currentUIDemo": {
+    "status": "当前唯一Demo资源与既有模拟交互检查通过",
+    "routes": 31,
+    "states": 255,
+    "result": {
+      "scope": "Only simulated design interactions; no real services",
+      "passed": 12,
+      "checks": [
+        "Guest trial -> boundary -> login -> verification -> skip import -> unknown -> paid -> delivered -> shell",
+        "Game grants stay separate",
+        "Free and zero-cash grants have no channel payment; credit upgrade uses only new cash",
+        "Repeated purchase returns existing grant",
+        "Refund result and rights exception remain separate",
+        "Unverified and logged-out contexts hide private save details",
+        "Deletion application, restrictions, withdrawal, final stop and classified cleanup",
+        "Publishing gaps block and denied preview reveals no draft",
+        "Scope duplicates reject without losing form; valid ASCII sample passes",
+        "Unknown fees, negative cross-period net and known-fee sample reconcile",
+        "Search, shareable query, return and Unicode length feedback",
+        "Support progress, mute and expansion interactions"
+      ]
+    },
+    "errors": [],
+    "failures": [],
+    "limits": "离线设计检查，无真实服务、支付或游戏接入",
+    "本轮范围": "保留前次离线模拟结果，本轮未重跑；不属于本轮数据库验证"
+  },
+  "recoveryDiagram": {
+    "status": "pass",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "specification": {
+      "path": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/图表/恢复开放门禁.json",
+      "sha256": "7bc2194a5c5535f17653a9bce820ef86e22b138d1eb52df22f98cb92a8b6724a",
+      "bytes": 4344
+    },
+    "artifact": {
+      "path": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/图表/恢复开放门禁.html",
+      "sha256": "cb597168c03fe20782f6e6755d0624d1b089887e814ffd1338fd654287512e02",
+      "bytes": 820306
+    },
+    "visualReview": "not-requested",
+    "update": {
+      "status": "current",
+      "installedVersion": "3.2.0",
+      "availableVersion": "3.2.0",
+      "releaseNotes": null,
+      "checkedAt": "2026-10-26T02:53:21.859Z",
+      "source": "cache",
+      "noticeRequired": false,
+      "noticeText": null
+    },
+    "scope": "库外关入口、同库恢复与尾部缺证隔离；Archify四门禁通过，不证明恢复已演练"
+  },
+  "limitations": [
+    "本轮无扩大授权；SD2/RK1/MC1/CR1/OSF1及AV1/FM1/PT1/GB1/RC1/RT1/CL1继续有效；完整架构未整体验收，未进入阶段4",
+    "平台48表533列77条逻辑关联0物理外键为设计，底座及独立游戏玩法表未创建或计入；filemeta仅候选前缀例外",
+    "同库限制/业务/outbox事务与关联守卫未实现；跨HTTP不自动原子；事件去重9个样本不是处理器或数据库测试",
+    "MC-V01至MC-V14全部运行项未执行；8.2.0历史候选不是生产定版；本轮未解析依赖、编译或升级",
+    "当前MySQL5.7.14、可见表0、log_bin=OFF及高权MCP身份沿用已取得元数据；实际应用账号、备份和完整限制尾部恢复未知",
+    "SeaweedFS后端、版本化/非null版本/私有权限、对象及密钥恢复均未运行验收；对象日志CAS禁用；缺证范围继续隔离",
+    "Redis6.2.20 standalone仅MCP自报及固定资料支持候选，不证明应用实际连通、补丁完整、安全或生产适用",
+    "RPO15分钟/RTO4小时仍是目标；具体完整恢复证据路线及资源费用未定，不能用缺证隔离冒充达标",
+    "SDK、资源隔离、支付、游戏接入和业务闭环未运行验收；UI全模拟，本轮保留既有UI及Archify记录，未重跑",
+    "完整ER仍有Graphviz非ASCII字宽警告，未完成全图人工视觉审阅；文档浏览通过不代表业务能力",
+    "表单仅本地假宿主测试；保存/恢复/请求发送均不自动批准，用户可只确认部分；后续仅执行实际获准范围"
+  ],
+  "sourceResearch": {
+    "scope": "Java/POM白名单只读；精确版本报告5.2/5.3及来源原位更新",
+    "javaFiles": 968,
+    "pomFiles": 20,
+    "mappers": 8,
+    "abstractMappingMethods": 11,
+    "finding": "未发现需要MapStruct1.7的显式注解/属性/API；MS1已实际确认优先评估1.6.3，现有POM暂不切换",
+    "limits": "未解析依赖/编译；生成行为、Lombok精确组合及完整许可未验收"
+  },
+  "crossReview": {
+    "status": "定向复核通过",
+    "finding": "通用202缺少资源完成查询路径",
+    "resolution": "默认不生成通用202，仅operateSave明示受理且200/202同为SaveOperation；资源读取只二进制或错误",
+    "limits": "只读静态审查，不验证运行时行为"
+  },
+  "confirmationForm": {
+    "status": "AV1/FM1/PT1实际消息已确认；原表单已替换为只读确认摘要，不能再次提交",
+    "scope": "XJ-ARCH-VALIDATION-20261026",
+    "form": "/Users/hzmking/.codex/visualizations/2026/10/23/01a16946-5348-7e20-8f54-6abdd144d9d5/architecture-resource-review.html",
+    "sha256": "2fd176e7ef457c9fe4eed6b68bcf820dc842bc60026f5108a976584a9025309b",
+    "basis": {
+      "digest": "e4d0d2b883ff7928734972a3d0abe9939664adde0615ea3df21b1f97ad55d46b",
+      "files": [
+        {
+          "path": "docs/03-架构/文档/架构候选与复用决策-V0.1.md",
+          "sha256": "01b31108aafdbe200b9bfc65dcf34577f826fbdc99f4b7b1d4c34461db4facc4"
+        },
+        {
+          "path": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md",
+          "sha256": "6cc1107277b780175ef05976fa85f30b680c80cd5c9a14ad43c010c626ace2f4"
+        },
+        {
+          "path": "docs/03-架构/资料/对象存储候选对比.md",
+          "sha256": "2ed8ae06dacfe3f91129b113895062b229ffc6a58dcd7685714dee0d1ad9630f"
+        },
+        {
+          "path": "docs/03-架构/文档/双支付适配与可信核实规格-V0.1.md",
+          "sha256": "f63681ad4061c2ef22a82b82c951ad4febd709f3ab1b5cea3ab4f7946da1f751"
+        },
+        {
+          "path": "docs/03-架构/决策/当前有效决策.md",
+          "sha256": "4cdd127df7ee26013ca09eda4bb36703b97651098ec40a350a72a3dadac07513"
+        }
+      ],
+      "algorithm": "SHA-256 of UTF-8 JSON array; ensure_ascii=false, sort_keys=true, separators=(comma,colon); ordered files"
+    },
+    "questions": {
+      "AV": [
+        "AV1有限本地兼容验证（推荐）",
+        "AV2保持只读研究"
+      ],
+      "FM": [
+        "FM1原版mysql及filemeta前缀例外（推荐）",
+        "FM2严格前缀继续研究"
+      ],
+      "PT": [
+        "PT1外部浏览器双支付（推荐）",
+        "PT2另加微信内网页JSAPI"
+      ]
+    },
+    "validation": {
+      "date": "2026-10-26",
+      "status": "离线交互表单检查通过",
+      "viewports": [
+        {
+          "width": 320,
+          "expanded": false,
+          "scroll": 288,
+          "client": 288
+        },
+        {
+          "width": 320,
+          "expanded": true,
+          "scroll": 288,
+          "client": 288
+        },
+        {
+          "width": 736,
+          "expanded": false,
+          "scroll": 704,
+          "client": 704
+        },
+        {
+          "width": 736,
+          "expanded": true,
+          "scroll": 704,
+          "client": 704
+        },
+        {
+          "width": 1024,
+          "expanded": false,
+          "scroll": 992,
+          "client": 992
+        },
+        {
+          "width": 1024,
+          "expanded": true,
+          "scroll": 992,
+          "client": 992
+        }
+      ],
+      "pageErrors": [],
+      "checks": [
+        "初始无预选；空选择拒绝",
+        "默认/展开无横向溢出",
+        "六种单项选择与三项组合发送载荷",
+        "部分确认不扩大AV/FM/PT授权；附带当前依据摘要及补充要求",
+        "匹配scope/digest恢复；旧scope或旧摘要忽略",
+        "所有草稿submitted=false",
+        "发送失败及无宿主提示；按钮恢复"
+      ],
+      "limits": "仅隔离本地预览与假的宿主发送接口；未发送真实确认消息，不产生批准或业务运行验收",
+      "visualInspection": "已查看736px默认截图，三题、补充及发送控件清晰，无遮挡；320/736/1024默认和展开宽度均通过",
+      "testHarness": "预览iframe自动测高期间原点击测试未命中；布局检查后增大测试视口使整表可见，再以原生点击完成全部选择与异常检查；未修改表单业务逻辑来绕过断言",
+      "scope": "历史可提交表单的验证，适用于approvedFormSha256；当前已替换只读摘要"
+    },
+    "limits": "只有实际发送到对话的选择消息产生对应授权；草稿始终submitted=false。未选不批准，不构成完整架构验收或阶段4/业务开发/部署授权。历史MC1确认依据独立保留",
+    "approvedFormSha256": "2fd176e7ef457c9fe4eed6b68bcf820dc842bc60026f5108a976584a9025309b",
+    "currentSummarySha256": "935b1898ccb627bfd2ffed6614003965802d73457590b7b6391ea4d261d0a027",
+    "currentSummary": "只读三项确认摘要；无表单、脚本、发送接口；历史批准依据保持原值",
+    "currentSummaryValidation": {
+      "status": "只读摘要源码检查通过",
+      "checks": [
+        "无form/input/button/script/发送入口",
+        "AV1/FM1/PT1已确认标签齐全",
+        "历史确认摘要和成员指纹独立保留"
+      ]
+    },
+    "architectureClosure": {
+      "scope": "XJ-ARCH-CLOSURE-20261026-V0.2",
+      "form": "/Users/hzmking/.codex/visualizations/2026/10/23/01a16946-5348-7e20-8f54-6abdd144d9d5/architecture-closure-review.html",
+      "formSha256AtSubmission": "c0fd94e57fc97a2cacea8481cbbbcbed1f37da1e674495838a9e5a2be32838fb",
+      "status": "实际选择消息已确认GB1／RC1／RT1／CL1，补充无；只确认四项阶段3架构方向",
+      "confirmation": {
+        "date": "2026-10-26",
+        "source": "对话中实际发送的kind=message选择消息",
+        "scope": "XJ-ARCH-CLOSURE-20261026-V0.2",
+        "selected": {
+          "admin": "GB1",
+          "recovery": "RC1",
+          "returnBinding": "RT1",
+          "continueInfo": "CL1"
+        },
+        "notes": "无",
+        "notFullArchitectureAcceptance": true
+      },
+      "basis": {
+        "digest": "a64f0b25a541032da7c10b7bc5fe931d41b50794763a3ca0038ef43ac592b1ca",
+        "algorithm": "SHA-256 of UTF-8 JSON array; ensure_ascii=false, sort_keys=true, separators=(comma,colon); ordered files",
+        "files": [
+          {
+            "path": "docs/03-架构/文档/架构候选与复用决策-V0.1.md",
+            "sha256": "0ee9c8e1dd1f72dc6f970e919700ac9da303e2dd6da260ffefc1c49bce6fd6a6"
+          },
+          {
+            "path": "docs/03-架构/文档/部署资源与恢复规格.md",
+            "sha256": "4a983cdeec262f3d00eb657afeb8fd748b008e819bafe1aeb4eeb9c13b62d485"
+          },
+          {
+            "path": "docs/03-架构/决策/当前有效决策.md",
+            "sha256": "5c75c77a32e0fa40ced56ee54723a79944c1f8b8a61ca3001f0de27a0b01bcf7"
+          },
+          {
+            "path": "docs/03-架构/评审/当前验证记录.json",
+            "sha256": "fb84ab49b94feb482e0d912d88111e01d95f201ec5b42e32886a0a8c74b1cae7"
+          },
+          {
+            "path": "docs/03-架构/文档/游戏接入与可信业务链路候选-V0.1.md",
+            "sha256": "7a16610cf364573c92518394cef4ab1525e6802f229af31a35e48f1d6aa71b15"
+          }
+        ]
+      },
+      "questions": {
+        "admin": [
+          "GB1",
+          "GB2",
+          "GB3"
+        ],
+        "recovery": [
+          "RC1",
+          "RC2",
+          "RC3"
+        ],
+        "returnBinding": [
+          "RT1",
+          "RT2",
+          "RT3"
+        ],
+        "continueInfo": [
+          "CL1",
+          "CL2",
+          "CL3"
+        ]
+      },
+      "validation": {
+        "date": "2026-10-26",
+        "status": "提交前离线表单与Chrome无头交互检查通过；真实选择随后由对话消息完成",
+        "checks": [
+          "初始无预选；空选择拒绝",
+          "可只选部分问题，发送载荷只含已选方向",
+          "RT1/CL1两项组合预览与未选不视为同意文案正确",
+          "草稿scope/version/摘要不匹配不恢复",
+          "清除只清页面草稿，不撤销真实选择",
+          "320/736宽度无横向溢出；736视觉截图人工检查通过"
+        ],
+        "limits": "上述检查只验证旧可提交表单的页面逻辑与布局；真正批准来自对话实际选择消息，页面草稿不构成批准",
+        "viewports": [
+          320,
+          736
+        ]
+      },
+      "currentForm": "已改为只读确认摘要；移除表单、脚本、草稿与发送入口，避免重复提交",
+      "currentSummarySha256": "4b779dd910ffe7ef5209e2b59de68f4e90e8470cd1740cd295daa9b592a4fb29",
+      "currentSummaryValidation": {
+        "status": "只读摘要源码检查通过",
+        "checks": [
+          "无form/input/button/script/发送入口",
+          "GB1／RC1／RT1／CL1及补充无完整呈现",
+          "原确认对象摘要明确仅指认选择时材料"
+        ]
+      },
+      "boundary": "GB1／RC1／RT1／CL1只确认对应阶段3架构方向，不是完整架构验收，不进入阶段4，不授权源码/依赖修改、实现、DDL、账号配置、采购、资源运行、真实支付或部署"
+    },
+    "architectureAcceptance": {
+      "scope": "XJ-ARCH-ACCEPTANCE-20261026-V0.1",
+      "form": "/Users/hzmking/.codex/visualizations/2026/10/23/01a16946-5348-7e20-8f54-6abdd144d9d5/architecture-acceptance-review.html",
+      "formSha256": "aa577d6db73ede8f79af2bd708c136991b7f91643576c80e762c4cdc8a8028bd",
+      "basis": {
+        "digest": "e618327bb9b920e497598ac3b8cc039186fb8f87e46c8e79df1392d8172ebd65",
+        "algorithm": "SHA-256 of UTF-8 JSON array; ensure_ascii=false, sort_keys=true, separators=(comma,colon); ordered files",
+        "files": [
+          {
+            "path": "docs/03-架构/文档/架构候选与复用决策-V0.1.md",
+            "sha256": "8f58387b309031dc08c365b49dc935872a1d0ce98f79d6d30f22c9528c3fd5ef",
+            "bytes": 24443
+          },
+          {
+            "path": "docs/03-架构/文档/游戏接入与可信业务链路候选-V0.1.md",
+            "sha256": "1b7031b1058551f47e2b900697652cbb56b989249005049889ba3180d555a22e",
+            "bytes": 20006
+          },
+          {
+            "path": "docs/03-架构/文档/接口接入契约阅读与验证边界-V0.1.md",
+            "sha256": "f586ed03442b823a6b4527b48c72e7d7705491a59cb4a13b95768a5e7b277851",
+            "bytes": 8414
+          },
+          {
+            "path": "docs/03-架构/文档/部署资源与恢复规格.md",
+            "sha256": "66547cb997d4f1e3a13635ce35cca8de99b7b35d8b632e5bdcaa0beeda222573",
+            "bytes": 44175
+          },
+          {
+            "path": "docs/03-架构/资料/物理数据模型-V0.1.json",
+            "sha256": "60548a485bd5d728e6d845734b09fee3cd3f129e73285d221b7343718d0e191c",
+            "bytes": 156291
+          }
+        ]
+      },
+      "questions": {
+        "architecture": [
+          "AC1",
+          "AC2",
+          "AC3"
+        ],
+        "plan": [
+          "PL1",
+          "PL2",
+          "PL3"
+        ],
+        "milestone": [
+          "M1",
+          "M2",
+          "M3"
+        ],
+        "resources": [
+          "GR1",
+          "GR2",
+          "GR3"
+        ]
+      },
+      "status": "可提交表单已准备并通过离线检查；尚无实际选择消息，四项均待决",
+      "validation": {
+        "date": "2026-10-26",
+        "status": "离线表单与Chrome无头交互检查通过；未向对话发送真实选择",
+        "checks": [
+          "4组12个单选项，初始无预选",
+          "空选择拒绝",
+          "部分选择只发送已选项，未选项明确保持待决",
+          "AC1/PL1/M1/GR1组合预览及对象摘要正确",
+          "草稿始终submitted=false，不伪造发送或授权",
+          "清除只清页面草稿，不撤销真实选择",
+          "无宿主发送通道时明确提示，不伪称提交",
+          "320/736/1024宽度无横向溢出",
+          "file://被安全策略拒绝，未绕过；本机HTTP呈现正常"
+        ],
+        "limits": "仅本地假宿主与页面逻辑检查；未向对话发送，不产生架构验收或阶段4授权",
+        "formSha256": "aa577d6db73ede8f79af2bd708c136991b7f91643576c80e762c4cdc8a8028bd"
+      },
+      "boundary": "四项均待实际确认；即使选择AC1/PL1，也只通过阶段3架构设计验收并允许编制阶段4实施计划，不直接开始业务开发，不授权建表、修改源码或依赖、采购、真实支付、公开发布或部署",
+      "localPreview": {
+        "url": "http://127.0.0.1:8769/architecture-acceptance-review.html",
+        "bind": "127.0.0.1",
+        "status": "实际加载通过；响应charset=utf-8；页面未预选",
+        "validation": {
+          "date": "2026-10-26",
+          "checks": [
+            "内嵌浏览器安全策略拒绝file://，未绕过",
+            "改用仅监听127.0.0.1的临时HTTP服务呈现同一文件",
+            "初始加载中文乱码，补显式UTF-8声明后重载正常",
+            "4组12个单选项完整可见且均未选",
+            "截图确认736/1024画面Q1-Q4及按钮可见",
+            "临时服务不读取项目业务数据，不向外部网络暴露"
+          ],
+          "limits": "只验证本机查看与版式；未选择或发送确认；服务在任务期间关闭"
+        }
+      }
+    }
+  },
+  "currentChanges": [
+    "按实际选择落实GB1／RC1／RT1／CL1：管理端首期分发边界、恢复计划见证、购买返回受控位置和库页继续摘要进入当前设计，均未实施或运行验证",
+    "RT1补齐RunCreate.intentId、RunResume、Run.resume及唯一return_run_id绑定；CL1补齐LibraryItem.continue和ContinueSummary；新增409 INTENT_BINDING_INVALID，不回显原始位置",
+    "补强Upgrade响应契约：返回商品修订、价格、抵扣、应付、币种、承诺及内容范围；已交付必须有grantId，零补款不得伪造订单",
+    "将首期付款机器契约收紧为支付宝PAGE/WAP与微信NATIVE/H5；JSAPI及小程序请求拒绝，未来兼容须新版本契约另行确认",
+    "将存档提交动作收紧为WRITE/IMPORT/RESTORE/RESTART；读取走save/read、兼容确认走restore-confirm，移除READ_RESTORE歧义",
+    "在恢复规格原位补充故障前接受范围的库外见证、停写条件、恢复开放门禁及同库缺证隔离；RC1只确认方向，不证明CR1达标",
+    "在架构总审阅原位同步GB1管理端首期分发边界、RC1恢复证据路线及11处TS2304的剩余影响",
+    "重新生成OpenAPI、事件/桥Schema、物理模型、字典、ER源及审阅页，并由Graphviz 14.1.3重渲染SVG；当前48表533列77逻辑关联，未修改源码/依赖，不构成新批准或全图视觉验收",
+    "当前资料清单更新为122份；更新后再次执行静态契约、模型浏览器、本地链接与源码保护检查通过"
+  ],
+  "objectStorageResearch": {
+    "date": "2026-10-26",
+    "status": "OSF1实际确认；按附带约束补同一存储/模型/恢复设计，未运行产品",
+    "report": "docs/03-架构/资料/对象存储候选对比.md",
+    "minioReport": "docs/03-架构/资料/MinIO开源版本与能力核查.md",
+    "design": "docs/03-架构/文档/开源组件与对象存储适配方案.md",
+    "minioSourceReadPoint": "7aac2a2c5b7c882e68c1ce017d8256be2feea27f",
+    "seaweedSourceReadPoint": "4.50 / ec8f9793502c59ce3381cc4151bfc0806afd92e8",
+    "findings": [
+      "MinIO官方社区停更与源码制品维护责任；不自动采用AIStor",
+      "SeaweedFS社区主项目Apache-2.0；4.50为固定源码读点，不声称当前最新或冻结生产版本",
+      "未配置身份和显式鉴权文件的启动路径可关闭S3鉴权；必须显式权限及内部入口隔离",
+      "null版本删除路径将部分元数据查询错误当作成功；已列静态限制，未运行复现，不能扩大至所有版本删除",
+      "条件写字段和锁/路由实现不证明跨filer故障线性一致；旧LR1已被SD2同库覆盖，条件写不能代替MySQL限制事务或恢复证据",
+      "元数据备份不等于正文备份；filer.backup默认选项不构成完整版本备份及消退证据"
+    ],
+    "sourceChecks": "25日8份鉴权/版本/条件写固定源码，26日8份README/许可/角色与备份回收固定源码，均只读HTTPS200；没有执行上游命令或测试",
+    "crossReview": {
+      "status": "定向复核发现null历史版本删除限制，已如实列入报告与候选约束",
+      "scope": "8份临时源码指纹及鉴权、指定版本读删、条件写边界",
+      "limits": "不是全面安全审计，未验证约束能够落实或故障语义；备份拓扑部分由主代理完成"
+    },
+    "collaboration": "拓扑/备份研究协作者因网络502/EOF中止且未交付报告；主代理补齐固定源码取证，未伪称协作者完成",
+    "limits": "无产品安装/构建/运行、最终制品或完整许可核查、恢复演练、生产维护承诺或费用验收",
+    "model": {
+      "tables": 48,
+      "columns": 533,
+      "physicalForeignKeys": 0,
+      "logicalRelations": 77,
+      "stores": {
+        "mysql": 48
+      },
+      "source": "当前SD2/RK1同源设计；不是当时旧模型或已建数据库",
+      "publicContractChanges": "82 HTTP/119 schema/17 RPC；RT1/CL1补既有契约，不新增HTTP操作或RPC"
+    },
+    "filerMetadata": {
+      "date": "2026-10-26",
+      "report": "docs/03-架构/资料/对象存储候选对比.md#8-filer元数据与有限验证候选",
+      "researcher": "Arendt",
+      "sourceReadPoint": "ec8f9793502c59ce3381cc4151bfc0806afd92e8",
+      "findings": [
+        "原版mysql可指定database但单表固定filemeta；prefix为配置键前缀",
+        "mysql不自动创建默认表；mysql2有自动CREATE/DROP，单改DDL模板不能实现完整表名映射",
+        "Go MySQL驱动v1.10.1声明5.7+，不等于5.7.14实测；不能借用MC1 Java结论",
+        "默认主键预算3072字节、排序规则、4MiB包长、备份及角色组合仍须验证"
+      ],
+      "candidate": "同xj_play原版mysql及受控filemeta；仅当FM1实际批准前缀例外后才成为已选架构方向；FM2严格前缀继续研究",
+      "evidenceDiscipline": "最终依据协作者独立取得的固定源码。主代理早先误转述已立即撤回，不计作证据；随后主代理确实HTTPS200取得mysql_store.go，SHA-256为9f58663b5d2ffa78fc23b51cc84cedd55b7f7d34cee9e2bdcf9cf71562c71ce7",
+      "limits": "固定源码研究，未冻结生产制品、安装、执行SQL、授权或运行存储；filer与平台同库不会使S3跨HTTP自动原子"
+    }
+  },
+  "completeERExport": {
+    "date": "2026-10-26",
+    "status": "Graphviz已实际渲染DOT/SVG；全图人工视觉验收未完成",
+    "engine": "环境已有@viz-js/viz",
+    "graphvizVersion": "14.1.3",
+    "tables": 48,
+    "columns": 533,
+    "physicalForeignKeys": 0,
+    "logicalRelations": 77,
+    "stores": [
+      {
+        "id": "mysql",
+        "label": "统一MySQL · xj_play",
+        "tables": 48
+      }
+    ],
+    "modelSha256": "60548a485bd5d728e6d845734b09fee3cd3f129e73285d221b7343718d0e191c",
+    "dotSha256": "2284b49552a74f4427959529798196fdbab9f11f4d316fc70014780ea07eb905",
+    "svgSha256": "c3c7974f3f6fbe13ca4c03d2bb940399f03b8cf9e392670d84e38faa9c5a098a",
+    "warnings": [
+      {
+        "message": "Warning: no value for width of non-ASCII character 233. Falling back to width of space character",
+        "level": "warning"
+      }
+    ],
+    "scope": "完整字段大画幅SVG已由Graphviz渲染；非ASCII字宽警告仍存在，不声称全图人工视觉验收或手机视口检查通过"
+  },
+  "approvedObjectStorage": {
+    "scope": "XJ-OSS-PRODUCT-20261026",
+    "digest": "77f072545650da5529e5b76a3ac332f2198578da1e186a198231fd31d8a53e27",
+    "algorithm": "SHA-256 of UTF-8 JSON array; ensure_ascii=false, sort_keys=true, separators=(comma,colon); ordered files below",
+    "files": [
+      {
+        "path": "docs/03-架构/资料/对象存储候选对比.md",
+        "sha256": "36777d262c42f68516be37ddd6c3506b67c482d2a1690633c46338ec5296a6ba"
+      },
+      {
+        "path": "docs/03-架构/资料/MinIO开源版本与能力核查.md",
+        "sha256": "92b4d027d198e9ec7dd2a11764bf09840688e34d9ae99c43937e3ee7f60d146d"
+      },
+      {
+        "path": "docs/03-架构/文档/开源组件与对象存储适配方案.md",
+        "sha256": "d5ad420853818d40c96b2b1b956dda594abd357299fc456a5386feb40283d0a2"
+      },
+      {
+        "path": "docs/03-架构/文档/部署资源与恢复规格.md",
+        "sha256": "a7d04c9b0d40c0303ad00088e4a285ca4792c0001fb5042043db5b983ef4e377"
+      },
+      {
+        "path": "docs/03-架构/决策/当前有效决策.md",
+        "sha256": "3f15014efbc414f62ae169212ed19487c17e74952324ce6075a548598b486272"
+      }
+    ],
+    "form": "/Users/hzmking/.codex/visualizations/2026/10/23/01a16946-5348-7e20-8f54-6abdd144d9d5/architecture-resource-review.html",
+    "status": "OSF1实际消息已确认；本轮修改前5项指纹及总摘要一致。指纹描述确认时对象，不证明后续新内容获验收"
+  },
+  "storageDesignReview": {
+    "status": "原2项问题在设计文本层面复核收口",
+    "findings": [
+      {
+        "priority": "P1",
+        "issue": "上传前计划缺持久表达导致UNKNOWN恢复/归属/GC无依据",
+        "resolution": "补主库xj_storage_write，固定计划与候选、唯一结果逻辑关联、计划/对象守卫及迟到写者隔离约束"
+      },
+      {
+        "priority": "P2",
+        "issue": "先验证全部旧引用会误要求取回合法消退对象/密钥",
+        "resolution": "先核当前同库恢复证据及完整限制覆盖，形成可信删除排除/未决隔离，再验证其余有效引用，禁止从缺失反推删除；同库旧快照不能自证覆盖"
+      }
+    ],
+    "limits": "原对象设计问题的当前适用表述；本轮仅复核SD2/RK1及限制契约，不声称重跑对象存储故障测试"
+  },
+  "systemDiagram": {
+    "status": "pass",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "specification": {
+      "path": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/图表/game-platform-candidate.json",
+      "sha256": "fc1f6d7515cdac3208aff7a969f41470c70af7731d2de28799b14a073acbf600",
+      "bytes": 3845
+    },
+    "artifact": {
+      "path": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/图表/game-platform-candidate.html",
+      "sha256": "51ab6d1c58b91a5f66d01c2a0383fefb70586fd3c056f5c26d40a0a64e11c833",
+      "bytes": 819940
+    },
+    "visualReview": "not-requested",
+    "update": {
+      "status": "current",
+      "installedVersion": "3.2.0",
+      "availableVersion": "3.2.0",
+      "releaseNotes": null,
+      "checkedAt": "2026-10-26T02:53:21.859Z",
+      "source": "cache",
+      "noticeRequired": false,
+      "noticeText": null
+    },
+    "scope": "SD2单MySQL/游戏前缀、RK1逻辑关联及共享恢复边界；Archify四门禁通过，不证明真实业务或数据库权限"
+  },
+  "approvedRestrictionStore": {
+    "scope": "XJ-RESTRICTION-STORE-20261026",
+    "digest": "c840b950dbf51faf12fca39a3ae34233019d4385a15ea74d69221431c755f981",
+    "algorithm": "SHA-256 of UTF-8 JSON array; ensure_ascii=false, sort_keys=true, separators=(comma,colon); ordered files below",
+    "files": [
+      {
+        "path": "docs/03-架构/资料/独立限制记录持久方案核查.md",
+        "sha256": "520e5d2ce79889b8a4811af5a0c60c33a83780e0ea69c7c647a6929245682ccb"
+      },
+      {
+        "path": "docs/03-架构/文档/部署资源与恢复规格.md",
+        "sha256": "bbbd2dcf35889dd88cdbaac7d55e40d374e6449f160e1e5cad28f63c6e9e7a2e"
+      },
+      {
+        "path": "docs/03-架构/文档/开源组件与对象存储适配方案.md",
+        "sha256": "81d9965db98ddef2817df36e94999b03418f945de8b58b3af251dd9127b3d895"
+      },
+      {
+        "path": "docs/03-架构/资料/物理数据模型-V0.1.json",
+        "sha256": "66eeb972ac76e91d8a299276815df74233be46453ccb725988b866a4e8215039"
+      },
+      {
+        "path": "docs/03-架构/决策/当前有效决策.md",
+        "sha256": "8e82bf0c4c365f559961a00e8ca76fac373daeff1d8198042774f05761473473"
+      }
+    ],
+    "form": "/Users/hzmking/.codex/visualizations/2026/10/23/01a16946-5348-7e20-8f54-6abdd144d9d5/architecture-resource-review.html",
+    "status": "历史LR1实际确认依据；已被用户直接指示SD2覆盖，不再是现行拓扑。原路径/指纹描述当时对象，不改写为新报告摘要，也不批准本轮新产物"
+  },
+  "restrictionStoreReview": {
+    "status": "本轮2项P2已在静态文本及对应生成产物层面复核关闭",
+    "findings": [
+      {
+        "priority": "P2",
+        "issue": "completeReset撤旧会话未纳入SD2限制事务契约",
+        "resolution": "加入6个既有操作；一次性令牌消费/口令更新/撤会话/记录同事务，可信原请求绑定查原成功结果，不把敏感口令写入限制日志"
+      },
+      {
+        "priority": "P2",
+        "issue": "业务守卫“首先锁”与全局门禁锁序冲突",
+        "resolution": "先门禁及适用的头/原操作，再第一把业务锁；禁止反向再取门禁，单纯授予不伪造REVOKE"
+      }
+    ],
+    "RK1": "77条逻辑关联与77个references字段一致，physicalForeignKeys=[]，无fk键标记；目标字段存在，return_run_id另设唯一约束，应用一致性要求已列",
+    "limits": "只读定向复核，不是全面安全审计，未验证真实事务、DDL、权限或故障恢复"
+  },
+  "singleDatabaseResearch": {
+    "date": "2026-10-26",
+    "report": "docs/03-架构/资料/同库数据与限制记录核查.md",
+    "status": "两组只读元数据已取得；默认行格式、日志及工具权限补查完成，应用权限和恢复能力未验证",
+    "database": "xj_play",
+    "serverVersion": "5.7.14",
+    "visibleTablesReturned": 0,
+    "queries": 6,
+    "queryScope": [
+      "SD2初核3条：当前库/版本、可见表清单、白名单变量",
+      "权限恢复补查3条：当前库/版本/可见表计数、白名单变量、去身份化的权限作用域/种类/可转授汇总"
+    ],
+    "variables": {
+      "character_set_server": "utf8mb4",
+      "collation_server": "utf8mb4_general_ci",
+      "default_storage_engine": "InnoDB",
+      "log_bin": 0,
+      "sync_binlog": 1,
+      "innodb_flush_log_at_trx_commit": 1,
+      "max_allowed_packet": 4194304,
+      "lower_case_table_names": 0,
+      "innodb_file_per_table": 1,
+      "innodb_large_prefix": 1,
+      "innodb_file_format": "Barracuda",
+      "innodb_page_size": 16384,
+      "tx_isolation": "REPEATABLE-READ",
+      "innodb_default_row_format": "dynamic",
+      "binlog_format": "ROW",
+      "log_slave_updates": "OFF",
+      "gtid_mode": "OFF",
+      "enforce_gtid_consistency": "OFF",
+      "expire_logs_days": 0,
+      "read_only": "OFF",
+      "super_read_only": "OFF"
+    },
+    "findings": [
+      "平台/游戏/限制共享恢复边界，旧自洽链不证明尾部完整",
+      "当前binlog关闭，不具该实例binlog路线PITR前提；RPO/RTO未达标验收",
+      "BOM管理Connector/J9.7.0官方仅覆盖MySQL8.0+，不覆盖5.7.14；不是已实测必然连接失败",
+      "RK1全部关联仅语义表达，physicalForeignKeys为空；应用守卫与归属/孤儿核验代替FK强制",
+      "当前可见表计数仍为0，默认DYNAMIC不证明实际表及索引适配",
+      "当前MCP工具账号可见28类全局且可转授权限；实际应用/游戏/迁移/备份身份尚未核实，不输出身份"
+    ],
+    "limits": "表清单只描述本次可见结果；无业务行读取、DDL/DML、授权/配置改动、升级、有效依赖解析、连接运行或恢复验收"
+  },
+  "baseSqlCompatibilityReview": {
+    "date": "2026-10-26",
+    "status": "白名单DDL/实体静态核查与定向复核完成；未运行兼容验收",
+    "tool": "docs/03-架构/评审/核查底座数据库脚本.py",
+    "report": "docs/03-架构/资料/同库数据与限制记录核查.md",
+    "scripts": [
+      {
+        "path": "backend/yudao-boot-mini/sql/mysql/ruoyi-vue-pro.sql",
+        "sha256": "b9ece76fe65f4885d892a9948927eec92b3421c9eec007628a994d0701f7aa0b",
+        "createTables": 48,
+        "dropTables": 48,
+        "foreignKeyChecksStatements": 2,
+        "physicalForeignKeys": 0,
+        "engines": {
+          "InnoDB": 48
+        }
+      },
+      {
+        "path": "backend/yudao-boot-mini/sql/mysql/quartz.sql",
+        "sha256": "4d2753e7d5ad9c6bab343531cca372598fe09b860bc526e978a4d500636ee244",
+        "createTables": 11,
+        "dropTables": 11,
+        "foreignKeyChecksStatements": 2,
+        "physicalForeignKeys": 5,
+        "engines": {
+          "InnoDB": 11
+        }
+      }
+    ],
+    "mappingComparison": {
+      "mappings": 48,
+      "uniqueTables": 48,
+      "modules": {
+        "system": 32,
+        "infra": 16
+      },
+      "tablesWithoutEntity": [],
+      "entitiesWithoutTable": []
+    },
+    "nativeJsonColumns": 0,
+    "review": {
+      "reviewer": "James",
+      "status": "指定6.1/6.2及核查工具未发现实质问题",
+      "scope": "表集合、5FK、JSON注释误报、大小写、索引预算、6处显式SQL、Quartz存储启用边界"
+    },
+    "sourceEvidence": {
+      "url": "https://docs.oracle.com/cd/E17952_01/mysql-5.7-en/innodb-limits.html",
+      "method": "主代理只读HTTPS取得官方正文",
+      "finding": "大前缀启用时DYNAMIC/COMPRESSED为3072字节；COMPACT/REDUNDANT为767字节；不是实际建表结果"
+    },
+    "limits": "SQL只读字节扫描，仅输出DDL元数据，无种子行提取/展示；不读运行配置，不执行SQL、驱动解析、编译、调度或恢复测试；107仅是全部候选集合算术"
+  },
+  "driverCompatibilityResearch": {
+    "date": "2026-10-26",
+    "report": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md",
+    "status": "官方逐版支持范围、CPU和本地POM静态核查完成；维护与运行仍有缺口",
+    "officialSupportBoundary": "已核8.2.0仍覆盖5.7；8.3.0/8.4.0/9.7.0为8.0+",
+    "historicalCandidate": "com.mysql:mysql-connector-j:8.2.0，MC1已确认为历史兼容验证候选；未生产定版、未安装或运行",
+    "knownOlderRisk": "Oracle October 2023 CPU列CVE-2023-22102影响Connector/J8.1.0及以前；未验证应用利用条件，也未据此声称8.2安全",
+    "pomSuggestion": "yudao-dependencies/pom.xml统一dependencyManagement显式管理驱动坐标；未修改或解析依赖",
+    "context7": "主代理resolve无精确Java驱动库，改查/mysql官方文档库，实际只返回8.3及历史8.0.18/31范围，未取得所问8.4正文；用独立OracleHTTPS逐版正文补证",
+    "collaboration": "Arendt网络502中断后续查并交付6.1/6.2；没有把中断当成功",
+    "limits": "维护政策403、固定tag源码重取超时；未证明当前维护、安全、实际有效依赖或Java17组合；未联库/安装/构建"
+  },
+  "approvedMysqlCompatibility": {
+    "date": "2026-10-26",
+    "scope": "XJ-MYSQL-COMPAT-20261026",
+    "decision": "MC1",
+    "source": "实际发送到对话的kind:message选择消息；同批submitted:false只是草稿，其他历史状态不批准任何新决定",
+    "digest": "d0154dc5b6570b34ab24af782f2207dd4cc36ff846d4c641cbdb06a7d5bfb08e",
+    "algorithm": "SHA-256 of UTF-8 JSON array; ensure_ascii=false, sort_keys=true, separators=(comma,colon)",
+    "files": [
+      {
+        "path": "docs/03-架构/资料/同库数据与限制记录核查.md",
+        "sha256": "a5efff84b1183fb6a5c30e8e20ea95f3948437498b37afeb1bbce9efda10c4ea"
+      },
+      {
+        "path": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md",
+        "sha256": "f18978e551e5256976ea69432d2484ca364ddc644850ef12fa5210e3fe7b6415"
+      },
+      {
+        "path": "docs/03-架构/决策/当前有效决策.md",
+        "sha256": "1ae598b544d86890c673d9d8125540e8a5b332e8d486e670d4799cc809c1f8ae"
+      }
+    ],
+    "basisVerification": "本轮修改前3项文件指纹及总摘要全部匹配；原指纹只描述确认当时对象，不证明本轮新增规格已验收",
+    "userComment": "如果mysql 5.7.14不满足，后面也会可以考虑升级到 mysql 8.x 以上的版本",
+    "status": "MC1历史兼容候选研究方向已确认；条件升级不是MC2选择、精确版本批准或操作授权",
+    "limits": "保持xj_play/MySQL5.7.14、SD2/RK1；无生产定版，无安装/改POM/SQL/升级/阶段4/开发/部署授权"
+  },
+  "mysqlCompatibilitySpecification": {
+    "date": "2026-10-26",
+    "report": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md#63-mc1适配规格与后续验证矩阵",
+    "status": "MC1范围内新增阶段3规格；不是运行测试结果或已验收实现",
+    "validationCases": 14,
+    "runtimeStatus": "全部未执行",
+    "crossReview": {
+      "reviewer": "James",
+      "status": "指定文档范围未发现实质矛盾",
+      "scope": "MC1确认/生产候选区分、条件升级授权、同库/无外键/恢复边界、14项验证矩阵",
+      "limits": "仅静态一致性，不重做外部事实或运行验证"
+    },
+    "specification": "统一BOM管理位置及实际解析证据、14项验证行为、失败分类、条件升级比较及门禁",
+    "limits": "本轮不联网补查、不新增MCP查询、不解析依赖/安装/改POM/执行SQL/升级/业务开发或部署"
+  },
+  "permissionRecoverySpecification": {
+    "date": "2026-10-26",
+    "status": "阶段3规格及有限官方语义研究；不是运行验证或新批准",
+    "design": "docs/03-架构/文档/部署资源与恢复规格.md",
+    "research": "docs/03-架构/资料/同库数据与限制记录核查.md#9-权限与备份的官方语义依据",
+    "metadataSupplement": {
+      "queries": 3,
+      "source": "本次会话恢复前实际MySQL MCP只读结果；本次文档收口未重复查询",
+      "database": "xj_play",
+      "serverVersion": "5.7.14",
+      "visibleTables": 0,
+      "variables": {
+        "binlog_format": "ROW",
+        "enforce_gtid_consistency": "OFF",
+        "expire_logs_days": "0",
+        "gtid_mode": "OFF",
+        "innodb_default_row_format": "dynamic",
+        "innodb_file_format": "Barracuda",
+        "innodb_file_per_table": "ON",
+        "innodb_flush_log_at_trx_commit": "1",
+        "innodb_large_prefix": "ON",
+        "innodb_page_size": "16384",
+        "log_bin": "OFF",
+        "log_slave_updates": "OFF",
+        "lower_case_table_names": "0",
+        "max_allowed_packet": "4194304",
+        "read_only": "OFF",
+        "super_read_only": "OFF",
+        "sync_binlog": "1",
+        "tx_isolation": "REPEATABLE-READ"
+      },
+      "toolPrivilegeSummary": {
+        "scope": "GLOBAL",
+        "isGrantable": "YES",
+        "types": 28,
+        "entriesPerType": 1,
+        "privilegeTypes": [
+          "ALTER",
+          "ALTER ROUTINE",
+          "CREATE",
+          "CREATE ROUTINE",
+          "CREATE TABLESPACE",
+          "CREATE TEMPORARY TABLES",
+          "CREATE USER",
+          "CREATE VIEW",
+          "DELETE",
+          "DROP",
+          "EVENT",
+          "EXECUTE",
+          "FILE",
+          "INDEX",
+          "INSERT",
+          "LOCK TABLES",
+          "PROCESS",
+          "REFERENCES",
+          "RELOAD",
+          "REPLICATION CLIENT",
+          "REPLICATION SLAVE",
+          "SELECT",
+          "SHOW DATABASES",
+          "SHOW VIEW",
+          "SHUTDOWN",
+          "SUPER",
+          "TRIGGER",
+          "UPDATE"
+        ],
+        "identityIncluded": false
+      },
+      "limits": "工具身份的元数据不证明应用账号、宿主控制权或备份存在；无账号/主机/凭据输出，无授权、写入、参数变更及备份操作"
+    },
+    "officialResearch": {
+      "researcher": "Arendt",
+      "actualReadDate": "2026-10-26",
+      "primaryPages": 8,
+      "fixedSource": "mysql/mysql-server mysql-5.7.14/client/mysqldump.c",
+      "result": "协作者独立HTTPS取得8份Oracle5.7正文及1份固定tag源码；适用范围和URL归档于报告9.6",
+      "versionLimits": "排除5.7.31起PROCESS及手册混入的8.0.32条件；不套8.x SQL角色或动态BACKUP_ADMIN",
+      "failedRead": "最初固定tag .cc路径404，改实际.c路径后200；主代理web空返回不计有效证据",
+      "runtimeStatus": "未执行导出、恢复或授权"
+    },
+    "designAdditions": [
+      "凭据职责身份、逐表权限与工具账号区分",
+      "资源依赖、已有证据、缺口及其影响",
+      "一致全量/连续日志与快照路线比较",
+      "对象/密钥/制品及最后接受限制尾部的独立完整性门禁",
+      "修正旧静态商店、CR1与环境隔离状态"
+    ],
+    "crossReview": {
+      "reviewer": "James",
+      "status": "指定章节未发现实质问题",
+      "scope": "部署规格1.1/4.1/6.0/7.5、运营候选7/9及当前有效决策",
+      "limits": "静态一致性；不含第9节外部语义的独立重读，不验证账号权限或恢复能力"
+    },
+    "decisions": "本轮未新增批准决策；已有SD2/RK1/MC1/CR1/OSF1继续有效；备份路线是比较建议，未新增BR1",
+    "runtimeStatus": "权限正反例、驱动连接、备份、日志归档及恢复演练均未执行"
+  },
+  "localFragmentLinks": {
+    "date": "2026-10-26",
+    "checks": 28,
+    "failures": [],
+    "scope": "本地Markdown/HTML显式片段引用；不访问外部链接"
+  },
+  "eventKeySpecificationSamples": {
+    "scope": "仅模型约束及文档算法样本；没有事件处理实现或数据库运行",
+    "passed": 9,
+    "checks": {
+      "同run原编号稳定": true,
+      "不同run同编号不碰撞": true,
+      "不同来源不碰撞": true,
+      "不同环境不碰撞": true,
+      "不同模式不碰撞": true,
+      "WEB不同会话不碰撞": true,
+      "WEB不同作品不碰撞": true,
+      "组合边界无歧义": true,
+      "结果64字符": true
+    }
+  },
+  "architectureReview": {
+    "date": "2026-10-26",
+    "entry": "docs/03-架构/文档/架构候选与复用决策-V0.1.md#8-阶段3总审阅与下一门禁",
+    "status": "具备集中审阅入口；GB1／RC1／RT1／CL1已由实际消息确认并同步，完整架构仍未整体验收，不进入阶段4",
+    "coverage": "任务书交付矩阵、设计未决与实施验证边界、有限本地验证、filer表名与支付终端比较",
+    "crossReview": {
+      "reviewers": [
+        "James",
+        "Pauli"
+      ],
+      "findings": [
+        {
+          "issue": "跨run/游戏的原eventId与全表(event_type,event_key)唯一键可能误去重",
+          "resolution": "服务端按可信作用域派生event_key，业务唯一键(event_key)；模型/字典/ER/Schema与说明同步"
+        },
+        {
+          "issue": "已确认的非现金售后businessRef仍写成待确认",
+          "resolution": "同步实际确认状态，order_ref仅用于实际订单"
+        }
+      ],
+      "followUp": "Pauli只读复核当前文件，两项原发现已关闭，未发现残余实质问题；不是全面运行验收"
+    },
+    "remaining": [
+      "故障前最后接受限制的具体完整恢复证据路线",
+      "FM1精确制品、恢复组合与实际运行前提待验证",
+      "MC1有效依赖与适用风险",
+      "GB1首期分发边界的真实构建图、资源清单、深链接404与权限回归待验收",
+      "网页支付真实产品资质、终端条件与对账"
+    ],
+    "limits": "事件采集迟到窗口具体限值仍待收口；算法与Schema样本不是事件处理器、数据库或业务闭环测试；ER全图视觉审阅未完成"
+  },
+  "localToolMetadata": {
+    "date": "2026-10-26",
+    "report": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md#64-本地工具实况与有限验证前提",
+    "platform": "Darwin/arm64",
+    "java": "Temurin17.0.19+10",
+    "maven": "3.9.16 / Java17.0.19",
+    "node": "24.15.0",
+    "pnpm": "仅核执行入口，未运行",
+    "docker": "仅当前PATH未发现执行入口",
+    "jdbcDefaultCache": "指定默认Connector/J目录未发现，未推断其他缓存",
+    "limits": "仅java/mvn/node版本及入口/目录检查；不安装/切换候选，不解析依赖、构建或启动应用",
+    "scope": "首次只读宿主工具核查；隔离候选实际版本与本轮执行见localCompatibilityValidation，不能混同"
+  },
+  "redisMetadataResearch": {
+    "date": "2026-10-26",
+    "queries": 1,
+    "command": "INFO server",
+    "serverVersion": "6.2.20",
+    "mode": "standalone",
+    "report": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md#65-当前redis连接与复用候选",
+    "provenance": "主代理实际只读查询；James未重新连接，仅独立读取6份官方来源正文并归档",
+    "finding": "固定tag顶层BSD三条款、Redisson4.7.0最低3.0及Spring Data3.5适配声明支持保留复用验证候选",
+    "limits": "未读键/配置；不归档原始INFO、端点/账号/凭据；版本自报及分支维护声明不证明应用连通、实际制品安全或生产适用"
+  },
+  "managementComponentBoundary": {
+    "date": "2026-10-26",
+    "status": "本地引用链与官方来源补查完成；生产裁剪和许可验收未执行，待后续范围确认",
+    "report": "docs/03-架构/资料/源码复用复核-20261024.md#11-管理端甘特图组件与首期制品边界",
+    "localAudit": {
+      "date": "2026-10-26",
+      "scope": "白名单源码/清单只读静态；不读运行配置、不安装或构建",
+      "files": [
+        {
+          "path": "frontend/yudao-ui-admin-vue3/package.json",
+          "sha256": "3da5403778f3987703025798e66c6c8989bcef0404c5ff74326fd0afca897028",
+          "lines": 154
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/pnpm-lock.yaml",
+          "sha256": "045b4d48e08a94052ff245aaa4ff6aa92dc6b9073b0b0381c176c35eb41c9b23",
+          "lines": 10336
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/main.ts",
+          "sha256": "656cf1ec1bc46a599d4b73cf808238de60f9b49df7f0c02f1d6f1ef6c01eee16",
+          "lines": 91
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/router/index.ts",
+          "sha256": "cee1dfc3d8f52f8898dc39c883ba797c6c45a8cfd9a2f2e1371d59b2a3835f34",
+          "lines": 50
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/router/modules/remaining.ts",
+          "sha256": "236c1860254f77da947da745da3f091f6ae908fbcbe754f98a10f6ab82008d6e",
+          "lines": 1221
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/utils/routerHelper.ts",
+          "sha256": "0c8747848b7f2f5b9f7e5246a10ae7ee1f57234abca770902f56fd4e2980b85b",
+          "lines": 372
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/store/modules/permission.ts",
+          "sha256": "247ab3aa0ebee02cbb9b807797cd14c13de1cd3864c60e12fbdcb57e1e032747",
+          "lines": 79
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/views/mes/pro/task/components/GanttChart.vue",
+          "sha256": "227bd03447fae527ceb9b3854d3f01f347b7a572c1da8fb506b3d7773e319015",
+          "lines": 269
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/views/mes/pro/task/index.vue",
+          "sha256": "013d227ffed18af9e2e58703fb6f1fe63d30b5ef0772a99254735e266782ae4c",
+          "lines": 234
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/views/mes/pro/task/edit/index.vue",
+          "sha256": "d9d6bc9cd5fe5bdf5bef8a25eb841723d9bb33c38ddc550c38d06c10316a1875",
+          "lines": 95
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/api/mes/pro/task/index.ts",
+          "sha256": "3580d09a8cb6c849cb328299926f5336e659bc99438c7d00c8bcbee5973f85ee",
+          "lines": 76
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/views/pms/pm/project/detail/ProjectGantt.vue",
+          "sha256": "7ef69538842e5c1385ab141e743a05ebc8f7d8ff7e557d6998a19afdb18b20fa",
+          "lines": 414
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/vite.config.ts",
+          "sha256": "7793213520706f0c0566f33a5afbdc8b96c986aeb0cebfde0f89d55eb34fa808",
+          "lines": 108
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/build/vite/optimize.ts",
+          "sha256": "9ad09957afc76d3b6aa3136ee82db2693ce86451afa0791655859de1664215b8",
+          "lines": 111
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/permission.ts",
+          "sha256": "4fb7b7152776748b245892b498f411982478aa110455bed1ca9a368f748cfd80",
+          "lines": 79
+        },
+        {
+          "path": "docs/02-product/documents/间隙PLAY-产品需求文档-V1.0-提交稿.md",
+          "sha256": "f225260cd1921ee356dfa1e1e6de5fbe858803aa2801709517e3006deced601d",
+          "lines": 458
+        },
+        {
+          "path": "docs/03-design/sources/page-state-inventory-refined-v1.2.json",
+          "sha256": "3d5fb7f5deda1c515b7138ceaa58b1bb3df0167fb39478dc51429d6949866542",
+          "lines": 511
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/node_modules/dhtmlx-gantt/package.json",
+          "sha256": "9ae67e4349cce15fda1550b029b9f86cb5ca38cd8ef38fe585bcb1ef9cfbb3b9",
+          "lines": 28
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/node_modules/dhtmlx-gantt/license.txt",
+          "sha256": "11c4a8b414a534365f02da7dad9dc3e471d35b15ed31df9d4006fb2a144c4443",
+          "lines": 339
+        }
+      ],
+      "directImports": [
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/views/mes/pro/task/components/GanttChart.vue",
+          "line": 7,
+          "text": "import { gantt } from 'dhtmlx-gantt'"
+        },
+        {
+          "path": "frontend/yudao-ui-admin-vue3/src/views/mes/pro/task/components/GanttChart.vue",
+          "line": 8,
+          "text": "import 'dhtmlx-gantt/codebase/dhtmlxgantt.css'"
+        }
+      ],
+      "firstPhasePageInventoryGanttMatches": [],
+      "checks": [
+        "17项本地证据当前指纹一致",
+        "src中2条直接包导入集中在1个MES组件",
+        "两个消费者及固定路由/宽泛glob均有源码证据",
+        "首期页面清单无Gantt/MES/排产项；完整标识匹配避免games误报",
+        "报告新增本地文件/行号引用存在"
+      ],
+      "limits": "只读引用核查；没有依赖解析、构建、运行或最终制品/许可验收"
+    },
+    "findings": [
+      "2条直接包导入集中于MES组件，两处页面消费者；固定路由及宽泛glob保留构建图路径，隐藏菜单不是制品排除",
+      "当前平台页面清单没有MES/Gantt排产页；建议将其列入首期生产裁剪候选，不自动实施或选择替代库",
+      "官方固定9.1.4许可与v10 MIT Community版本条件不同；本项目是否持有其他适用授权及最终产物状态未知"
+    ],
+    "primarySourceResearch": {
+      "local": "主代理核17项源码/需求/页面文件；协作者核2项本地包许可文件，主代理复核对应哈希",
+      "vite": "主代理HTTPS200读取官方glob正文；Context7 fetch failed及通用检索空返回不计成功",
+      "dhtmlx": "Maxwell实际浏览读取3份v9.1.4标签正文、安装说明、许可对照、Commercial页、Commercial/Enterprise EULA及GNU FAQ；均2026-10-26，来源和读取边界合入报告G02—G09",
+      "failures": "终端DNS和抽取失败不算正文成功；无值查询参数变形返回不同条款标题，最终以准确URL实际浏览正文为依据"
+    },
+    "recommendationBoundary": "不纳入首期制品的建议仍待批准；AV1若被选仅核原声明副本兼容，不自动包含裁剪源码/路由/依赖或商业授权验收",
+    "validation": "本地文件/行号与19项证据哈希核对；静态契约/本地链接/110资料指纹重跑通过；前端干净，后端仅已知配置路径改动且未读内容/diff",
+    "frozenConfirmation": "当前AV/FM/PT表单和5项依据均逐项重核一致，没有新增或改写实际确认",
+    "limits": "无安装、依赖解析、编译、产物审计、运行、数据库/Redis/存储/支付连接、菜单或源码裁剪、采购/部署；不是法律定论或整体许可审计"
+  },
+  "approvedArchitectureValidation": {
+    "date": "2026-10-26",
+    "scope": "XJ-ARCH-VALIDATION-20261026",
+    "selection": {
+      "advance": "AV1",
+      "filer": "FM1",
+      "payments": "PT1"
+    },
+    "source": "实际到达对话的visualization kind:message选择消息；同期及其他历史submitted:false状态不构成批准",
+    "digest": "e4d0d2b883ff7928734972a3d0abe9939664adde0615ea3df21b1f97ad55d46b",
+    "files": [
+      {
+        "path": "docs/03-架构/文档/架构候选与复用决策-V0.1.md",
+        "sha256": "01b31108aafdbe200b9bfc65dcf34577f826fbdc99f4b7b1d4c34461db4facc4"
+      },
+      {
+        "path": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md",
+        "sha256": "6cc1107277b780175ef05976fa85f30b680c80cd5c9a14ad43c010c626ace2f4"
+      },
+      {
+        "path": "docs/03-架构/资料/对象存储候选对比.md",
+        "sha256": "2ed8ae06dacfe3f91129b113895062b229ffc6a58dcd7685714dee0d1ad9630f"
+      },
+      {
+        "path": "docs/03-架构/文档/双支付适配与可信核实规格-V0.1.md",
+        "sha256": "f63681ad4061c2ef22a82b82c951ad4febd709f3ab1b5cea3ab4f7946da1f751"
+      },
+      {
+        "path": "docs/03-架构/决策/当前有效决策.md",
+        "sha256": "4cdd127df7ee26013ca09eda4bb36703b97651098ec40a350a72a3dadac07513"
+      }
+    ],
+    "basisVerification": "本轮修改任何依据文件前，5项文件及总摘要均相符",
+    "notes": "无",
+    "boundary": "仅阶段3有限隔离本地兼容验证及FM1/PT1架构方向；原仓库/默认工具不改，保护配置不读/复制/打包，不连接数据库/Redis/存储/支付，不执行SQL/授权/采购/业务开发/部署，不代表架构整体验收或阶段4批准"
+  },
+  "localCompatibilityValidation": {
+    "date": "2026-10-26",
+    "scope": "XJ-ARCH-VALIDATION-20261026/AV1",
+    "status": "有限预检已执行；Java与Nuxt通过；管理端固定锁安装/替身构建通过、类型检查失败；阶段3未整体验收",
+    "toolMetadata": [
+      {
+        "tool": "node",
+        "url": "https://nodejs.org/dist/v24.22.1/SHASUMS256.txt",
+        "date": "2026-10-26",
+        "status": 200,
+        "bytes": 3171,
+        "sha256": "fdfbffc969c0f604beff0124d409b33a43b53f5c681d6220f80023e0d6df9dc4",
+        "darwinArm64Match": [
+          "89c682593d76cd44233fa53b1563264e7de9cbb189cad169135c5b4fadfbc0a7  node-v24.22.1-darwin-arm64.tar.gz"
+        ]
+      },
+      {
+        "tool": "pnpm",
+        "url": "https://registry.npmjs.org/pnpm/10.34.8",
+        "date": "2026-10-26",
+        "status": 200,
+        "bytes": 6190,
+        "sha256": "320c65115c025d4b363997abb057ac71cdeb9ffd1b5509a4704e910d318e8459",
+        "version": "10.34.8",
+        "dist": {
+          "shasum": "f5dedcbcdd3290f1c6e1b3657cc85bfcb4e4bfbb",
+          "tarball": "https://registry.npmjs.org/pnpm/-/pnpm-10.34.8.tgz",
+          "fileCount": 1072,
+          "integrity": "sha512-9ieo6XE0Ov5J39D2PQKCNCAd+oMdXLWIcz4eX42ya/FpiaMhYatcG02zsf28NzFgYGtbieAC323RmoWt+R/FqA==",
+          "signatures": [
+            {
+              "sig": "MEYCIQChUGUrlLwp5kXxrs9WSGuVtIA6FLL5330vZDFvfMKrugIhALlws4J769K60Z8qMAXVQbT4LWbfWC4CaeuUNi+tBcvE",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ],
+          "attestations": {
+            "url": "https://registry.npmjs.org/-/npm/v1/attestations/pnpm@10.34.8",
+            "provenance": {
+              "predicateType": "https://slsa.dev/provenance/v1"
+            }
+          },
+          "unpackedSize": 19976515
+        },
+        "scripts": {
+          "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+          "test": "pnpm run compile && pnpm run _test",
+          "_test": "jest",
+          "start": "tsc --watch",
+          "bundle": "ts-node bundle.ts",
+          "compile": "tsc --build && pnpm run lint --fix && rimraf dist bin/nodes && pnpm run bundle && shx cp -r node-gyp-bin dist/node-gyp-bin && shx cp -r node_modules/@pnpm/tabtab/lib/templates dist/templates && shx cp -r node_modules/ps-list/vendor dist/vendor && shx cp pnpmrc dist/pnpmrc",
+          "_compile": "tsc --build",
+          "pretest:e2e": "rimraf node_modules/.bin/pnpm"
+        },
+        "engines": {
+          "node": ">=18.12"
+        }
+      },
+      {
+        "tool": "jdk",
+        "url": "https://api.adoptium.net/v3/assets/version/17.0.21%2B9?architecture=aarch64&heap_size=normal&image_type=jdk&jvm_impl=hotspot&os=mac&vendor=eclipse",
+        "date": "2026-10-26",
+        "status": 200,
+        "bytes": 3329,
+        "sha256": "ac09131225bff17c34ae0aba9621a18d07e4c3e8f66e5c06f8dabc14a13404d6",
+        "matches": [
+          {
+            "version": {
+              "build": 9,
+              "major": 17,
+              "minor": 0,
+              "openjdk_version": "17.0.21+9",
+              "security": 21,
+              "semver": "17.0.21+9"
+            },
+            "binaries": [
+              {
+                "os": "mac",
+                "architecture": "aarch64",
+                "package": {
+                  "checksum": "78b08c7f5a0598242d5719c022e19479cb4a3aa45c37c19726a757a469ed1c15",
+                  "checksum_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz.sha256.txt",
+                  "download_count": 40842,
+                  "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz",
+                  "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz.json",
+                  "name": "OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz",
+                  "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz.sig",
+                  "size": 186192554
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "toolDownloads": [
+      {
+        "tool": "node",
+        "url": "https://nodejs.org/dist/v24.22.1/node-v24.22.1-darwin-arm64.tar.gz",
+        "algorithm": "sha256",
+        "expected": "89c682593d76cd44233fa53b1563264e7de9cbb189cad169135c5b4fadfbc0a7",
+        "http": 200,
+        "actual": "89c682593d76cd44233fa53b1563264e7de9cbb189cad169135c5b4fadfbc0a7",
+        "bytes": 53062778,
+        "status": "verified-and-extracted"
+      },
+      {
+        "tool": "pnpm",
+        "url": "https://registry.npmjs.org/pnpm/-/pnpm-10.34.8.tgz",
+        "algorithm": "sha512",
+        "expected": "9ieo6XE0Ov5J39D2PQKCNCAd+oMdXLWIcz4eX42ya/FpiaMhYatcG02zsf28NzFgYGtbieAC323RmoWt+R/FqA==",
+        "http": 200,
+        "actual": "9ieo6XE0Ov5J39D2PQKCNCAd+oMdXLWIcz4eX42ya/FpiaMhYatcG02zsf28NzFgYGtbieAC323RmoWt+R/FqA==",
+        "bytes": 4895838,
+        "status": "verified-and-extracted"
+      },
+      {
+        "tool": "jdk",
+        "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz",
+        "algorithm": "sha256",
+        "expected": "78b08c7f5a0598242d5719c022e19479cb4a3aa45c37c19726a757a469ed1c15",
+        "http": 200,
+        "actual": "78b08c7f5a0598242d5719c022e19479cb4a3aa45c37c19726a757a469ed1c15",
+        "bytes": 186192554,
+        "status": "verified-and-extracted"
+      }
+    ],
+    "toolVersions": {
+      "node": {
+        "exit": 0,
+        "output": "v24.22.1\n"
+      },
+      "java": {
+        "exit": 0,
+        "output": "openjdk version \"17.0.21\" 2026-10-20\nOpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)\nOpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)\n"
+      },
+      "pnpm": {
+        "exit": 0,
+        "output": "10.34.8\n"
+      }
+    },
+    "java": {
+      "results": [
+        {
+          "variant": "baseline",
+          "step": "effective-pom",
+          "exit": 0,
+          "seconds": 69.6,
+          "log": "baseline-effective-pom.log"
+        },
+        {
+          "variant": "baseline",
+          "step": "dependency-tree",
+          "exit": 0,
+          "seconds": 568.5,
+          "log": "baseline-dependency-tree.log"
+        },
+        {
+          "variant": "candidate",
+          "step": "effective-pom",
+          "exit": 0,
+          "seconds": 2.8,
+          "log": "candidate-effective-pom.log"
+        },
+        {
+          "variant": "candidate",
+          "step": "dependency-tree",
+          "exit": 0,
+          "seconds": 5.2,
+          "log": "candidate-dependency-tree.log"
+        },
+        {
+          "variant": "baseline",
+          "step": "compile",
+          "exit": 0,
+          "seconds": 13.1,
+          "log": "baseline-compile.log",
+          "writesRestrictedToVerificationDirectory": true,
+          "userHomeReadDenied": true,
+          "offlineNetworkDenied": true
+        },
+        {
+          "variant": "candidate",
+          "step": "compile",
+          "exit": 0,
+          "seconds": 12.8,
+          "log": "candidate-compile.log",
+          "writesRestrictedToVerificationDirectory": true,
+          "userHomeReadDenied": true,
+          "offlineNetworkDenied": true
+        }
+      ],
+      "input": {
+        "files": 988,
+        "sha256": "40d714a2123387a2f49a53389e02fe8094420b26416dea6e1ae06ee80810c759",
+        "algorithm": "SHA-256 of UTF-8 json.dumps(sorted path/sha256 rows, ensure_ascii=False, indent=2) + LF",
+        "types": {
+          ".config": 1,
+          ".xml": 20,
+          ".java": 967
+        }
+      },
+      "comparison": {
+        "artifacts": {
+          "baseline": {
+            "org.redisson:redisson-spring-data-35": [
+              "4.7.0"
+            ],
+            "org.projectlombok:lombok": [
+              "1.18.48"
+            ],
+            "org.mapstruct:mapstruct": [
+              "1.7.0.Beta2"
+            ],
+            "org.mapstruct:mapstruct-jdk8": [
+              "1.7.0.Beta2"
+            ],
+            "org.mapstruct:mapstruct-processor": [
+              "1.7.0.Beta2"
+            ],
+            "com.mysql:mysql-connector-j": [
+              "9.7.0"
+            ],
+            "org.springframework.data:spring-data-redis": [
+              "3.5.12"
+            ]
+          },
+          "candidate": {
+            "com.mysql:mysql-connector-j": [
+              "8.2.0"
+            ],
+            "org.redisson:redisson-spring-data-35": [
+              "4.7.0"
+            ],
+            "org.projectlombok:lombok": [
+              "1.18.48"
+            ],
+            "org.mapstruct:mapstruct": [
+              "1.6.3"
+            ],
+            "org.mapstruct:mapstruct-jdk8": [
+              "1.6.3"
+            ],
+            "org.mapstruct:mapstruct-processor": [
+              "1.6.3"
+            ],
+            "org.springframework.data:spring-data-redis": [
+              "3.5.12"
+            ]
+          }
+        },
+        "mappers": [
+          {
+            "path": "yudao-module-infra/target/generated-sources/annotations/cn/iocoder/yudao/module/infra/convert/codegen/CodegenConvertImpl.java",
+            "baselineSha256": "325c1c53abac70756d34c2708572157ce3593f1ee2ac9ad3b796d2877e4a77c7",
+            "candidateSha256": "4e7a4ce1a9defec995e291b8ea709a621d6fb184e2ca88f36184db967395501f",
+            "equalAfterRemovingGeneratedAnnotation": false,
+            "diff": "--- baseline\n+++ candidate\n@@ -34,7 +34,7 @@\n             return null;\n         }\n \n-        List<CodegenColumnDO> list1 = new ArrayList<>( list.size() );\n+        List<CodegenColumnDO> list1 = new ArrayList<CodegenColumnDO>( list.size() );\n         for ( TableField tableField : list ) {\n             list1.add( convert( tableField ) );\n         }\n"
+          },
+          {
+            "path": "yudao-module-infra/target/generated-sources/annotations/cn/iocoder/yudao/module/infra/convert/config/ConfigConvertImpl.java",
+            "baselineSha256": "6a79b8a646e697c4e96542818311055cef5b9ce0c2c30cb20437d83ca94430ec",
+            "candidateSha256": "6b1059d1ff264208599cc239a41b55f973d8a14697dc40b7a625745fa530c0ee",
+            "equalAfterRemovingGeneratedAnnotation": false,
+            "diff": "--- baseline\n+++ candidate\n@@ -18,7 +18,7 @@\n             return null;\n         }\n \n-        PageResult<ConfigRespVO> pageResult = new PageResult<>();\n+        PageResult<ConfigRespVO> pageResult = new PageResult<ConfigRespVO>();\n \n         pageResult.setTotal( page.getTotal() );\n         pageResult.setList( convertList( page.getList() ) );\n@@ -32,7 +32,7 @@\n             return null;\n         }\n \n-        List<ConfigRespVO> list1 = new ArrayList<>( list.size() );\n+        List<ConfigRespVO> list1 = new ArrayList<ConfigRespVO>( list.size() );\n         for ( ConfigDO configDO : list ) {\n             list1.add( convert( configDO ) );\n         }\n"
+          },
+          {
+            "path": "yudao-module-infra/target/generated-sources/annotations/cn/iocoder/yudao/module/infra/convert/file/FileConfigConvertImpl.java",
+            "baselineSha256": "2c21dc331bd9cac3e1ee53e1e122e49060b4102b62a552acce37a9b03f9e6c03",
+            "candidateSha256": "b601233c97a8f44646efa4e886fce9d4b3aa1a9ed9d884d82885ebea05f8edf8",
+            "equalAfterRemovingGeneratedAnnotation": true
+          },
+          {
+            "path": "yudao-module-infra/target/generated-sources/annotations/cn/iocoder/yudao/module/infra/convert/redis/RedisConvertImpl.java",
+            "baselineSha256": "565035a06a5c7ca2892278aa8a13b1aab2ced9d4bda2e6ac922769c4b2faf4c0",
+            "candidateSha256": "13e040cfe59ac0f15be882f561403d3d2b751be6183d4679d08d9370b9a7dc6b",
+            "equalAfterRemovingGeneratedAnnotation": true
+          },
+          {
+            "path": "yudao-module-system/target/generated-sources/annotations/cn/iocoder/yudao/module/system/convert/auth/AuthConvertImpl.java",
+            "baselineSha256": "209d4b13d207e9ea7f195911a668a53ac27bc89e0a9a80533e599ac0d841836e",
+            "candidateSha256": "b0197113d5f04ab458e4024228df8602f36b8224150e87b9e576e24f04094ecd",
+            "equalAfterRemovingGeneratedAnnotation": true
+          },
+          {
+            "path": "yudao-module-system/target/generated-sources/annotations/cn/iocoder/yudao/module/system/convert/oauth2/OAuth2OpenConvertImpl.java",
+            "baselineSha256": "2a42295e1c78ba15ee2bd1a9ad6a1eb0c2c2f61050e63ff1270e4cbfd0dd5d10",
+            "candidateSha256": "42a32d26e0fd83aa1c2ee7b7941af521e6416a973ce8d2a37b6bcd2b30cf029e",
+            "equalAfterRemovingGeneratedAnnotation": true
+          },
+          {
+            "path": "yudao-module-system/target/generated-sources/annotations/cn/iocoder/yudao/module/system/convert/tenant/TenantConvertImpl.java",
+            "baselineSha256": "16bae401eb5a0d575776944874fbf67fe4b54fec49db91c9e1e26eea5c733af8",
+            "candidateSha256": "f22acd3ba7c232de1e09c2f97ecd9de04c3eee49a9aa68a0293c06c0e984b43a",
+            "equalAfterRemovingGeneratedAnnotation": true
+          },
+          {
+            "path": "yudao-module-system/target/generated-sources/annotations/cn/iocoder/yudao/module/system/convert/user/UserConvertImpl.java",
+            "baselineSha256": "20b582565f09cabcf0600fc1d15de894050caba58d2aa68df3293fb86f0023e3",
+            "candidateSha256": "a5330075471938c570b63debeaaed4ff5d30ba654d7788c8bb209fb521caa7a3",
+            "equalAfterRemovingGeneratedAnnotation": true
+          }
+        ],
+        "warnings": {
+          "baseline": [
+            "[WARNING] 1 problem was encountered while building the effective model for org.javassist:javassist:jar:3.21.0-GA during dependency collection step for project (use -X to see details)",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/codegen/CodegenConvert.java:[34,20] Unmapped target properties: \"createTime, updateTime, creator, updater, deleted, id, dataSourceConfigId, scene, remark, moduleName, businessName, className, classComment, author, templateType, frontType, parentMenuId, masterTableId, subJoinColumnId, subJoinMany, treeParentColumnId, treeNameColumnId, transMap\".",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/codegen/CodegenConvert.java:[47,21] Unmapped target properties: \"createTime, updateTime, creator, updater, deleted, id, tableId, ordinalPosition, dictType, example, createOperation, updateOperation, listOperation, listOperationCondition, listOperationResult, htmlType, transMap\".",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/config/ConfigConvert.java:[26,14] Unmapped target properties: \"createTime, updateTime, creator, updater, deleted, type, transMap\".",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/file/FileConfigConvert.java:[20,18] Unmapped target property: \"master\".",
+            "[WARNING] yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/convert/auth/AuthConvert.java:[82,26] Unmapped target property: \"socialType\".",
+            "[WARNING] yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/convert/auth/AuthConvert.java:[84,23] Unmapped target property: \"createIp\"."
+          ],
+          "candidate": [
+            "[WARNING] 1 problem was encountered while building the effective model for org.javassist:javassist:jar:3.21.0-GA during dependency collection step for project (use -X to see details)",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/config/ConfigConvert.java:[26,14] Unmapped target properties: \"createTime, updateTime, creator, updater, deleted, type, transMap\".",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/codegen/CodegenConvert.java:[34,20] Unmapped target properties: \"createTime, updateTime, creator, updater, deleted, id, dataSourceConfigId, scene, remark, moduleName, businessName, className, classComment, author, templateType, frontType, parentMenuId, masterTableId, subJoinColumnId, subJoinMany, treeParentColumnId, treeNameColumnId, transMap\".",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/codegen/CodegenConvert.java:[47,21] Unmapped target properties: \"createTime, updateTime, creator, updater, deleted, id, tableId, ordinalPosition, dictType, example, createOperation, updateOperation, listOperation, listOperationCondition, listOperationResult, htmlType, transMap\".",
+            "[WARNING] yudao-module-infra/src/main/java/cn/iocoder/yudao/module/infra/convert/file/FileConfigConvert.java:[20,18] Unmapped target property: \"master\".",
+            "[WARNING] yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/convert/auth/AuthConvert.java:[82,26] Unmapped target property: \"socialType\".",
+            "[WARNING] yudao-module-system/src/main/java/cn/iocoder/yudao/module/system/convert/auth/AuthConvert.java:[84,23] Unmapped target property: \"createIp\"."
+          ]
+        },
+        "baselineDriverTree": [
+          "[INFO] +- com.mysql:mysql-connector-j:jar:9.7.0:compile",
+          "[INFO] |  +- com.mysql:mysql-connector-j:jar:9.7.0:compile (version managed from 9.7.0)",
+          "[INFO]    |  +- com.mysql:mysql-connector-j:jar:9.7.0:provided (version managed from 9.7.0)",
+          "[INFO]    +- com.mysql:mysql-connector-j:jar:9.7.0:compile (version managed from 9.7.0)",
+          "[INFO] |  +- com.mysql:mysql-connector-j:jar:9.7.0:compile (version managed from 9.7.0)",
+          "[INFO] |  +- com.mysql:mysql-connector-j:jar:9.7.0:compile (version managed from 9.7.0)",
+          "[INFO] |  |  +- com.mysql:mysql-connector-j:jar:9.7.0:compile (version managed from 9.7.0)"
+        ],
+        "candidateDriverTree": [
+          "[INFO] +- com.mysql:mysql-connector-j:jar:8.2.0:compile",
+          "[INFO] |  +- com.mysql:mysql-connector-j:jar:8.2.0:compile (version managed from 8.2.0)",
+          "[INFO]    |  +- com.mysql:mysql-connector-j:jar:8.2.0:provided (version managed from 8.2.0)",
+          "[INFO]    +- com.mysql:mysql-connector-j:jar:8.2.0:compile (version managed from 8.2.0)",
+          "[INFO] |  +- com.mysql:mysql-connector-j:jar:8.2.0:compile (version managed from 8.2.0)",
+          "[INFO] |  +- com.mysql:mysql-connector-j:jar:8.2.0:compile (version managed from 8.2.0)",
+          "[INFO] |  |  +- com.mysql:mysql-connector-j:jar:8.2.0:compile (version managed from 8.2.0)"
+        ],
+        "warningSetsEqual": true
+      },
+      "driverJars": [
+        {
+          "version": "9.7.0",
+          "jarDownloaded": true,
+          "sha256": "0353648eaa1c91e0f4020c959abf756bc866ffd583df22ae6b6f6e0cbd43eb44",
+          "containsDriverClass": true
+        },
+        {
+          "version": "8.2.0",
+          "jarDownloaded": true,
+          "sha256": "06f14fbd664d0e382347489e66495ca27ab7e6c2e1d9969a496931736197465f",
+          "containsDriverClass": true
+        }
+      ],
+      "keyInputs": [
+        {
+          "path": "lombok.config",
+          "sha256": "fdae9814ac28a06650ad96adf5bcaa9b3c1d7b77321cf4299bb7b5e3ddb9c85a"
+        },
+        {
+          "path": "pom.xml",
+          "sha256": "f5f8bcb019c649ceeda9c53f01f5a14af218a71e8795c3ba184ff5a726b57e83"
+        },
+        {
+          "path": "yudao-dependencies/pom.xml",
+          "sha256": "559fab5409fb7c10332192d46fbde6765b33e7f2f14e92ff1e8028973582ccab"
+        }
+      ],
+      "limits": "20模块POM/主源码/lombok.config编译，不含应用配置/运行资源/测试；无应用启动、数据库连接或业务运行验收；原POM不改；编译最终以-o和网络/用户目录读取拒绝、只允许验证目录写入的沙箱重跑；先前effective POM/tree未套此沙箱，不改写历史"
+    },
+    "admin": {
+      "checks": {
+        "results": [
+          {
+            "step": "install",
+            "exit": 0,
+            "seconds": 116.4,
+            "log": "admin-install.log",
+            "networkAndUserHomeReadDenied": false
+          },
+          {
+            "step": "types",
+            "exit": 1,
+            "seconds": 14.7,
+            "log": "admin-types.log",
+            "networkAndUserHomeReadDenied": true,
+            "userHomeReadDenied": true,
+            "writesRestrictedToVerificationDirectory": true
+          },
+          {
+            "step": "build",
+            "exit": 0,
+            "seconds": 19.3,
+            "log": "admin-build.log",
+            "networkAndUserHomeReadDenied": true,
+            "userHomeReadDenied": true,
+            "writesRestrictedToVerificationDirectory": true
+          }
+        ],
+        "lifecycleWhitelist": [],
+        "limits": "Source config/axios excluded and replaced with unavailable stubs; not a full original request-layer compatibility check"
+      },
+      "input": {
+        "files": 3022,
+        "sha256": "e043b703098197e5e04a4bb56c1099ccba989be55dcab5f51962af12fb566703",
+        "algorithm": "SHA-256 of UTF-8 json.dumps(sorted path/sha256 rows, ensure_ascii=False, indent=2) + LF",
+        "types": {
+          ".ts": 902,
+          ".html": 1,
+          ".json": 6,
+          ".yaml": 1,
+          ".js": 28,
+          ".ico": 1,
+          ".gif": 2,
+          ".vue": 1940,
+          ".svg": 50,
+          ".jpg": 6,
+          ".mp3": 2,
+          ".png": 56,
+          ".tsx": 8,
+          ".ttf": 1,
+          ".woff": 2,
+          ".woff2": 1,
+          ".scss": 13,
+          ".css": 2
+        }
+      },
+      "diagnostics": [
+        {
+          "path": "src/views/ai/chat/index/components/conversation/ConversationList.vue",
+          "line": 289,
+          "column": 27,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessageBox'.",
+          "sourceSha256": "3b365dc1f2ad0c7642529c2cd71b8df05f79e2ffb4c61f9e006600447d617bc8"
+        },
+        {
+          "path": "src/views/ai/chat/index/components/conversation/ConversationList.vue",
+          "line": 334,
+          "column": 5,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessage'.",
+          "sourceSha256": "3b365dc1f2ad0c7642529c2cd71b8df05f79e2ffb4c61f9e006600447d617bc8"
+        },
+        {
+          "path": "src/views/ai1/skill/file/SkillFileTree.vue",
+          "line": 187,
+          "column": 29,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessageBox'.",
+          "sourceSha256": "fd8990c1c5d342178fc1cb15a43d5f58f814326c2bdfddf0748b44de49f97d36"
+        },
+        {
+          "path": "src/views/ai1/skill/file/SkillFileTree.vue",
+          "line": 213,
+          "column": 29,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessageBox'.",
+          "sourceSha256": "fd8990c1c5d342178fc1cb15a43d5f58f814326c2bdfddf0748b44de49f97d36"
+        },
+        {
+          "path": "src/views/bpm/oa/leave/index.vue",
+          "line": 242,
+          "column": 27,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessageBox'.",
+          "sourceSha256": "0f9e4a8d0ebb88e450996a4e049139ce9b02646c9e5f3f2c77b5abd6a4c66056"
+        },
+        {
+          "path": "src/views/iot/alert/record/index.vue",
+          "line": 279,
+          "column": 44,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessageBox'.",
+          "sourceSha256": "e756def3e6f994dc4da5314109c9475beedfe1150bfdc96dbad10a6b5268fbd7"
+        },
+        {
+          "path": "src/views/mes/wm/barcode/components/PrinterLabel.vue",
+          "line": 20,
+          "column": 3,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessage'.",
+          "sourceSha256": "c8ffafcafe49e14987da3bccc22fc7e92d895b19cfd182009cd6cdb4a654045d"
+        },
+        {
+          "path": "src/views/mes/wm/barcode/config/BarcodeConfigForm.vue",
+          "line": 161,
+          "column": 3,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessage'.",
+          "sourceSha256": "f580bb11103b9e42225093ccf80d5c642a3c16a5d99d714080ec4961f5342480"
+        },
+        {
+          "path": "src/views/mes/wm/warehouse/location/LocationForm.vue",
+          "line": 237,
+          "column": 11,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessageBox'.",
+          "sourceSha256": "f88e43783210ceccefca17f7baa7cf65cb61916e1fbb65405e21920eab966f17"
+        },
+        {
+          "path": "src/views/mes/wm/warehouse/location/LocationForm.vue",
+          "line": 248,
+          "column": 11,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElMessageBox'.",
+          "sourceSha256": "f88e43783210ceccefca17f7baa7cf65cb61916e1fbb65405e21920eab966f17"
+        },
+        {
+          "path": "src/views/pms/kb/document/KnowledgeLibrarySidebar.vue",
+          "line": 162,
+          "column": 41,
+          "code": "TS2304",
+          "message": "Cannot find name 'ElTree'.",
+          "sourceSha256": "4443d869d05017426ac0c379dc45117911d50e60e4dbb68e04ea2e6919135725"
+        }
+      ],
+      "lifecycleWhitelist": [],
+      "scriptInventory": [
+        {
+          "name": "snabbdom",
+          "version": "3.6.3",
+          "scripts": {
+            "prepare": "husky install"
+          }
+        },
+        {
+          "name": "css-what",
+          "version": "6.2.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "htmlparser2",
+          "version": "8.0.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "zrender",
+          "version": "6.0.0",
+          "scripts": {
+            "prepare": "npm run build:lib"
+          }
+        },
+        {
+          "name": "bpmn-js-properties-panel",
+          "version": "5.54.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "codemirror",
+          "version": "6.65.7",
+          "scripts": {
+            "prepare": "npm run-script build"
+          }
+        },
+        {
+          "name": "get-caller-file",
+          "version": "2.0.5",
+          "scripts": {
+            "prepare": "tsc"
+          }
+        },
+        {
+          "name": "min-dom",
+          "version": "5.3.0",
+          "scripts": {
+            "prepare": "run-s bundle"
+          }
+        },
+        {
+          "name": "postcss-sorting",
+          "version": "10.0.0",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "i18next",
+          "version": "23.16.8",
+          "scripts": {
+            "prepare": "husky install"
+          }
+        },
+        {
+          "name": "ids",
+          "version": "3.0.2",
+          "scripts": {
+            "prepare": "run-s bundle"
+          }
+        },
+        {
+          "name": "@parcel/watcher",
+          "version": "2.5.6",
+          "scripts": {
+            "install": "node scripts/build-from-source.js"
+          }
+        },
+        {
+          "name": "@bpmn-io/lezer-feel",
+          "version": "2.4.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "balanced-match",
+          "version": "4.0.4",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "keyv",
+          "version": "4.5.4",
+          "scripts": {
+            "prepare": "yarn build"
+          }
+        },
+        {
+          "name": "@codemirror/state",
+          "version": "6.6.0",
+          "scripts": {
+            "prepare": "cm-buildhelper src/index.ts"
+          }
+        },
+        {
+          "name": "moddle",
+          "version": "8.1.0",
+          "scripts": {
+            "prepare": "run-s build generate-types"
+          }
+        },
+        {
+          "name": "jackspeak",
+          "version": "3.4.3",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "path-scurry",
+          "version": "2.0.2",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "@lezer/common",
+          "version": "1.5.2",
+          "scripts": {
+            "prepare": "node build.js"
+          }
+        },
+        {
+          "name": "css-functions-list",
+          "version": "3.3.3",
+          "scripts": {
+            "prepare": "if [[ -x \"$(command -v husky)\" ]]; then husky; fi"
+          }
+        },
+        {
+          "name": "hookified",
+          "version": "1.15.1",
+          "scripts": {
+            "prepare": "pnpm build"
+          }
+        },
+        {
+          "name": "fastest-levenshtein",
+          "version": "1.0.16",
+          "scripts": {
+            "prepare": "npm run build && npm run build:esm"
+          }
+        },
+        {
+          "name": "luxon",
+          "version": "3.7.2",
+          "scripts": {
+            "prepare": "husky install"
+          }
+        },
+        {
+          "name": "object-refs",
+          "version": "0.4.0",
+          "scripts": {
+            "prepare": "npm run bundle"
+          }
+        },
+        {
+          "name": "glob",
+          "version": "13.0.6",
+          "scripts": {
+            "prepare": "tshy && bash scripts/build.sh"
+          }
+        },
+        {
+          "name": "tinyexec",
+          "version": "1.0.4",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "es5-ext",
+          "version": "0.10.64",
+          "scripts": {
+            "postinstall": " node -e \"try{require('./_postinstall')}catch(e){}\" || exit 0"
+          }
+        },
+        {
+          "name": "saxen",
+          "version": "11.0.2",
+          "scripts": {
+            "prepare": "run-s bundle"
+          }
+        },
+        {
+          "name": "magic-regexp",
+          "version": "0.10.0",
+          "scripts": {
+            "prepare": "npx simple-git-hooks && pnpm build"
+          }
+        },
+        {
+          "name": "stylelint-order",
+          "version": "8.1.1",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "y18n",
+          "version": "5.0.8",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "@marijn/find-cluster-break",
+          "version": "1.0.2",
+          "scripts": {
+            "prepare": "rollup -c"
+          }
+        },
+        {
+          "name": "@bpmn-io/feel-editor",
+          "version": "1.12.1",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "foreground-child",
+          "version": "3.3.1",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "minimatch",
+          "version": "10.2.5",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "bpmn-moddle",
+          "version": "10.0.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "brace-expansion",
+          "version": "5.0.5",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "package-json-from-dist",
+          "version": "1.0.1",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "cheerio-select",
+          "version": "2.1.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "htmlparser2",
+          "version": "9.1.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@eslint/eslintrc",
+          "version": "2.1.4",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@isaacs/cliui",
+          "version": "8.0.2",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "brace-expansion",
+          "version": "5.0.4",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "domelementtype",
+          "version": "2.3.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@bpmn-io/lezer-feel",
+          "version": "1.9.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "eslint-visitor-keys",
+          "version": "3.4.3",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "minimatch",
+          "version": "10.2.4",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "undici",
+          "version": "6.23.0",
+          "scripts": {
+            "prepare": "husky && node ./scripts/platform-shell.js"
+          }
+        },
+        {
+          "name": "bpmn-js",
+          "version": "18.16.1",
+          "scripts": {
+            "prepare": "run-s distro"
+          }
+        },
+        {
+          "name": "sdp",
+          "version": "3.2.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@humanwhocodes/module-importer",
+          "version": "1.0.1",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "moddle-xml",
+          "version": "12.0.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "cliui",
+          "version": "8.0.1",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "is-plain-object",
+          "version": "5.0.0",
+          "scripts": {
+            "prepare": "rollup -c"
+          }
+        },
+        {
+          "name": "@sxzz/popperjs-es",
+          "version": "2.11.8",
+          "scripts": {
+            "prepare": "husky install .config/husky"
+          }
+        },
+        {
+          "name": "minimatch",
+          "version": "9.0.9",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "dom-serializer",
+          "version": "2.0.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "echarts",
+          "version": "6.0.0",
+          "scripts": {
+            "prepare": "npm run build:lib && husky install"
+          }
+        },
+        {
+          "name": "yargs",
+          "version": "15.4.1",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "videojs-contrib-quality-levels",
+          "version": "4.1.0",
+          "scripts": {
+            "prepare": "husky install"
+          }
+        },
+        {
+          "name": "ts-api-utils",
+          "version": "1.4.3",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "minipass",
+          "version": "7.1.3",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "@camunda/feel-builtins",
+          "version": "0.2.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "acorn",
+          "version": "8.16.0",
+          "scripts": {
+            "prepare": "cd ..; npm run build:main"
+          }
+        },
+        {
+          "name": "core-js-pure",
+          "version": "3.48.0",
+          "scripts": {
+            "postinstall": "node -e \"try{require('./postinstall')}catch(e){}\""
+          }
+        },
+        {
+          "name": "terser",
+          "version": "5.46.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@bpmn-io/feelin",
+          "version": "6.1.0",
+          "scripts": {
+            "prepare": "run-s build generate-typings"
+          }
+        },
+        {
+          "name": "@bpmn-io/properties-panel",
+          "version": "3.25.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "preact",
+          "version": "10.19.3",
+          "scripts": {
+            "prepare": "run-s build && check-export-map"
+          }
+        },
+        {
+          "name": "style-mod",
+          "version": "4.1.3",
+          "scripts": {
+            "prepare": "npm run build && npm run build-readme"
+          }
+        },
+        {
+          "name": "inherits-browser",
+          "version": "0.1.0",
+          "scripts": {
+            "prepare": "microbundle -f cjs,esm && cpy index.d.ts dist/"
+          }
+        },
+        {
+          "name": "webrtc-adapter",
+          "version": "9.0.5",
+          "scripts": {
+            "prepare": "grunt build"
+          }
+        },
+        {
+          "name": "@humanfs/types",
+          "version": "0.15.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "domutils",
+          "version": "3.2.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "meow",
+          "version": "14.1.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "focus-trap",
+          "version": "7.8.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "nth-check",
+          "version": "2.1.1",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "cheerio",
+          "version": "1.0.0",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "preact",
+          "version": "10.29.1",
+          "scripts": {
+            "prepare": "husky && npm run test:install && run-s build"
+          }
+        },
+        {
+          "name": "@codemirror/commands",
+          "version": "6.10.3",
+          "scripts": {
+            "prepare": "cm-buildhelper src/commands.ts"
+          }
+        },
+        {
+          "name": "@lezer/lr",
+          "version": "1.4.10",
+          "scripts": {
+            "prepare": "node build.js; tsc src/constants.ts -d --outDir dist"
+          }
+        },
+        {
+          "name": "didi",
+          "version": "11.0.0",
+          "scripts": {
+            "prepare": "run-s bundle"
+          }
+        },
+        {
+          "name": "domhandler",
+          "version": "5.0.3",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "axios",
+          "version": "1.16.0",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "stylelint-config-standard",
+          "version": "40.0.0",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "@humanfs/core",
+          "version": "0.19.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "cosmiconfig",
+          "version": "9.0.1",
+          "scripts": {
+            "prepare": "husky install"
+          }
+        },
+        {
+          "name": "yargs",
+          "version": "17.7.2",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "whatwg-encoding",
+          "version": "3.1.1",
+          "scripts": {
+            "prepare": "node scripts/update.js"
+          }
+        },
+        {
+          "name": "lru-cache",
+          "version": "10.4.3",
+          "scripts": {
+            "prepare": "tshy && bash fixup.sh"
+          }
+        },
+        {
+          "name": "lru-cache",
+          "version": "11.2.6",
+          "scripts": {
+            "prepare": "tshy && bash fixup.sh"
+          }
+        },
+        {
+          "name": "@humanwhocodes/retry",
+          "version": "0.4.3",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@lezer/markdown",
+          "version": "1.6.3",
+          "scripts": {
+            "prepare": "node build.js"
+          }
+        },
+        {
+          "name": "signal-exit",
+          "version": "4.1.0",
+          "scripts": {
+            "prepare": "tsc -p tsconfig.json && tsc -p tsconfig-esm.json && bash ./scripts/fixup.sh"
+          }
+        },
+        {
+          "name": "ts-api-utils",
+          "version": "2.5.0",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "@humanfs/node",
+          "version": "0.16.8",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "glob",
+          "version": "10.4.5",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "entities",
+          "version": "4.5.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "postcss-selector-parser",
+          "version": "7.1.1",
+          "scripts": {
+            "prepare": "del-cli dist && BABEL_ENV=publish babel src --out-dir dist --ignore /__tests__/"
+          }
+        },
+        {
+          "name": "css-select",
+          "version": "5.2.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@codemirror/lint",
+          "version": "6.9.5",
+          "scripts": {
+            "prepare": "cm-buildhelper src/lint.ts"
+          }
+        },
+        {
+          "name": "@codemirror/language",
+          "version": "6.12.3",
+          "scripts": {
+            "prepare": "cm-buildhelper src/index.ts"
+          }
+        },
+        {
+          "name": "tiny-svg",
+          "version": "4.1.4",
+          "scripts": {
+            "prepare": "run-s bundle"
+          }
+        },
+        {
+          "name": "crelt",
+          "version": "1.0.6",
+          "scripts": {
+            "prepare": "rollup -c"
+          }
+        },
+        {
+          "name": "hashery",
+          "version": "1.5.1",
+          "scripts": {
+            "prepare": "pnpm build"
+          }
+        },
+        {
+          "name": "stylelint-config-recommended",
+          "version": "18.0.0",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "@codemirror/autocomplete",
+          "version": "6.20.1",
+          "scripts": {
+            "prepare": "cm-buildhelper src/index.ts"
+          }
+        },
+        {
+          "name": "@bpmn-io/feel-lint",
+          "version": "2.1.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "min-dom",
+          "version": "4.2.1",
+          "scripts": {
+            "prepare": "run-s distro"
+          }
+        },
+        {
+          "name": "@bpmn-io/lang-feel",
+          "version": "2.4.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "stylelint",
+          "version": "17.11.0",
+          "scripts": {
+            "prepare": "git config set --local core.hooksPath .githooks || true && patch-package"
+          }
+        },
+        {
+          "name": "@bpmn-io/feel-lint",
+          "version": "3.1.0",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "esbuild",
+          "version": "0.27.3",
+          "scripts": {
+            "postinstall": "node install.js"
+          }
+        },
+        {
+          "name": "@codemirror/view",
+          "version": "6.41.1",
+          "scripts": {
+            "prepare": "cm-buildhelper src/index.ts"
+          }
+        },
+        {
+          "name": "w3c-keyname",
+          "version": "2.2.8",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "rimraf",
+          "version": "6.1.3",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "minimatch",
+          "version": "9.0.3",
+          "scripts": {
+            "prepare": "tsc -p tsconfig.json && tsc -p tsconfig-esm.json"
+          }
+        },
+        {
+          "name": "@lezer/highlight",
+          "version": "1.2.3",
+          "scripts": {
+            "prepare": "node build.js"
+          }
+        },
+        {
+          "name": "tinyexec",
+          "version": "1.1.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@bpmn-io/extract-process-variables",
+          "version": "2.2.1",
+          "scripts": {
+            "prepare": "run-s build"
+          }
+        },
+        {
+          "name": "meow",
+          "version": "13.2.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "@ctrl/tinycolor",
+          "version": "4.2.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "colorette",
+          "version": "2.0.20",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "jsonrepair",
+          "version": "3.13.2",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "path-scurry",
+          "version": "1.11.1",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "lightningcss",
+          "version": "1.32.0",
+          "scripts": {
+            "prepare": "patch-package"
+          }
+        },
+        {
+          "name": "rollup",
+          "version": "4.60.3",
+          "scripts": {
+            "prepare": "husky && npm run prepare:patch && node scripts/check-release.js || npm run build:prepare"
+          }
+        },
+        {
+          "name": "yargs-parser",
+          "version": "21.1.1",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "tabbable",
+          "version": "6.4.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        }
+      ],
+      "limits": "仅公开占位环境及无请求axios替身副本，不能证明原请求层、业务、真实环境或压缩分支；安装禁脚本；类型/构建最终在无网络/禁止用户目录读取/只允许验证目录写入的沙箱执行，历史安装仅为隔离路径与空脚本策略"
+    },
+    "adminPreflight": {
+      "copy_allowlist": {
+        "reviewed_root_files": [
+          "package.json",
+          "pnpm-lock.yaml",
+          "tsconfig.json",
+          "vite.config.ts",
+          "uno.config.ts",
+          "postcss.config.js",
+          "index.html"
+        ]
+      },
+      "validation_environment": {
+        "values": {
+          "VITE_APP_TITLE": "AV1 compatibility preflight",
+          "VITE_BASE_PATH": "/",
+          "VITE_OUT_DIR": "dist-av1-preflight",
+          "VITE_PORT": "41799",
+          "VITE_OPEN": "false",
+          "VITE_DEV": "false",
+          "VITE_SOURCEMAP": "false",
+          "VITE_DROP_DEBUGGER": "true",
+          "VITE_DROP_CONSOLE": "true",
+          "VITE_COMPRESS": "",
+          "VITE_BASE_URL": "https://av1-preflight.invalid",
+          "VITE_API_URL": "/admin-api",
+          "VITE_GOVIEW_URL": "https://av1-preflight.invalid",
+          "VITE_APP_CAPTCHA_ENABLE": "false",
+          "VITE_APP_TENANT_ENABLE": "false",
+          "VITE_APP_DOCALERT_ENABLE": "false",
+          "VITE_APP_DEFAULT_LOGIN_TENANT": "",
+          "VITE_APP_DEFAULT_LOGIN_USERNAME": "",
+          "VITE_APP_DEFAULT_LOGIN_PASSWORD": "",
+          "VITE_APP_API_ENCRYPT_ENABLE": "false",
+          "VITE_APP_API_ENCRYPT_HEADER": "AV1-Public-Placeholder",
+          "VITE_APP_API_ENCRYPT_ALGORITHM": "AES",
+          "VITE_APP_API_ENCRYPT_REQUEST_KEY": "",
+          "VITE_APP_API_ENCRYPT_RESPONSE_KEY": ""
+        }
+      }
+    },
+    "nuxt": {
+      "install": {
+        "exit": 0,
+        "ignoreScripts": true,
+        "fixtureOnly": true
+      },
+      "generate": {
+        "exit": 0,
+        "lifecycleWhitelist": []
+      },
+      "staticChecks": {
+        "status": "passed",
+        "host": "temporary strict static host on 127.0.0.1",
+        "limits": "fixture only; HTTP status is a host rule, not automatic Nuxt deployment behavior",
+        "files": [
+          {
+            "path": "200.html",
+            "bytes": 1051
+          },
+          {
+            "path": "404.html",
+            "bytes": 1051
+          },
+          {
+            "path": "_nuxt/0MRULwDD.js",
+            "bytes": 4002
+          },
+          {
+            "path": "_nuxt/CDk5c6B2.js",
+            "bytes": 185296
+          },
+          {
+            "path": "_nuxt/CMNyets9.js",
+            "bytes": 388
+          },
+          {
+            "path": "_nuxt/Dj0HkOzK.js",
+            "bytes": 2659
+          },
+          {
+            "path": "_nuxt/PwRsko2k.js",
+            "bytes": 417
+          },
+          {
+            "path": "_nuxt/SeTWVRMZ.js",
+            "bytes": 334
+          },
+          {
+            "path": "_nuxt/builds/latest.json",
+            "bytes": 71
+          },
+          {
+            "path": "_nuxt/builds/meta/c2304009-2e53-49a7-9790-0543e73a8ef8.json",
+            "bytes": 108
+          },
+          {
+            "path": "_nuxt/error-404.CpRA2tME.css",
+            "bytes": 2701
+          },
+          {
+            "path": "_nuxt/error-500.DXq6iBTR.css",
+            "bytes": 1951
+          },
+          {
+            "path": "_payload.json",
+            "bytes": 69
+          },
+          {
+            "path": "account/index.html",
+            "bytes": 1051
+          },
+          {
+            "path": "games/fixture/_payload.json",
+            "bytes": 69
+          },
+          {
+            "path": "games/fixture/index.html",
+            "bytes": 1549
+          },
+          {
+            "path": "index.html",
+            "bytes": 1542
+          }
+        ],
+        "routes": [
+          {
+            "path": "/",
+            "status": 200
+          },
+          {
+            "path": "/games/fixture/",
+            "status": 200
+          },
+          {
+            "path": "/account/",
+            "status": 200
+          },
+          {
+            "path": "/not-present/",
+            "status": 404
+          },
+          {
+            "path": "/games/not-present/",
+            "status": 404
+          }
+        ],
+        "pageErrors": [],
+        "consoleWarningsAndErrors": [
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+          },
+          {
+            "type": "error",
+            "text": "[NUXT_E1005]"
+          }
+        ],
+        "checks": [
+          "public prerender",
+          "private HTML shell",
+          "runtime response simulated",
+          "fresh navigation clears simulated private state",
+          "static output excludes private marker",
+          "HTTP 404 for missing routes",
+          "Nuxt mount observed and public navigation retains document",
+          "no hydration mismatch diagnostic observed"
+        ],
+        "serverClosed": true
+      },
+      "lifecycleWhitelist": [],
+      "scriptInventory": [
+        {
+          "name": "acorn",
+          "version": "8.19.0",
+          "scripts": {
+            "prepare": "cd ..; npm run build:main"
+          }
+        },
+        {
+          "name": "glob",
+          "version": "13.0.6",
+          "scripts": {
+            "prepare": "tshy && bash scripts/build.sh"
+          }
+        },
+        {
+          "name": "get-caller-file",
+          "version": "2.0.5",
+          "scripts": {
+            "prepare": "tsc"
+          }
+        },
+        {
+          "name": "y18n",
+          "version": "5.0.8",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "yargs-parser",
+          "version": "22.0.0",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "cliui",
+          "version": "9.0.1",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "yargs",
+          "version": "18.2.0",
+          "scripts": {
+            "prepare": "npm run compile"
+          }
+        },
+        {
+          "name": "esbuild",
+          "version": "0.28.2",
+          "scripts": {
+            "postinstall": "node install.js"
+          }
+        },
+        {
+          "name": "terser",
+          "version": "5.51.2",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "rollup",
+          "version": "4.65.1",
+          "scripts": {
+            "prepare": "husky && npm run prepare:patch && node scripts/check-release.js || npm run build:prepare"
+          }
+        },
+        {
+          "name": "is-reference",
+          "version": "1.2.1",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "balanced-match",
+          "version": "4.0.4",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "jackspeak",
+          "version": "3.4.3",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "lru-cache",
+          "version": "11.5.3",
+          "scripts": {
+            "prepare": "tshy && bash scripts/build.sh"
+          }
+        },
+        {
+          "name": "minipass",
+          "version": "7.1.3",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "path-scurry",
+          "version": "2.0.2",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "lightningcss",
+          "version": "1.33.0",
+          "scripts": {
+            "prepare": "patch-package"
+          }
+        },
+        {
+          "name": "node-fetch",
+          "version": "2.7.0",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "tar",
+          "version": "7.5.22",
+          "scripts": {
+            "prepare": "tshy && bash scripts/build.sh"
+          }
+        },
+        {
+          "name": "undici",
+          "version": "8.12.3",
+          "scripts": {
+            "prepare": "husky && node ./scripts/platform-shell.js"
+          }
+        },
+        {
+          "name": "glob",
+          "version": "10.5.0",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "minimatch",
+          "version": "10.2.6",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "isexe",
+          "version": "4.0.0",
+          "scripts": {
+            "prepare": "tshy && bash build.sh"
+          }
+        },
+        {
+          "name": "chownr",
+          "version": "3.0.0",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "minizlib",
+          "version": "3.1.0",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "yallist",
+          "version": "5.0.0",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "tinyexec",
+          "version": "1.3.1",
+          "scripts": {
+            "prepare": "npm run build"
+          }
+        },
+        {
+          "name": "signal-exit",
+          "version": "4.1.0",
+          "scripts": {
+            "prepare": "tsc -p tsconfig.json && tsc -p tsconfig-esm.json && bash ./scripts/fixup.sh"
+          }
+        },
+        {
+          "name": "foreground-child",
+          "version": "3.3.1",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "package-json-from-dist",
+          "version": "1.0.1",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "minimatch",
+          "version": "9.0.9",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "brace-expansion",
+          "version": "5.0.12",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        },
+        {
+          "name": "smob",
+          "version": "1.6.2",
+          "scripts": {
+            "prepare": "husky"
+          }
+        },
+        {
+          "name": "lru-cache",
+          "version": "10.4.3",
+          "scripts": {
+            "prepare": "tshy && bash fixup.sh"
+          }
+        },
+        {
+          "name": "path-scurry",
+          "version": "1.11.1",
+          "scripts": {
+            "prepare": "tshy"
+          }
+        }
+      ],
+      "source": "docs/03-架构/评审/静态机制夹具",
+      "limits": "模拟私人响应；无真实身份/权益/游戏；HTTP404依赖临时静态宿主规则；使用既有Chrome独立临时会话，默认Playwright制品缺失不计成功，实际重测已通过"
+    },
+    "rawEvidenceFingerprints": [
+      {
+        "artifact": "baseline-effective-pom.xml",
+        "bytes": 7243478,
+        "sha256": "ce01ef6ce6b11289f3dcdcbb561f24f9997da8c3c746be71ad74b8a287df4b9c"
+      },
+      {
+        "artifact": "candidate-effective-pom.xml",
+        "bytes": 7238570,
+        "sha256": "d11a4f14bfc14de6443cb1f0855d1d2672686d16fb7ab024088773d0ce372229"
+      },
+      {
+        "artifact": "baseline-dependency-tree.log",
+        "bytes": 640982,
+        "sha256": "855108af6dc6fcd8771aa9173af1349a55de77910b62649b4eff0f41b8901098"
+      },
+      {
+        "artifact": "candidate-dependency-tree.log",
+        "bytes": 640646,
+        "sha256": "f5463521f568e996120c4432994a6f737d45a1fc76efad3a6dbf17cde60696b3"
+      },
+      {
+        "artifact": "baseline-compile.log",
+        "bytes": 29127,
+        "sha256": "e6dc2d301a8238b7b917dc15db86f4566374d1b3633eb9314eef9a914b62694b"
+      },
+      {
+        "artifact": "candidate-compile.log",
+        "bytes": 29165,
+        "sha256": "87352129db2fd5d53c1610b61b7da9614f68b6c9e15a8070323867ff87384d3a"
+      },
+      {
+        "artifact": "admin-install.log",
+        "bytes": 14309,
+        "sha256": "af290d6e62ece99b133b5850976f097fc1a9ed9881ca9232ea85ca4c477606e3"
+      },
+      {
+        "artifact": "admin-types.log",
+        "bytes": 1158,
+        "sha256": "3dbb7ea9e09b3145ba2352d0aebfaf83fc0ee8214438a2682794f41ca7bcd0e4"
+      },
+      {
+        "artifact": "admin-build.log",
+        "bytes": 268114,
+        "sha256": "78ad7c267d0cd89eef114851125685e58945e5a312cd7e15ac3b8ab5db6ad9ea"
+      },
+      {
+        "artifact": "nuxt-install.log",
+        "bytes": 5062,
+        "sha256": "aba51009b03986d19ce98221bd4672bc146b5aabdbdd7ebe56a90f4e11c26902"
+      },
+      {
+        "artifact": "nuxt-generate.log",
+        "bytes": 3530,
+        "sha256": "808d0d6aef754e318172f939213c5f6c6efd9e1fecc38b4b1981341ed29bc99a"
+      }
+    ],
+    "harnessCorrections": [
+      "补根lombok.config编译约定，清副本target重编，原业务代码不改",
+      "修正误排任意config目录为只排src/config，补源码后重测；首轮人为缺文件不列为原工程缺陷",
+      "修正复用目录创建、总退出码；加强最终编译/类型/构建沙箱及Nuxt挂载/同文档导航/console观察"
+    ],
+    "preservation": "原位保存紧凑结果、原输入摘要、关键差异及必要复现脚本/静态夹具；不保存工具制品、依赖缓存、整份有效POM、临时源码副本或构建站点",
+    "cleanup": {
+      "status": "已清理并核实不存在",
+      "date": "2026-10-26",
+      "scope": "仅本轮独立工具/下载/依赖缓存/Java及管理端源码副本/Nuxt生成站点、指针与临时预检文件",
+      "approximateRegularFileBytesRemoved": 3503041989,
+      "preserved": "当前记录内紧凑结果/输入摘要/差异、4个复现校验入口和静态夹具源/锁",
+      "userAssets": "原工程、保护配置、用户既有文件及默认工具未改；Chrome/静态测试宿主已关闭"
+    },
+    "boundary": "FM1/PT1只确认架构方向；未建表/授权/运行存储/真实支付；SD2/RK1不变；未业务开发/部署；未原仓库或默认工具变更",
+    "review": {
+      "date": "2026-10-26",
+      "role": "独立只读脚本复核",
+      "final": "最终三份执行/校验脚本未发现新的明显实质问题；由主代理另行重跑最终验证",
+      "resolved": [
+        "副本目录复用创建",
+        "失败退出码传递",
+        "子进程仅可写验证目录；最终编译/类型/构建断网",
+        "Nuxt挂载、同文档导航及console观察"
+      ],
+      "limits": "脚本复核不替代执行验证，也不将历史命令追认为受新沙箱保护；新工具获取入口仅语法与精确输入核查"
+    },
+    "finalChecks": {
+      "status": "通过",
+      "currentDocumentFingerprints": "122份当前文件一致；这是整理后快照，不是新业务验收",
+      "localLinks": "通过",
+      "sourceProtection": "前端干净；后端仅已知本地配置改动；未读取内容或diff",
+      "limits": "文档/契约检查通过不覆盖管理端类型失败或真实服务/业务运行"
+    }
+  }
+}

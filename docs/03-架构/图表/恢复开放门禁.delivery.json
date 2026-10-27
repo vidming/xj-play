@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "273f04b8-bdc3-449d-8d7b-c7dff9b30787",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/图表/恢复开放门禁.json",
+  "output": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/图表/恢复开放门禁.html",
+  "specification": {
+    "sha256": "7bc2194a5c5535f17653a9bce820ef86e22b138d1eb52df22f98cb92a8b6724a",
+    "bytes": 4344
+  },
+  "artifact": {
+    "sha256": "cb597168c03fe20782f6e6755d0624d1b089887e814ffd1338fd654287512e02",
+    "bytes": 820306
+  }
+}

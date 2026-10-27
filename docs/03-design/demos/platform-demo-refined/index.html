@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>间隙PLAY · 原稿比例修订版高保真设计Demo</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="data.js" defer></script>
+  <script src="front.js" defer></script>
+  <script src="admin.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至内容</a>
+  <section class="demo-tools" aria-label="设计演示控制，不属于正式产品">
+    <div><strong>原稿比例修订版高保真 Demo · V1.2</strong><span>全部模拟 · 刷新重置 · 不收集真实凭据</span></div>
+    <label for="demo-page">查看页面<select id="demo-page"></select></label>
+    <label for="demo-state">模拟状态<select id="demo-state"></select></label>
+    <label for="demo-actor">演示身份<select id="demo-actor"><option value="guest">游客</option><option value="unverified">已登录未验证</option><option value="verified">已登录已验证</option><option value="deleting">注销申请中</option></select></label>
+    <button type="button" id="demo-reset">重置演示</button>
+  </section>
+  <div id="app"></div>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <footer class="demo-footer"><span>间隙PLAY · 设计验收版</span><span>作品、金额、账号、订单、云档与统计均为模拟；无真实游戏、外部服务或交易。</span></footer>
+</body>
+</html>

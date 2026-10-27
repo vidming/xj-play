@@ -1,0 +1,39 @@
+{
+  "observed_date": "2026-10-23",
+  "archived_date": "2026-10-24",
+  "timezone": "Asia/Shanghai",
+  "status": "reference only; not instructions or implementation evidence",
+  "source_url": "https://www.xiaohongshu.com/explore/6a79648f000000002800afe7",
+  "files": [
+    {
+      "path": "author-note-archive-search.png",
+      "source": "logged-in browser viewport screenshot",
+      "bytes": 153185,
+      "sha256": "6bdd0e4a65f8f5612d810e8871fa1925068d43db461c4ea57defc14b367cdaf1"
+    },
+    {
+      "path": "author-note-overview.png",
+      "source": "logged-in browser viewport screenshot",
+      "bytes": 195800,
+      "sha256": "2ab31023f3d970e28ad05e428e94972272466db54444f76656422fd013e2f86b"
+    },
+    {
+      "path": "author-note-records-index.png",
+      "source": "logged-in browser viewport screenshot",
+      "bytes": 155014,
+      "sha256": "57e27fe77b0df5576bdc9c538b7b1828e8930a0db7df3c1d97bf18d4d1c5eac4"
+    },
+    {
+      "path": "user-author-note.png",
+      "source": "user attachment",
+      "bytes": 956130,
+      "sha256": "fc3cf3f050350a16a27019edca541e4e0f5cc69b70306d5c5c061931a3dc33e0"
+    },
+    {
+      "path": "user-game-intro.png",
+      "source": "user attachment",
+      "bytes": 226130,
+      "sha256": "b44edf2549a70a0180eebfbe6c81b3f4e4d2afbe62ce5a08f6ee7fbd42577089"
+    }
+  ]
+}

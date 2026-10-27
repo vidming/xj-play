@@ -1,0 +1,71 @@
+{
+  "scope": "阶段1首节点；主代理官方来源核验，不包含批准的需求",
+  "sources": [
+    {
+      "id": "R01",
+      "url": "https://itch.io/games",
+      "final_url": "https://itch.io/games",
+      "http_status": 200,
+      "title": "Top games - itch.io",
+      "access_date": "2026-10-23",
+      "timezone": "Asia/Shanghai",
+      "sha256_response": "2039e3a054b4fddf752598070e7a21f26dd626eb57bf7931860749050e3a590d",
+      "publication_date": "not established; access is not publication date"
+    },
+    {
+      "id": "R02",
+      "url": "https://itch.io/docs/creators/getting-started",
+      "final_url": "https://itch.io/docs/creators/getting-started",
+      "http_status": 200,
+      "title": "Your first itch.io page - itch.io",
+      "access_date": "2026-10-23",
+      "timezone": "Asia/Shanghai",
+      "sha256_response": "3f98ce916b99855652ddae0d9391cd90dd72ad7dd28d75dacb7bad77d0aa1aeb",
+      "publication_date": "not established; access is not publication date"
+    },
+    {
+      "id": "R03",
+      "url": "https://itch.io/docs/creators/html5",
+      "final_url": "https://itch.io/docs/creators/html5",
+      "http_status": 200,
+      "title": "Uploading HTML5 games - itch.io",
+      "access_date": "2026-10-23",
+      "timezone": "Asia/Shanghai",
+      "sha256_response": "ace0d725cae1178eafe7dccac08a22f2355496d88483597ad1b5459f26be4401",
+      "publication_date": "not established; access is not publication date"
+    },
+    {
+      "id": "R04",
+      "url": "https://itch.io/docs/creators/quality-guidelines",
+      "final_url": "https://itch.io/docs/creators/quality-guidelines",
+      "http_status": 200,
+      "title": "Content creator quality guidelines - itch.io",
+      "access_date": "2026-10-23",
+      "timezone": "Asia/Shanghai",
+      "sha256_response": "05d6678dad3106b006bc456d5c85a6546134fd726f361b862f02d696e5c8e269",
+      "publication_date": "not established; access is not publication date"
+    },
+    {
+      "id": "R05",
+      "url": "https://itch.io/docs/creators/design",
+      "final_url": "https://itch.io/docs/creators/design",
+      "http_status": 200,
+      "title": "Designing your page - itch.io",
+      "access_date": "2026-10-23",
+      "timezone": "Asia/Shanghai",
+      "sha256_response": "89d8719bc56f5598b4db4ea2193ec582ad5eeed5bf9fa2f84f3b6db7840afdfa",
+      "publication_date": "not established; access is not publication date"
+    },
+    {
+      "id": "R06",
+      "url": "https://itch.io/docs/api/serverside",
+      "final_url": "https://itch.io/docs/api/serverside",
+      "http_status": 200,
+      "title": "Serverside API reference - itch.io",
+      "access_date": "2026-10-23",
+      "timezone": "Asia/Shanghai",
+      "sha256_response": "d6612eab6e84be82fa5fbe0c6d84e9d5939f016a985e28302aea8c6963e93e06",
+      "publication_date": "not established; access is not publication date"
+    }
+  ]
+}

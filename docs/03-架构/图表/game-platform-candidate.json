@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "游戏接入与可信资源交付｜阶段3设计，未部署",
+    "locale": "zh-CN",
+    "output": "docs/03-架构/图表/game-platform-candidate.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "商店与运营入口",
+      "sublabel": "玩家与管理员分别认证",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        170,
+        70
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "平台业务模块",
+      "sublabel": "身份 / 订单 / 权益 / 存档",
+      "pos": [
+        420,
+        40
+      ],
+      "size": [
+        190,
+        70
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "xj_play统一MySQL",
+      "sublabel": "平台 / 限制 / 每游戏独立前缀",
+      "pos": [
+        850,
+        40
+      ],
+      "size": [
+        210,
+        70
+      ]
+    },
+    {
+      "id": "game",
+      "type": "frontend",
+      "label": "独立游戏程序",
+      "sublabel": "自有页面 / 剧情 / 状态",
+      "pos": [
+        40,
+        400
+      ],
+      "size": [
+        170,
+        70
+      ]
+    },
+    {
+      "id": "gate",
+      "type": "security",
+      "label": "资源访问网关",
+      "sublabel": "核实当前会话与内容范围",
+      "pos": [
+        420,
+        400
+      ],
+      "size": [
+        190,
+        70
+      ]
+    },
+    {
+      "id": "assets",
+      "type": "cloud",
+      "label": "SeaweedFS私有对象",
+      "sublabel": "显式鉴权 / 非null固定版本",
+      "pos": [
+        850,
+        400
+      ],
+      "size": [
+        190,
+        70
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "可信平台后端候选",
+      "wraps": [
+        "api",
+        "gate"
+      ],
+      "pad": 28
+    },
+    {
+      "kind": "security-group",
+      "label": "游戏来源隔离",
+      "wraps": [
+        "game"
+      ],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "shell-api",
+      "from": "shell",
+      "to": "api",
+      "label": "账号与订单",
+      "variant": "security"
+    },
+    {
+      "id": "api-db",
+      "from": "api",
+      "to": "db",
+      "label": "同连接本地事务"
+    },
+    {
+      "id": "game-shell",
+      "from": "game",
+      "to": "shell",
+      "label": "购买与返回消息"
+    },
+    {
+      "id": "game-gate",
+      "from": "game",
+      "to": "gate",
+      "label": "受限资源请求",
+      "variant": "security"
+    },
+    {
+      "id": "gate-api",
+      "from": "gate",
+      "to": "api",
+      "label": "核实权益",
+      "variant": "security"
+    },
+    {
+      "id": "gate-assets",
+      "from": "gate",
+      "to": "assets",
+      "label": "允许后读取"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "独立游戏",
+      "items": [
+        "游戏自有页面、剧情、框架与工程",
+        "前端经SDK/API，数据库凭据只在可信后端",
+        "专有后端仅持本游戏表权限；跨服务非同事务"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "可信访问",
+      "items": [
+        "游客只获声明的试玩范围",
+        "付费内容不随公开引导包完整下发",
+        "购买核实后重新查询权益再继续"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "SD2同库与恢复边界",
+      "items": [
+        "平台xj_；游戏登记xjg_<gameKey>_",
+        "表关系仅作逻辑关联；不建立物理外键",
+        "限制、业务、事件与outbox同事务提交",
+        "实测元数据：5.7.14；binlog关闭",
+        "同库旧快照不证明尾部完整；缺证仍隔离"
+      ]
+    }
+  ]
+}

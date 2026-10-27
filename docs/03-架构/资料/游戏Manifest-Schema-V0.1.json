@@ -1,0 +1,233 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "manifestVersion": {
+      "const": "1.0"
+    },
+    "gameKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "gameVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "platformProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "const": "1.0"
+        },
+        "max": {
+          "const": "1.x"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ]
+    },
+    "entry": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^?#\\x00]+$"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "context",
+          "access",
+          "resources",
+          "purchase",
+          "save",
+          "events",
+          "return"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true
+    },
+    "save": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[!-~]+$"
+        },
+        "accepts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[!-~]+$"
+          },
+          "minItems": 1,
+          "maxItems": 30
+        },
+        "maxBytes": {
+          "const": 1048576
+        }
+      },
+      "required": [
+        "format",
+        "accepts",
+        "maxBytes"
+      ]
+    },
+    "routes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "spa",
+            "document"
+          ]
+        },
+        "fallback": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^?#\\x00]+$"
+        }
+      },
+      "required": [
+        "mode"
+      ]
+    },
+    "content": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9._:-]+$"
+          },
+          "availability": {
+            "enum": [
+              "trial",
+              "entitled"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "availability"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 1000
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[^?#\\x00]+$"
+          },
+          "visibility": {
+            "enum": [
+              "public",
+              "protected"
+            ]
+          },
+          "requiresAll": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "resourceId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "sha256": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64,
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "path",
+          "visibility"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "visibility": {
+                  "const": "protected"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "requiresAll"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "requiresAll"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 10000
+    }
+  },
+  "required": [
+    "manifestVersion",
+    "gameKey",
+    "gameVersion",
+    "platformProtocol",
+    "entry",
+    "capabilities",
+    "routes",
+    "content",
+    "resources"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schema.invalid/xj/manifest/1.0",
+  "title": "间隙PLAY游戏资源包声明草案",
+  "x-cross-field-validation": [
+    "URL解码/Unicode及大小写碰撞、符号链接、解压穿越由发布验证器拒绝；正则不能替代安全归一化",
+    "resource.path与content.key分别唯一；requiresAll均属于当前作品；entry/fallback必须在公开清单",
+    "资源manifestVersion与平台支持major匹配；save存在当且仅当声明save能力",
+    "resourceId由平台在发布索引中分配，上传者不能伪造归属；包内摘要逐文件比对",
+    "10000文件/30格式是待资源确认的设计上限，不当作已批准生产额度"
+  ]
+}

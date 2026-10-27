@@ -1,0 +1,27 @@
+/* Reference proportions refined after UA3; original wordmark and product rules preserved. */
+:root {
+  --ink-900: #24252b; --ink-600: #60616a;
+  --coral-500: #df5a4e; --coral-700: #b64036; --coral-800: #9d342c;
+  --paper-000: #fff; --paper-100: #f5f5f3; --paper-200: #eeede9;
+  --line-200: #dededc; --night-900: #191a1f; --night-soft: #e1dcdb;
+  --green-700: #30664e; --green-100: #e8f0eb;
+  --amber-700: #81551d; --amber-100: #fcf0da;
+  --red-700: #a5302d; --red-100: #fbebe8; --coral-100: #f6e6e1;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+  --font-ui: "PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-display: "PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-brand: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;
+  /* Semantic roles. */
+  --surface: var(--paper-000); --canvas: var(--paper-100); --text: var(--ink-900);
+  --muted: var(--ink-600); --border: var(--line-200); --action: var(--coral-700);
+  --focus: var(--coral-700); --coral: var(--coral-500);
+  --positive: var(--green-700); --warning: var(--amber-700); --negative: var(--red-700);
+  /* Component aliases. */
+  --radius-control: 7px; --radius-field: 7px; --radius-card: 10px; --radius-section: 12px;
+  --column-bg: #25252c; --column-fg: #fff; --column-muted: #d5d3d9;
+  --button-bg: var(--action); --button-fg: var(--paper-000); --button-radius: var(--radius-control);
+  --panel-radius: var(--radius-card); --feature-radius: var(--radius-section);
+  --input-bg: var(--surface); --input-border: var(--border);
+  --content-width: 1160px; --sidebar-width: 208px; --duration-state: 180ms;
+}

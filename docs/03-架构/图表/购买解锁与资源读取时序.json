@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "购买解锁与资源读取 · 成功主路径候选",
+    "locale": "zh-CN",
+    "output": "docs/03-架构/图表/购买解锁与资源读取时序.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "game",
+      "type": "frontend",
+      "label": "独立游戏",
+      "sublabel": "自有玩法与页面"
+    },
+    {
+      "id": "host",
+      "type": "frontend",
+      "label": "平台外壳",
+      "sublabel": "桥与购买界面"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "可信平台",
+      "sublabel": "会话 / 权益 / 网关"
+    },
+    {
+      "id": "pay",
+      "type": "external",
+      "label": "支付渠道",
+      "sublabel": "候选 / 尚未接入"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "事务库",
+      "sublabel": "现金 / 来源 / 任务"
+    }
+  ],
+  "messages": [
+    {
+      "id": "intent",
+      "from": "game",
+      "to": "host",
+      "y": 170,
+      "label": "请求购买范围",
+      "variant": "default",
+      "note": "保留游戏自己的恢复位置"
+    },
+    {
+      "id": "create-intent",
+      "from": "host",
+      "to": "api",
+      "y": 255,
+      "label": "登记原游戏意图",
+      "variant": "default"
+    },
+    {
+      "id": "verify",
+      "from": "api",
+      "to": "host",
+      "y": 295,
+      "label": "要求登录与验证",
+      "variant": "security",
+      "note": "游客先登录并验证邮箱；导入进度可跳过"
+    },
+    {
+      "id": "quote",
+      "from": "host",
+      "to": "api",
+      "y": 380,
+      "label": "请求可信报价",
+      "variant": "security"
+    },
+    {
+      "id": "quote-back",
+      "from": "api",
+      "to": "host",
+      "y": 420,
+      "label": "价格及覆盖快照",
+      "variant": "return"
+    },
+    {
+      "id": "confirm",
+      "from": "host",
+      "to": "api",
+      "y": 460,
+      "label": "玩家确认后下单",
+      "variant": "emphasis",
+      "note": "服务端重核来源、价格与当前范围"
+    },
+    {
+      "id": "order",
+      "from": "api",
+      "to": "db",
+      "y": 545,
+      "label": "保存订单与来源保留",
+      "variant": "security"
+    },
+    {
+      "id": "attempt",
+      "from": "api",
+      "to": "pay",
+      "y": 585,
+      "label": "创建付款尝试",
+      "variant": "emphasis"
+    },
+    {
+      "id": "redirect",
+      "from": "pay",
+      "to": "host",
+      "y": 625,
+      "label": "浏览器返回",
+      "variant": "return",
+      "note": "返回不是付款证明；仍显示核实中"
+    },
+    {
+      "id": "notify",
+      "from": "pay",
+      "to": "api",
+      "y": 710,
+      "label": "验签通知或主动查单",
+      "variant": "security"
+    },
+    {
+      "id": "fact",
+      "from": "api",
+      "to": "db",
+      "y": 750,
+      "label": "持久化现金及交付任务",
+      "variant": "security",
+      "note": "同业务事务；渠道号去重，未知不变失败"
+    },
+    {
+      "id": "grant",
+      "from": "api",
+      "to": "db",
+      "y": 835,
+      "label": "幂等授予来源范围",
+      "variant": "emphasis"
+    },
+    {
+      "id": "status",
+      "from": "host",
+      "to": "api",
+      "y": 875,
+      "label": "查询原订单结果",
+      "variant": "default"
+    },
+    {
+      "id": "delivered",
+      "from": "api",
+      "to": "host",
+      "y": 915,
+      "label": "核实已交付",
+      "variant": "return",
+      "note": "已收款与权益交付分别表达"
+    },
+    {
+      "id": "run",
+      "from": "host",
+      "to": "api",
+      "y": 1000,
+      "label": "新run绑定当前账号",
+      "variant": "security"
+    },
+    {
+      "id": "bridge",
+      "from": "host",
+      "to": "game",
+      "y": 1040,
+      "label": "重新握手并恢复位置",
+      "variant": "emphasis",
+      "note": "检查当前frame与准确来源；旧桥失效"
+    },
+    {
+      "id": "resource",
+      "from": "game",
+      "to": "host",
+      "y": 1125,
+      "label": "请求受保护资源",
+      "variant": "default"
+    },
+    {
+      "id": "read",
+      "from": "host",
+      "to": "api",
+      "y": 1165,
+      "label": "按run与资源编号读取",
+      "variant": "security",
+      "note": "重核账号 / 版本 / 当前权益，不信本地paid"
+    },
+    {
+      "id": "bytes",
+      "from": "api",
+      "to": "host",
+      "y": 1250,
+      "label": "仅返回有权字节",
+      "variant": "return"
+    },
+    {
+      "id": "transfer",
+      "from": "host",
+      "to": "game",
+      "y": 1290,
+      "label": "桥传输内容并继续",
+      "variant": "return"
+    },
+    {
+      "id": "ready",
+      "from": "game",
+      "to": "host",
+      "y": 1330,
+      "label": "游戏确认可交互",
+      "variant": "default"
+    },
+    {
+      "id": "ready-api",
+      "from": "host",
+      "to": "api",
+      "y": 1370,
+      "label": "登记运行就绪",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "范围",
+      "items": [
+        "已有试玩run触及付费边界后的成功路径；当前未接入真实渠道",
+        "取消、未知付款、退款、存档冲突及注销分支见接入文档"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "信任边界",
+      "items": [
+        "浏览器返回、游戏事件和存档均不能证明已购",
+        "资源私有分发与每次授权仍需真实实现和隔离测试"
+      ]
+    }
+  ]
+}

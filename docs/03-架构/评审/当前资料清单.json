@@ -1,0 +1,621 @@
+{
+  "date": "2026-10-26",
+  "status": "当前设计与实现资料快照；不是重新批准或完整架构验收",
+  "authority": "docs/03-架构/决策/当前有效决策.md",
+  "entry": "docs/README.md",
+  "exclusions": [
+    "本清单及当前验证记录，避免指纹循环；源码仓库不在此文档清单内"
+  ],
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "1c1bf307ce17e77426e03428daf54c5cf0af6f4c927522c23e45a6931ec429fa",
+      "bytes": 2638
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "7bc281bf4d4ccd936a7bb9a422837e0bdce6343811ae3b2e582c35097401d163",
+      "bytes": 2527
+    },
+    {
+      "path": "PRODUCT.md",
+      "sha256": "f501c38e0486eb49ba1a302d911068d12b1860c6f0e39557f767799ec9cdd4b9",
+      "bytes": 2326
+    },
+    {
+      "path": "README.md",
+      "sha256": "ab63235688e140b4309ede2a9468e934014e1136bb3cd15bce1f1c16b86e24f1",
+      "bytes": 1334
+    },
+    {
+      "path": "docs/00-项目管理/技能与工具体系手册.md",
+      "sha256": "208d7ee3e79f3c46892faeb62e7ba5c61b499dbd1e32919308b626b61d0c553f",
+      "bytes": 37435
+    },
+    {
+      "path": "docs/01-discovery/documents/现有系统复用证据-V0.1.md",
+      "sha256": "2c29985133241d29677974fd9412e8dce5e23b507189ab4b3b676f53fb6e5f0d",
+      "bytes": 10208
+    },
+    {
+      "path": "docs/01-discovery/documents/阶段0-需求理解与资产盘点-V0.2.md",
+      "sha256": "e80071d4df42bb0737ef2b87ee86735e482a788166df7d8919f69bc93df1e656",
+      "bytes": 8282
+    },
+    {
+      "path": "docs/01-产品专家/游戏平台高保真.html",
+      "sha256": "62c4ecbcbf713f47f8e414ac53393f2a426ae4bfe45da1c1a65e375c92d38bce",
+      "bytes": 16369
+    },
+    {
+      "path": "docs/01-产品专家/第七位来电者-单文件试玩.html",
+      "sha256": "8cda1ec523f016e56172242237ea865db9cb2d77dcce5a84cd8b1dc6d677b008",
+      "bytes": 17548
+    },
+    {
+      "path": "docs/02-product/diagrams/lifecycle-purchase-20261024/candidate.json",
+      "sha256": "38747d6f13c226333bb04d959760a7984ef3db83124f4c39e764c79dce5fd565",
+      "bytes": 5914
+    },
+    {
+      "path": "docs/02-product/diagrams/lifecycle-purchase-20261024/purchase-lifecycle.html",
+      "sha256": "487376d8543e46175c0c14d4b8c29ff1ed6bde5c7dd91899058297ab32c967fa",
+      "bytes": 830217
+    },
+    {
+      "path": "docs/02-product/diagrams/workflow-game-entry-20261024/candidate.json",
+      "sha256": "e9e417b8fa9ccae5a04bd5a5debcfeaa7ed056265a1ce17d2e167c9abea71e5d",
+      "bytes": 4601
+    },
+    {
+      "path": "docs/02-product/diagrams/workflow-game-entry-20261024/game-entry.html",
+      "sha256": "203ae0eebc5a1a9579dbd56636cd8b47023d940e5fd714269f2788233414f4e3",
+      "bytes": 827804
+    },
+    {
+      "path": "docs/02-product/documents/itch.io能力研究与平台启示-V0.1.md",
+      "sha256": "ca54374de9bd4babfee7afb4cf4d83e79562f7bb8bacf8747d8b17e9075df2ac",
+      "bytes": 16684
+    },
+    {
+      "path": "docs/02-product/documents/产品规格与政策-V1.0-提交稿.md",
+      "sha256": "fe97c249b83f759456f48910f5df6443fa29f1daf9702dc12b4b9ee566d33052",
+      "bytes": 12509
+    },
+    {
+      "path": "docs/02-product/documents/信息架构与产品线框-V1.0-提交稿.md",
+      "sha256": "e97ec6a3cc741346865f4ef4f2891e501cb5d1dcbd825ab9698d6f116de4c1a0",
+      "bytes": 11362
+    },
+    {
+      "path": "docs/02-product/documents/品牌定位与目标用户假设-V0.2.md",
+      "sha256": "c64cc6992af2ff2e08d711e850fdb344d0df4a1abae5b49fe2180c0c1b25f79d",
+      "bytes": 11330
+    },
+    {
+      "path": "docs/02-product/documents/字段与统计规格-V1.0-提交稿.md",
+      "sha256": "a49b00147befb8bf53660d2df64633ed0655006a3fe3d4f5afaa8acc6fd33a15",
+      "bytes": 16024
+    },
+    {
+      "path": "docs/02-product/documents/游戏与平台公共对接能力需求-V0.1.md",
+      "sha256": "b693ebf0e72edf9c88604dca6e91c90dc4ad0048560cb61c966bcbcfd2ad961e",
+      "bytes": 6473
+    },
+    {
+      "path": "docs/02-product/documents/独立游戏接入案例与验收关注清单-V0.1.md",
+      "sha256": "a31489ea3eee1527f6a91828788a74167632e18fdafd5938eeb73611db225b3d",
+      "bytes": 11727
+    },
+    {
+      "path": "docs/02-product/documents/账号进度与退款规则-V1.0-提交稿.md",
+      "sha256": "669a8178dc79c7965c796297a361288649cf3577d70e4b1f5ceae86284cf2680",
+      "bytes": 11617
+    },
+    {
+      "path": "docs/02-product/documents/间隙PLAY-产品需求文档-V1.0-提交稿.md",
+      "sha256": "f225260cd1921ee356dfa1e1e6de5fbe858803aa2801709517e3006deced601d",
+      "bytes": 75895
+    },
+    {
+      "path": "docs/02-product/documents/需求验收追溯矩阵-V1.0-提交稿.md",
+      "sha256": "7e7782a2148240e538c1a183aa82902e4c508daada920ded965f44c5002497d9",
+      "bytes": 7831
+    },
+    {
+      "path": "docs/02-product/reviews/产品提交稿V1.0语义自检-20261024.md",
+      "sha256": "df4aa5a2ec77a0722f79d2e8924228587d355308e823a0a38a6a14ae1d54877b",
+      "bytes": 2149
+    },
+    {
+      "path": "docs/02-product/sources/itch-commerce-ecosystem-evidence-20261023.md",
+      "sha256": "bf7ebe5f75d8b1ed6a4a97d1ddba6155c53210d99c2cfb6504604acc4d5fc994",
+      "bytes": 17631
+    },
+    {
+      "path": "docs/02-product/sources/itch-primary-sources-20261023.json",
+      "sha256": "f499174f26073df6c66707ab2e3de69b14c90361a021fd9c5fe7ecdfa2e1aeaa",
+      "bytes": 2876
+    },
+    {
+      "path": "docs/02-product/sources/xhs-20261023/author-note-archive-search.png",
+      "sha256": "6bdd0e4a65f8f5612d810e8871fa1925068d43db461c4ea57defc14b367cdaf1",
+      "bytes": 153185
+    },
+    {
+      "path": "docs/02-product/sources/xhs-20261023/author-note-overview.png",
+      "sha256": "2ab31023f3d970e28ad05e428e94972272466db54444f76656422fd013e2f86b",
+      "bytes": 195800
+    },
+    {
+      "path": "docs/02-product/sources/xhs-20261023/author-note-records-index.png",
+      "sha256": "57e27fe77b0df5576bdc9c538b7b1828e8930a0db7df3c1d97bf18d4d1c5eac4",
+      "bytes": 155014
+    },
+    {
+      "path": "docs/02-product/sources/xhs-20261023/manifest.json",
+      "sha256": "a4876d062a184bcb195f4927b4627c555e07a405f7a57ef8cec29d657e6b7d83",
+      "bytes": 1320
+    },
+    {
+      "path": "docs/02-product/sources/xhs-20261023/user-author-note.png",
+      "sha256": "fc3cf3f050350a16a27019edca541e4e0f5cc69b70306d5c5c061931a3dc33e0",
+      "bytes": 956130
+    },
+    {
+      "path": "docs/02-product/sources/xhs-20261023/user-game-intro.png",
+      "sha256": "b44edf2549a70a0180eebfbe6c81b3f4e4d2afbe62ce5a08f6ee7fbd42577089",
+      "bytes": 226130
+    },
+    {
+      "path": "docs/02-product/sources/原创双游戏玩法参考与平台需求-20261024.md",
+      "sha256": "9b1c85a350596e61c752387903141244b81d71dff6e7a2e948512d521807a0b6",
+      "bytes": 10872
+    },
+    {
+      "path": "docs/02-product/sources/小红书鬼媒婆案例观察-20261023.md",
+      "sha256": "de7b842e3ee6a146cecfe509ece034c07fb4a99ae13710b5eac3decafd5b827a",
+      "bytes": 3173
+    },
+    {
+      "path": "docs/02-product/sources/数据保留与售后政策依据核查-20261024.md",
+      "sha256": "785982ca8036118aa898804772c3498216a59b5344bed0eecb43ccd0547402de",
+      "bytes": 4239
+    },
+    {
+      "path": "docs/02-product/sources/独立前端游戏源码核查-20261024.md",
+      "sha256": "493b4c63d3f9f1cc964396ec5c74bb5ef1955e7579384ae6a41ed90824a83459",
+      "bytes": 2522
+    },
+    {
+      "path": "docs/02-product/sources/独立前端游戏能力与可信边界核查-20261024.md",
+      "sha256": "55e6b563b44c81d03a620628bc5046628267ff2a0350be1f18544a66d3e54aed",
+      "bytes": 11130
+    },
+    {
+      "path": "docs/03-design/assets/concepts/telephone-concept.png",
+      "sha256": "d6c62d3a91e3e04d016c4242420f8eaee4378e015e9ecaacb03b7ee3c79de98c",
+      "bytes": 1731460
+    },
+    {
+      "path": "docs/03-design/assets/logo-original/logo-original.css",
+      "sha256": "e4f5c47acd58ecf2a3b6027f9bbf48b304570cdb91946ca16df54e27830435de",
+      "bytes": 132
+    },
+    {
+      "path": "docs/03-design/assets/logo-original/logo-original.html",
+      "sha256": "f83fe487ae95a36c3443e4270833429f90f399207b2b53620e56babfc8940749",
+      "bytes": 67
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/README.md",
+      "sha256": "2922a399e3c010959dbdda6de177fcedb00b0125599480676e009bced0936b78",
+      "bytes": 4198
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/admin.js",
+      "sha256": "ddb7cac2d9ea86330eccd240c4da98547c836e8b41b2652d26c8467d5f0c235f",
+      "bytes": 23140
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/app.js",
+      "sha256": "4778088cde53217ec0c48bec11fa0aa7eb9b3bd50d2e6f68ef05912bc1ae4817",
+      "bytes": 15855
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/data.js",
+      "sha256": "0a5e09e1df63439f31e588f6c95706680816fee2c0760d1469fe27c71083b41f",
+      "bytes": 8325
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/front.js",
+      "sha256": "de308c6f1cfa3781d6adeb256bf4fbc1ca402248c3632d93352299d71b988925",
+      "bytes": 40451
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/index.html",
+      "sha256": "e035b6efdc72f79335a999ca4d3f176b2bc4f0dce249bb18fef04b6d703f36d0",
+      "bytes": 1664
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/styles.css",
+      "sha256": "799f8466e83a259b8e4509f1011cab4b65799aea641f493bd4db7278917d4375",
+      "bytes": 20231
+    },
+    {
+      "path": "docs/03-design/demos/platform-demo-refined/tokens.css",
+      "sha256": "533ce1640f6f3e76bbedd9c7bb78a1d1b573519d388aec0b212162bbda293cc5",
+      "bytes": 1751
+    },
+    {
+      "path": "docs/03-design/documents/设计系统与交付规范-V1.2.md",
+      "sha256": "bd4cebf138012a598f26b89c4260672c35c54d5837038d26dae29792a47755ed",
+      "bytes": 10908
+    },
+    {
+      "path": "docs/03-design/documents/页面状态与需求追溯-V1.2.md",
+      "sha256": "0d1f175019ca7b7da3946efca8f9f4db3c369c6083b4ade3e6f2039ff825738f",
+      "bytes": 20365
+    },
+    {
+      "path": "docs/03-design/reviews/check-full-demo-behavior.js",
+      "sha256": "af569e8ab8d659a85e40cfa2f59dd4da28fd20388647cebdb286f5687f82a7d4",
+      "bytes": 6644
+    },
+    {
+      "path": "docs/03-design/reviews/check-full-demo-layout.js",
+      "sha256": "44a484046830cd659e488098d5b7dc075800da276703a084345a6614f9e5a1a3",
+      "bytes": 1094
+    },
+    {
+      "path": "docs/03-design/reviews/原稿比例版UI验证记录-20261024.md",
+      "sha256": "289564c939da6bafa8874ff5bfe07b636c997cc61196e922b3555255ea5902fe",
+      "bytes": 3226
+    },
+    {
+      "path": "docs/03-design/sources/concept-art-provenance-20261024.md",
+      "sha256": "ec68aefb4b1603171725519c4dc99f9bfbd3bf7c3222c30af4f2d534d6747f48",
+      "bytes": 1091
+    },
+    {
+      "path": "docs/03-design/sources/design-tokens-refined-v1.2.json",
+      "sha256": "504890001b8c8df7d0be39fb4a030f0d2a65408e171a1cf42d0aafe0d6cf7247",
+      "bytes": 5762
+    },
+    {
+      "path": "docs/03-design/sources/logo-extraction-20261024.json",
+      "sha256": "d7f94ff154549874a21250cd86ccddb1e4ffd2760b4d454f68a211d1303df9e3",
+      "bytes": 788
+    },
+    {
+      "path": "docs/03-design/sources/page-state-inventory-refined-v1.2.json",
+      "sha256": "3d5fb7f5deda1c515b7138ceaa58b1bb3df0167fb39478dc51429d6949866542",
+      "bytes": 13628
+    },
+    {
+      "path": "docs/03-架构/.DS_Store",
+      "sha256": "c4a65dbbb402416b6a919e53227ef4aa652de93d614992e012a547ec2129c91b",
+      "bytes": 6148
+    },
+    {
+      "path": "docs/03-架构/决策/当前有效决策.md",
+      "sha256": "1434a02d7a39544e8094b6ed16ec15a252a72beb415b224bdb64befbbf0513a6",
+      "bytes": 23006
+    },
+    {
+      "path": "docs/03-架构/图表/game-platform-candidate.delivery.json",
+      "sha256": "b8c025fdf89c48dc8274afdaaf80f9186f92351de81c5dc77c67fe3be09f7e89",
+      "bytes": 695
+    },
+    {
+      "path": "docs/03-架构/图表/game-platform-candidate.html",
+      "sha256": "51ab6d1c58b91a5f66d01c2a0383fefb70586fd3c056f5c26d40a0a64e11c833",
+      "bytes": 819940
+    },
+    {
+      "path": "docs/03-架构/图表/game-platform-candidate.json",
+      "sha256": "fc1f6d7515cdac3208aff7a969f41470c70af7731d2de28799b14a073acbf600",
+      "bytes": 3845
+    },
+    {
+      "path": "docs/03-架构/图表/完整物理ER-V0.1.dot",
+      "sha256": "2284b49552a74f4427959529798196fdbab9f11f4d316fc70014780ea07eb905",
+      "bytes": 155946
+    },
+    {
+      "path": "docs/03-架构/图表/完整物理ER-V0.1.mmd",
+      "sha256": "eccc0539261ccd7e81a30640040f4448e3f16c0024a0040fea85b59744352195",
+      "bytes": 54526
+    },
+    {
+      "path": "docs/03-架构/图表/完整物理ER-V0.1.svg",
+      "sha256": "c3c7974f3f6fbe13ca4c03d2bb940399f03b8cf9e392670d84e38faa9c5a098a",
+      "bytes": 449256
+    },
+    {
+      "path": "docs/03-架构/图表/恢复开放门禁.delivery.json",
+      "sha256": "1590fd713ecbdd19d1d4f4f190fc6648b74e48653d6b240c6655feeca739539a",
+      "bytes": 681
+    },
+    {
+      "path": "docs/03-架构/图表/恢复开放门禁.html",
+      "sha256": "cb597168c03fe20782f6e6755d0624d1b089887e814ffd1338fd654287512e02",
+      "bytes": 820306
+    },
+    {
+      "path": "docs/03-架构/图表/恢复开放门禁.json",
+      "sha256": "7bc2194a5c5535f17653a9bce820ef86e22b138d1eb52df22f98cb92a8b6724a",
+      "bytes": 4344
+    },
+    {
+      "path": "docs/03-架构/图表/物理模型审阅页.html",
+      "sha256": "a10c6c8c9b8626646eb80c0b31cb0ddd5d236ccd280ab2b78db904b78695d293",
+      "bytes": 122291
+    },
+    {
+      "path": "docs/03-架构/图表/购买解锁与资源读取时序.html",
+      "sha256": "375d5941ff5d23e5bafe9b7f3cb348716ad9e8da8365cb7c2c2b6eeed924a3b7",
+      "bytes": 823074
+    },
+    {
+      "path": "docs/03-架构/图表/购买解锁与资源读取时序.json",
+      "sha256": "ce67459614530742edb4d6248bd453a6109510c1ae32865968325795f39360c9",
+      "bytes": 5549
+    },
+    {
+      "path": "docs/03-架构/文档/双支付适配与可信核实规格-V0.1.md",
+      "sha256": "990fe626ea8873eebe3b49c8fd5baf5a554495aaf480524b9d7a2da3b94bbddf",
+      "bytes": 9157
+    },
+    {
+      "path": "docs/03-架构/文档/平台接口与消息桥契约草案-V0.1.md",
+      "sha256": "ff6eb1b2a9ee030b7d4db09a724e5caec9fb259ee4d882eb29809f83eb63ddba",
+      "bytes": 11968
+    },
+    {
+      "path": "docs/03-架构/文档/开源组件与对象存储适配方案.md",
+      "sha256": "60e77816502ddb4005153b93b6d34127da6a8aa87175a1c1a0cecefd10d7dc39",
+      "bytes": 20589
+    },
+    {
+      "path": "docs/03-架构/文档/接口接入契约阅读与验证边界-V0.1.md",
+      "sha256": "f586ed03442b823a6b4527b48c72e7d7705491a59cb4a13b95768a5e7b277851",
+      "bytes": 8414
+    },
+    {
+      "path": "docs/03-架构/文档/数据一致性部署与运营候选-V0.1.md",
+      "sha256": "ea78fd8a57a6eb295bca257ab095959c404abd630cad549c466727a223f4553b",
+      "bytes": 21866
+    },
+    {
+      "path": "docs/03-架构/文档/架构候选与复用决策-V0.1.md",
+      "sha256": "8f58387b309031dc08c365b49dc935872a1d0ce98f79d6d30f22c9528c3fd5ef",
+      "bytes": 24443
+    },
+    {
+      "path": "docs/03-架构/文档/游戏SDK与适配器方案.md",
+      "sha256": "022105301aa6c31737cb80d8205cfb4e50bcf5939768db4f6f0b91c75ffbf8ea",
+      "bytes": 14854
+    },
+    {
+      "path": "docs/03-架构/文档/游戏接入与可信业务链路候选-V0.1.md",
+      "sha256": "1b7031b1058551f47e2b900697652cbb56b989249005049889ba3180d555a22e",
+      "bytes": 20006
+    },
+    {
+      "path": "docs/03-架构/文档/物理数据字典与迁移草案-V0.1.md",
+      "sha256": "bc052bec7fbb0f73be29950d888c73a24f33535948eb438d692be1022e71c69b",
+      "bytes": 80052
+    },
+    {
+      "path": "docs/03-架构/文档/部署资源与恢复规格.md",
+      "sha256": "66547cb997d4f1e3a13635ce35cca8de99b7b35d8b632e5bdcaa0beeda222573",
+      "bytes": 44175
+    },
+    {
+      "path": "docs/03-架构/评审/执行管理端隔离预检.py",
+      "sha256": "bb7ff2880b97d5d7941e02d974618f025005c64e1d1be14314d788b4fac7f0d6",
+      "bytes": 8936
+    },
+    {
+      "path": "docs/03-架构/评审/执行隔离Java兼容验证.py",
+      "sha256": "4429d9aa9ec2abc89afadc83c213b8895b021e862195af9af846ce88182b50e8",
+      "bytes": 6926
+    },
+    {
+      "path": "docs/03-架构/评审/校验Nuxt静态机制.cjs",
+      "sha256": "10fb971745062e6d423361c86e1a762278a4acb05358c90cd502044279222645",
+      "bytes": 6533
+    },
+    {
+      "path": "docs/03-架构/评审/校验完整架构草案.py",
+      "sha256": "2c3720afd446676cb0d6059c005c754c2e1246e07b8a6545dbdf58d7f0c5ef2b",
+      "bytes": 20274
+    },
+    {
+      "path": "docs/03-架构/评审/校验模型浏览页.cjs",
+      "sha256": "e5368ddc724e17edea4d610a8d91a4cdb0f37219fc85a7ed42844092645ecc2d",
+      "bytes": 4100
+    },
+    {
+      "path": "docs/03-架构/评审/核查底座数据库脚本.py",
+      "sha256": "a9c2df6540018efa067037440e2307d0141a77383041ddf0f800dc17ba9b1d55",
+      "bytes": 4055
+    },
+    {
+      "path": "docs/03-架构/评审/获取AV1隔离工具.py",
+      "sha256": "7676323f62868945205fe77cc2310a0d5dc8b1e5e0068e8dc8e22e08ae8c4f32",
+      "bytes": 3427
+    },
+    {
+      "path": "docs/03-架构/评审/静态机制夹具/app/app.vue",
+      "sha256": "ecdc95b40adc190558c14b0c9e6dd01bf5008d34ade3167a27ff081782e9aa93",
+      "bytes": 34
+    },
+    {
+      "path": "docs/03-架构/评审/静态机制夹具/app/pages/account.vue",
+      "sha256": "22cc5d434e52c6e89c7ac8b792ee68539410308064a617fe8799f9ab62842804",
+      "bytes": 416
+    },
+    {
+      "path": "docs/03-架构/评审/静态机制夹具/app/pages/games/fixture.vue",
+      "sha256": "a4b8bdf7442f8764f4e343807a591870fbc92585cf8dfcdd29d7b038851fa28b",
+      "bytes": 120
+    },
+    {
+      "path": "docs/03-架构/评审/静态机制夹具/app/pages/index.vue",
+      "sha256": "1d91773952bcb4a142844867a43e15c5d8a7291e276d22d50e02903d529e6801",
+      "bytes": 162
+    },
+    {
+      "path": "docs/03-架构/评审/静态机制夹具/nuxt.config.ts",
+      "sha256": "3d4990a18c505358459f0351518237be05f6bb78a24659f4097eac0a3211b34d",
+      "bytes": 278
+    },
+    {
+      "path": "docs/03-架构/评审/静态机制夹具/package.json",
+      "sha256": "04ec5c6bce236df443e021b46a09e9b3a815dc05a39ce6c6fb2c269a18d873e9",
+      "bytes": 165
+    },
+    {
+      "path": "docs/03-架构/评审/静态机制夹具/pnpm-lock.yaml",
+      "sha256": "bd0b119e3e6107e100ed0024088114159fbff0ca79ea61b742bea71518556a78",
+      "bytes": 204732
+    },
+    {
+      "path": "docs/03-架构/资料/MinIO开源版本与能力核查.md",
+      "sha256": "92b4d027d198e9ec7dd2a11764bf09840688e34d9ae99c43937e3ee7f60d146d",
+      "bytes": 8912
+    },
+    {
+      "path": "docs/03-架构/资料/OpenAPI官方元模式-20250915.json",
+      "sha256": "d0a3955182364c7b5fdebfd0583ecad259a870b4a2fe86a1b0fe8785f8224fed",
+      "bytes": 33126
+    },
+    {
+      "path": "docs/03-架构/资料/同库数据与限制记录核查.md",
+      "sha256": "175087ef37377da15b4259bba8369685a16e9c93cd327dceecdd192d11b17305",
+      "bytes": 31190
+    },
+    {
+      "path": "docs/03-架构/资料/官方规范核查-20261024.md",
+      "sha256": "b128dd3af4e109a224f97a67a4efddb45b1d62c24ed0ee639cf745f061ee44ef",
+      "bytes": 4571
+    },
+    {
+      "path": "docs/03-架构/资料/对象存储候选对比.md",
+      "sha256": "a5d31dc001cd8dccba8342b1dc2dab5f1554d9766d948b59c41b3c9058505a72",
+      "bytes": 30115
+    },
+    {
+      "path": "docs/03-架构/资料/平台OpenAPI-V0.1.json",
+      "sha256": "4785ae4d46fb007fd75290e246f75076b91648ad54738834a1c73f625812e814",
+      "bytes": 634966
+    },
+    {
+      "path": "docs/03-架构/资料/平台事件Schema-V0.1.json",
+      "sha256": "2525abb637377ad7ced5100d40df11ee24451a02e79bb142cab8238f993820c8",
+      "bytes": 75824
+    },
+    {
+      "path": "docs/03-架构/资料/接入与渲染规范复核-20261025.md",
+      "sha256": "1ee6eb1165c36db244f7182587cb8d01ae5ffa45f054a0831c45a4934d7c03f9",
+      "bytes": 3391
+    },
+    {
+      "path": "docs/03-架构/资料/支付宝与微信官方协议核查-20261025.md",
+      "sha256": "b1583d872dfdd9904f145d3ed20367076fd564fceb028361a1ad7280026e82aa",
+      "bytes": 41286
+    },
+    {
+      "path": "docs/03-架构/资料/更新当前资料清单.py",
+      "sha256": "b784a64934e55b381b648e3a6a9429d22765ad2f9bf80123a63bc94106f0965f",
+      "bytes": 1314
+    },
+    {
+      "path": "docs/03-架构/资料/游戏Manifest-Schema-V0.1.json",
+      "sha256": "e9ed5660d8ade126f4ddaa73912cda49158b8dd308e9155dc39ba008f18d0b51",
+      "bytes": 5531
+    },
+    {
+      "path": "docs/03-架构/资料/游戏消息桥Schema-V0.1.json",
+      "sha256": "dc88206203b1c468c49265b3bae1621e4338019b62277e1b87b597377bcad253",
+      "bytes": 223744
+    },
+    {
+      "path": "docs/03-架构/资料/源码复用复核-20261024.md",
+      "sha256": "6a00d88e967e372fbd32c343028f0204b81e52a8e69e8d59dd63c7d690343721",
+      "bytes": 52382
+    },
+    {
+      "path": "docs/03-架构/资料/物理数据模型-V0.1.json",
+      "sha256": "60548a485bd5d728e6d845734b09fee3cd3f129e73285d221b7343718d0e191c",
+      "bytes": 156291
+    },
+    {
+      "path": "docs/03-架构/资料/生成完整ER.cjs",
+      "sha256": "f32ae51899fde162423ca243bce812e80c8bcb14f92d88b29faeaff94013ddea",
+      "bytes": 4456
+    },
+    {
+      "path": "docs/03-架构/资料/生成接入Schema.py",
+      "sha256": "436fc680c2e8f916b95c03705637b62d2916145b79b220310f86dc05f08de2b9",
+      "bytes": 9967
+    },
+    {
+      "path": "docs/03-架构/资料/生成接口契约.py",
+      "sha256": "43774325966c4214316af962f432f9204b9d7ee7f02b4042f6e8eae169af7920",
+      "bytes": 47259
+    },
+    {
+      "path": "docs/03-架构/资料/生成模型审阅页.py",
+      "sha256": "977ca69927125e8803b5f2dc031d787a317fc0e89f9c851e7c1ce3c334fbb319",
+      "bytes": 7043
+    },
+    {
+      "path": "docs/03-架构/资料/生成物理字典.py",
+      "sha256": "a9c5f11082227a76be5361a0e24d0744b7e4d7d78218b80d97da7938feb22c5b",
+      "bytes": 50457
+    },
+    {
+      "path": "docs/03-架构/资料/精确版本与既有工程适配核查-20261025.md",
+      "sha256": "92e9312042358c195ab6b2caef95df1f541988d27bb9a5596ff5cd1f96c601c2",
+      "bytes": 80024
+    },
+    {
+      "path": "docs/08-变更与复盘/菜单清理记录-20261023.md",
+      "sha256": "dc2887fd59bbb11bf73b6110a7736c80e5828274cf018c42df6ff8562ee0ce42",
+      "bytes": 5397
+    },
+    {
+      "path": "docs/09-工具/import_yudao_sql.py",
+      "sha256": "960895008acc8186161347f6a12bb742808f12af49a9c11790a0b25ebb9dfa6d",
+      "bytes": 7331
+    },
+    {
+      "path": "docs/09-工具/mcp.json",
+      "sha256": "ea32a778676c9eee2d73dd917bbde04f046d2e79be6c54739a0dca93b6eff29b",
+      "bytes": 4269
+    },
+    {
+      "path": "docs/09-工具/menu-backup-20261023/restore_menus.py",
+      "sha256": "f159e04dc7a384f4d2415ab6619556802694e6b792ce82a2f7524dfd0e9d885c",
+      "bytes": 5337
+    },
+    {
+      "path": "docs/09-工具/menu-backup-20261023/system_menu_FULL.csv",
+      "sha256": "696325d8192300e98d93ff548f83530c7f2132716c2a5116664f61bd6ce1884b",
+      "bytes": 315326
+    },
+    {
+      "path": "docs/09-工具/menu-backup-20261023/system_role_menu_FULL.csv",
+      "sha256": "e471695b783f43aca91717caec47aa2f946620e56d61e220a06c37b2a043cb6e",
+      "bytes": 97626
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "0213805c09dfc5918db1677083e0f96ba4e22202d2fe74704db1d640c85abcbf",
+      "bytes": 7160
+    }
+  ]
+}
