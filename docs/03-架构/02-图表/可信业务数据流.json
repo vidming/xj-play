@@ -1,0 +1,433 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "间隙PLAY｜可信业务数据流（阶段3设计）",
+    "locale": "zh-CN",
+    "output": "docs/03-架构/02-图表/可信业务数据流.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "git@github.com:vidming/xj-play.git",
+      "revision": "55e794d3878a1c19d17dafcbcdbaa66876a031a8",
+      "link_mode": "local-only"
+    }
+  },
+  "stages": [
+    {
+      "label": "外部输入"
+    },
+    {
+      "label": "平台核实"
+    },
+    {
+      "label": "业务处理"
+    },
+    {
+      "label": "事实存储"
+    },
+    {
+      "label": "受控使用"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "type": "frontend",
+      "label": "玩家商店",
+      "sublabel": "试玩／下单意图",
+      "stage": 0,
+      "row": 0,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/游戏接入与可信业务链路候选-V0.1.md",
+          "line": 65,
+          "end_line": 74
+        }
+      ]
+    },
+    {
+      "id": "channel",
+      "type": "external",
+      "label": "支付渠道",
+      "sublabel": "通知／主动查单",
+      "stage": 0,
+      "row": 2,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 60,
+          "end_line": 65
+        }
+      ]
+    },
+    {
+      "id": "game",
+      "type": "frontend",
+      "label": "独立游戏",
+      "sublabel": "存档／白名单事件",
+      "stage": 0,
+      "row": 4,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/游戏接入与可信业务链路候选-V0.1.md",
+          "line": 19,
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "commerce",
+      "type": "backend",
+      "label": "报价及订单服务",
+      "sublabel": "不信前端价格",
+      "stage": 1,
+      "row": 0,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 58,
+          "end_line": 62
+        }
+      ]
+    },
+    {
+      "id": "verify",
+      "type": "security",
+      "label": "支付可信核实",
+      "sublabel": "验签＋主动查询",
+      "stage": 1,
+      "row": 2,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 62,
+          "end_line": 67
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "type": "security",
+      "label": "运行消息桥",
+      "sublabel": "当前run与来源",
+      "stage": 1,
+      "row": 4,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/游戏接入与可信业务链路候选-V0.1.md",
+          "line": 65,
+          "end_line": 76
+        }
+      ]
+    },
+    {
+      "id": "order",
+      "type": "database",
+      "label": "订单与意图",
+      "sublabel": "xj_play内xj_表",
+      "stage": 2,
+      "row": 0,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 60,
+          "end_line": 64
+        }
+      ]
+    },
+    {
+      "id": "cash",
+      "type": "database",
+      "label": "现金事实与outbox",
+      "sublabel": "同库事务与去重",
+      "stage": 2,
+      "row": 2,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 62,
+          "end_line": 65
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "type": "backend",
+      "label": "存档CAS处理",
+      "sublabel": "核归属／baseRevision",
+      "stage": 2,
+      "row": 3,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 81,
+          "end_line": 87
+        }
+      ]
+    },
+    {
+      "id": "event",
+      "type": "backend",
+      "label": "事件可信绑定",
+      "sublabel": "作用域去重／白名单",
+      "stage": 2,
+      "row": 4,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 99,
+          "end_line": 111
+        }
+      ]
+    },
+    {
+      "id": "grant",
+      "type": "database",
+      "label": "权益来源",
+      "sublabel": "幂等授予／撤销",
+      "stage": 3,
+      "row": 1,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 63,
+          "end_line": 67
+        }
+      ]
+    },
+    {
+      "id": "saveStore",
+      "type": "database",
+      "label": "云档元数据＋对象",
+      "sublabel": "xj_play引用精确版本",
+      "stage": 3,
+      "row": 3,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 81,
+          "end_line": 87
+        }
+      ]
+    },
+    {
+      "id": "privateObjects",
+      "type": "cloud",
+      "label": "私有资源对象",
+      "sublabel": "SeaweedFS固定版本",
+      "stage": 3,
+      "row": 2,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 18,
+          "end_line": 19
+        }
+      ]
+    },
+    {
+      "id": "eventStore",
+      "type": "database",
+      "label": "分析事件表",
+      "sublabel": "服务端派生event_key",
+      "stage": 3,
+      "row": 4,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 99,
+          "end_line": 111
+        }
+      ]
+    },
+    {
+      "id": "resource",
+      "type": "security",
+      "label": "运行与资源授权",
+      "sublabel": "按最新权益重核",
+      "stage": 4,
+      "row": 1,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/游戏接入与可信业务链路候选-V0.1.md",
+          "line": 65,
+          "end_line": 76
+        }
+      ]
+    },
+    {
+      "id": "gameContent",
+      "type": "frontend",
+      "label": "游戏正文与继续",
+      "sublabel": "自有页面及位置",
+      "stage": 4,
+      "row": 3,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/游戏接入与可信业务链路候选-V0.1.md",
+          "line": 100,
+          "end_line": 151
+        }
+      ]
+    },
+    {
+      "id": "analytics",
+      "type": "backend",
+      "label": "运营分析",
+      "sublabel": "可信事实与行为分离",
+      "stage": 4,
+      "row": 4,
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
+          "line": 89,
+          "end_line": 97
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "intent",
+      "from": "browser",
+      "to": "commerce",
+      "label": "账号与商品意图",
+      "variant": "security"
+    },
+    {
+      "id": "commit",
+      "from": "commerce",
+      "to": "order",
+      "label": "订单快照"
+    },
+    {
+      "id": "notification",
+      "from": "channel",
+      "to": "verify",
+      "label": "通知／查单证据",
+      "variant": "security"
+    },
+    {
+      "id": "cashFact",
+      "from": "verify",
+      "to": "cash",
+      "label": "已核现金事实",
+      "variant": "security"
+    },
+    {
+      "id": "orderMatch",
+      "from": "order",
+      "to": "grant",
+      "label": "订单与承诺"
+    },
+    {
+      "id": "cashMatch",
+      "from": "cash",
+      "to": "grant",
+      "label": "核实到账与交付"
+    },
+    {
+      "id": "scope",
+      "from": "grant",
+      "to": "resource",
+      "label": "有效权益范围",
+      "variant": "security"
+    },
+    {
+      "id": "launch",
+      "from": "browser",
+      "to": "bridge",
+      "label": "启动run请求",
+      "variant": "security"
+    },
+    {
+      "id": "gameRpc",
+      "from": "game",
+      "to": "bridge",
+      "label": "游戏侧RPC／事件",
+      "variant": "security"
+    },
+    {
+      "id": "saveInput",
+      "from": "bridge",
+      "to": "save",
+      "label": "存档操作／revision",
+      "variant": "security"
+    },
+    {
+      "id": "saveWrite",
+      "from": "save",
+      "to": "saveStore",
+      "label": "对象引用与CAS"
+    },
+    {
+      "id": "eventInput",
+      "from": "bridge",
+      "to": "event",
+      "label": "event_ref＋可信run",
+      "variant": "security"
+    },
+    {
+      "id": "eventWrite",
+      "from": "event",
+      "to": "eventStore",
+      "label": "派生去重键"
+    },
+    {
+      "id": "objectRead",
+      "from": "privateObjects",
+      "to": "resource",
+      "label": "固定资源版本",
+      "variant": "security"
+    },
+    {
+      "id": "readResource",
+      "from": "resource",
+      "to": "gameContent",
+      "label": "受控正文／云档",
+      "variant": "security"
+    },
+    {
+      "id": "restore",
+      "from": "saveStore",
+      "to": "resource",
+      "label": "云档引用／归属重核"
+    },
+    {
+      "id": "aggregate",
+      "from": "eventStore",
+      "to": "analytics",
+      "label": "脱敏行为统计",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "现金与权限",
+      "items": [
+        "回跳与游戏自报paid均不授予权益",
+        "可信通知/查单核实金额、订单及商户后留现金事实",
+        "唯一授予来源可重试；退款和限制使后续访问重新核验"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "游戏与云档",
+      "items": [
+        "游戏保留自己的故事、谜题、页面和存档payload含义",
+        "前端没有MySQL凭据；平台验证run、归属与权益",
+        "对象先写不可变版本，再用同库CAS切换云档引用"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "分析边界",
+      "items": [
+        "游戏事件低信任；服务端绑定run/会话后派生event_key",
+        "行为事件不改变现金或权益；晚到账形成可信修订",
+        "这是设计数据流，不表示真实支付或数据处理器已运行"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/部署拓扑候选.json",
+    "sha256": "c81419bb01ab714bc11d8af8daeaabee142d87c0828ddfbdc598d241c6f1fbb7",
+    "bytes": 8493
+  },
+  "artifact": {
+    "path": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/部署拓扑候选.html",
+    "sha256": "3b705a0725b9f211030fd66c2efbed0be7c14662ecef0d92ffdbc46e38be2f39",
+    "bytes": 838085
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/04-评审/99-archify临时-部署拓扑候选/部署拓扑候选.finalize.json",
+    "summaryReceipt": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/04-评审/99-archify临时-部署拓扑候选/部署拓扑候选.finalize-summary.json",
+    "browserCheckReceipt": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/04-评审/99-archify临时-部署拓扑候选/部署拓扑候选.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-26T02:53:21.859Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3102,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 6,
+      "routesOverSuggestedBends": 3,
+      "routesOverSuggestedStretch": 2
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "id": "host-resource-api",
+            "from": "store",
+            "to": "gate",
+            "label": "宿主转发受控请求",
+            "collectionIndex": 4,
+            "artifactIndex": 5
+          },
+          "right": {
+            "id": "jobs",
+            "from": "platform",
+            "to": "ops",
+            "label": "outbox与任务",
+            "collectionIndex": 10,
+            "artifactIndex": 11
+          },
+          "point": [
+            587,
+            488
+          ]
+        },
+        {
+          "left": {
+            "id": "verify",
+            "from": "gate",
+            "to": "platform",
+            "label": "应用内重核",
+            "collectionIndex": 5,
+            "artifactIndex": 6
+          },
+          "right": {
+            "id": "jobs",
+            "from": "platform",
+            "to": "ops",
+            "label": "outbox与任务",
+            "collectionIndex": 10,
+            "artifactIndex": 11
+          },
+          "point": [
+            591,
+            209.72727272727272
+          ],
+          "sharedNode": "platform"
+        },
+        {
+          "left": {
+            "id": "paycall",
+            "from": "platform",
+            "to": "pay",
+            "label": "查单与回调核实",
+            "collectionIndex": 7,
+            "artifactIndex": 8
+          },
+          "right": {
+            "id": "restriction-witness",
+            "from": "platform",
+            "to": "recovery",
+            "label": "限制计划先见证（待建设）",
+            "collectionIndex": 11,
+            "artifactIndex": 12
+          },
+          "point": [
+            819,
+            138
+          ],
+          "sharedNode": "platform"
+        },
+        {
+          "left": {
+            "id": "cache",
+            "from": "platform",
+            "to": "redis",
+            "label": "辅助状态",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "right": {
+            "id": "jobs",
+            "from": "platform",
+            "to": "ops",
+            "label": "outbox与任务",
+            "collectionIndex": 10,
+            "artifactIndex": 11
+          },
+          "point": [
+            704,
+            209
+          ],
+          "sharedNode": "platform"
+        },
+        {
+          "left": {
+            "id": "resource",
+            "from": "gate",
+            "to": "seaweed",
+            "label": "核权后读取",
+            "collectionIndex": 9,
+            "artifactIndex": 10
+          },
+          "right": {
+            "id": "restriction-witness",
+            "from": "platform",
+            "to": "recovery",
+            "label": "限制计划先见证（待建设）",
+            "collectionIndex": 11,
+            "artifactIndex": 12
+          },
+          "point": [
+            972,
+            467
+          ]
+        },
+        {
+          "left": {
+            "id": "point",
+            "from": "mysql",
+            "to": "recovery",
+            "label": "恢复点待验证",
+            "collectionIndex": 12,
+            "artifactIndex": 13
+          },
+          "right": {
+            "id": "versions",
+            "from": "seaweed",
+            "to": "recovery",
+            "label": "版本与密钥待验证",
+            "collectionIndex": 13,
+            "artifactIndex": 14
+          },
+          "point": [
+            1099,
+            601
+          ],
+          "sharedNode": "recovery"
+        }
+      ],
+      "detours": [
+        {
+          "relationship": {
+            "id": "jobs",
+            "from": "platform",
+            "to": "ops",
+            "label": "outbox与任务",
+            "collectionIndex": 10,
+            "artifactIndex": 11
+          },
+          "bends": 4,
+          "stretch": 1.506,
+          "directCorridorBlockers": [
+            {
+              "id": "redis",
+              "label": "Redis辅助",
+              "box": [
+                615,
+                220,
+                220,
+                74
+              ]
+            },
+            {
+              "id": "gate",
+              "label": "Java应用内资源模块",
+              "box": [
+                615,
+                430,
+                220,
+                74
+              ]
+            }
+          ]
+        },
+        {
+          "relationship": {
+            "id": "restriction-witness",
+            "from": "platform",
+            "to": "recovery",
+            "label": "限制计划先见证（待建设）",
+            "collectionIndex": 11,
+            "artifactIndex": 12
+          },
+          "bends": 4,
+          "stretch": 1
+        },
+        {
+          "relationship": {
+            "id": "point",
+            "from": "mysql",
+            "to": "recovery",
+            "label": "恢复点待验证",
+            "collectionIndex": 12,
+            "artifactIndex": 13
+          },
+          "bends": 4,
+          "stretch": 1.442,
+          "directCorridorBlockers": [
+            {
+              "id": "pay",
+              "label": "支付双渠道",
+              "box": [
+                975,
+                190,
+                220,
+                74
+              ]
+            },
+            {
+              "id": "seaweed",
+              "label": "SeaweedFS私有对象",
+              "box": [
+                975,
+                430,
+                220,
+                74
+              ]
+            }
+          ]
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "store → gate crosses platform → ops: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "gate → platform and platform → ops cross next to platform: move node gate or ops so the two reach platform from different sides (for example one level with it, one directly above or below it).",
+      "platform → pay and platform → recovery cross next to platform: move node pay or recovery so the two reach platform from different sides (for example one level with it, one directly above or below it).",
+      "platform → redis and platform → ops cross next to platform: move node redis or ops so the two reach platform from different sides (for example one level with it, one directly above or below it).",
+      "gate → seaweed crosses platform → recovery: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "mysql → recovery and seaweed → recovery cross next to recovery: move node mysql or seaweed so the two reach recovery from different sides (for example one level with it, one directly above or below it).",
+      "platform → recovery needs 4 bends: move node platform or recovery so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

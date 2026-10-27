@@ -308,6 +308,36 @@
       "bytes": 3848
     },
     {
+      "path": "docs/03-架构/02-图表/全系统逻辑架构.delivery.json",
+      "sha256": "804bb5b10c1bf05fe95dd63edded932ed6fa40bb5d8fee2215303e31c5366b87",
+      "bytes": 697
+    },
+    {
+      "path": "docs/03-架构/02-图表/全系统逻辑架构.html",
+      "sha256": "bf5fb1cca101317effecd156ccbdc8ae8fa4e9b2a2c7b7909c73b57ddafb0b9b",
+      "bytes": 839161
+    },
+    {
+      "path": "docs/03-架构/02-图表/全系统逻辑架构.json",
+      "sha256": "375137e67d0e4bde5660a907e06895ce00c4a99c4588872d9728c9aed166783b",
+      "bytes": 8812
+    },
+    {
+      "path": "docs/03-架构/02-图表/可信业务数据流.delivery.json",
+      "sha256": "1aa29b7bc5d21e247b2eb77aa59b18659f5fd18a0d2bb333a613372ca444efd1",
+      "bytes": 694
+    },
+    {
+      "path": "docs/03-架构/02-图表/可信业务数据流.html",
+      "sha256": "51e8ce299c9d00c5f31bef85efa1d640218d23ac68a57c81aa0b0d4effc35f4a",
+      "bytes": 837638
+    },
+    {
+      "path": "docs/03-架构/02-图表/可信业务数据流.json",
+      "sha256": "d8c6e4f12240751e52480307bfc7e9934677a69daf464eeef3951fdc6b1eb0b3",
+      "bytes": 10205
+    },
+    {
       "path": "docs/03-架构/02-图表/完整物理ER-V0.1.dot",
       "sha256": "2284b49552a74f4427959529798196fdbab9f11f4d316fc70014780ea07eb905",
       "bytes": 155946
@@ -353,6 +383,21 @@
       "bytes": 5552
     },
     {
+      "path": "docs/03-架构/02-图表/部署拓扑候选.delivery.json",
+      "sha256": "b335915b4e0b5d1dc8c3c1f4d9a5f49263b4f2d6e91c9531665c133e6e06dd59",
+      "bytes": 691
+    },
+    {
+      "path": "docs/03-架构/02-图表/部署拓扑候选.html",
+      "sha256": "3b705a0725b9f211030fd66c2efbed0be7c14662ecef0d92ffdbc46e38be2f39",
+      "bytes": 838085
+    },
+    {
+      "path": "docs/03-架构/02-图表/部署拓扑候选.json",
+      "sha256": "c81419bb01ab714bc11d8af8daeaabee142d87c0828ddfbdc598d241c6f1fbb7",
+      "bytes": 8493
+    },
+    {
       "path": "docs/03-架构/03-文档/双支付适配与可信核实规格-V0.1.md",
       "sha256": "0be7f0c5357e6ef17b6c4c8ad561049d4d9c74fbb78361280c6d8a94cff7a670",
       "bytes": 9166
@@ -368,19 +413,24 @@
       "bytes": 20601
     },
     {
+      "path": "docs/03-架构/03-文档/技术选型与定版条件.md",
+      "sha256": "7a95fdb55d37f4b77a1f629e361dc1ad28671fd166e8a640ee4e34205c3c5a25",
+      "bytes": 11000
+    },
+    {
       "path": "docs/03-架构/03-文档/接口接入契约阅读与验证边界-V0.1.md",
       "sha256": "6ccf943f4a929d1298bd12b84e9a69a8da071ff2f9c6f5f1a6814aced80f43bf",
       "bytes": 8429
     },
     {
       "path": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md",
-      "sha256": "e593dcde2e3f535d2e5fce17546107fcf36ceb25f6fbecba4bfebf55469b0d6c",
-      "bytes": 21917
+      "sha256": "2db62176bb067c1d6421423939988086bd15522c5ef4fd1e14aeb02614a17ec5",
+      "bytes": 26021
     },
     {
       "path": "docs/03-架构/03-文档/架构候选与复用决策-V0.1.md",
-      "sha256": "6006de3f8c3244b0db8327dd53e0c248f2977c6571b2618005d529fda8ce04dd",
-      "bytes": 24467
+      "sha256": "9cf4495ce75be07c394e8319bd498fd37454f6e9b471a060460b2938d3b03809",
+      "bytes": 25920
     },
     {
       "path": "docs/03-架构/03-文档/游戏SDK与适配器方案.md",
@@ -579,8 +629,8 @@
     },
     {
       "path": "docs/README.md",
-      "sha256": "ce6e54f25fd61109b91a7b6e5295c69109aca6873caf6c3eb00248ab186e5b95",
-      "bytes": 7556
+      "sha256": "de2001120c6d9d65a67f3e06a7304c9d43fedafbe7ff6758b9ffb3ab9f82ec90",
+      "bytes": 8441
     }
   ]
 }

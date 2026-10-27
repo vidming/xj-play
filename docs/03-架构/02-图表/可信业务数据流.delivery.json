@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ab93d0c9-7272-42bf-8292-11db3c18aed1",
+  "status": "current",
+  "command": "deliver",
+  "type": "dataflow",
+  "input": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/可信业务数据流.json",
+  "output": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/可信业务数据流.html",
+  "specification": {
+    "sha256": "d8c6e4f12240751e52480307bfc7e9934677a69daf464eeef3951fdc6b1eb0b3",
+    "bytes": 10205
+  },
+  "artifact": {
+    "sha256": "51e8ce299c9d00c5f31bef85efa1d640218d23ac68a57c81aa0b0d4effc35f4a",
+    "bytes": 837638
+  }
+}

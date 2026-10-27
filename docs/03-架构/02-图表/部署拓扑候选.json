@@ -1,0 +1,393 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "间隙PLAY｜部署拓扑候选（未部署）",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "docs/03-架构/02-图表/部署拓扑候选.html",
+    "repository": {
+      "url": "git@github.com:vidming/xj-play.git",
+      "revision": "55e794d3878a1c19d17dafcbcdbaa66876a031a8",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "玩家与运营浏览器",
+      "sublabel": "公网访问；独立身份",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        190,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 13,
+          "end_line": 20
+        }
+      ]
+    },
+    {
+      "id": "store",
+      "type": "frontend",
+      "label": "公开商店与管理入口",
+      "sublabel": "静态入口；商店宿主桥在浏览器",
+      "pos": [
+        295,
+        40
+      ],
+      "size": [
+        205,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 11,
+          "end_line": 20
+        }
+      ]
+    },
+    {
+      "id": "platform",
+      "type": "backend",
+      "label": "单业务应用与API反代",
+      "sublabel": "Java模块化；HTTPS候选",
+      "pos": [
+        615,
+        40
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 13,
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "mysql",
+      "type": "database",
+      "label": "当前xj_play",
+      "sublabel": "底座＋平台＋独立游戏表",
+      "pos": [
+        975,
+        40
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 16,
+          "end_line": 19
+        }
+      ]
+    },
+    {
+      "id": "pay",
+      "type": "external",
+      "label": "支付双渠道",
+      "sublabel": "通知验签／主动核实",
+      "pos": [
+        975,
+        190
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/双支付适配与可信核实规格-V0.1.md",
+          "line": 9,
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Redis辅助",
+      "sublabel": "会话与限流",
+      "pos": [
+        615,
+        220
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 16,
+          "end_line": 17
+        }
+      ]
+    },
+    {
+      "id": "game",
+      "type": "frontend",
+      "label": "各游戏独立来源",
+      "sublabel": "公开包与隔离iframe",
+      "pos": [
+        40,
+        430
+      ],
+      "size": [
+        205,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 43,
+          "end_line": 49
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "type": "security",
+      "label": "Java应用内资源模块",
+      "sublabel": "重核会话／run／权益",
+      "pos": [
+        615,
+        430
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/游戏接入与可信业务链路候选-V0.1.md",
+          "line": 65,
+          "end_line": 76
+        }
+      ]
+    },
+    {
+      "id": "seaweed",
+      "type": "cloud",
+      "label": "SeaweedFS私有对象",
+      "sublabel": "受控正文／云档／版本",
+      "pos": [
+        975,
+        430
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 18,
+          "end_line": 19
+        }
+      ]
+    },
+    {
+      "id": "ops",
+      "type": "backend",
+      "label": "任务／运营／审计",
+      "sublabel": "outbox／通知／监控",
+      "pos": [
+        615,
+        625
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 11,
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "type": "cloud",
+      "label": "独立故障域备份见证",
+      "sublabel": "一致全量／连续日志候选",
+      "pos": [
+        975,
+        625
+      ],
+      "size": [
+        220,
+        74
+      ],
+      "sources": [
+        {
+          "path": "docs/03-架构/03-文档/部署资源与恢复规格.md",
+          "line": 19,
+          "end_line": 21
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "可信平台运行边界候选",
+      "wraps": [
+        "platform",
+        "redis",
+        "gate",
+        "ops"
+      ],
+      "pad": 20
+    },
+    {
+      "kind": "security-group",
+      "label": "独立游戏来源",
+      "wraps": [
+        "game"
+      ],
+      "pad": 20
+    }
+  ],
+  "connections": [
+    {
+      "id": "enter",
+      "from": "browser",
+      "to": "store",
+      "label": "HTTPS入口"
+    },
+    {
+      "id": "request",
+      "from": "store",
+      "to": "platform",
+      "label": "账号/交易/后台请求",
+      "variant": "security"
+    },
+    {
+      "id": "launch",
+      "from": "store",
+      "to": "game",
+      "label": "启动独立版本"
+    },
+    {
+      "id": "game-host-bridge",
+      "from": "game",
+      "to": "store",
+      "label": "MessagePort白名单RPC",
+      "variant": "security"
+    },
+    {
+      "id": "host-resource-api",
+      "from": "store",
+      "to": "gate",
+      "label": "宿主转发受控请求",
+      "variant": "security"
+    },
+    {
+      "id": "verify",
+      "from": "gate",
+      "to": "platform",
+      "label": "应用内重核",
+      "variant": "security"
+    },
+    {
+      "id": "sql",
+      "from": "platform",
+      "to": "mysql",
+      "label": "同库事务"
+    },
+    {
+      "id": "paycall",
+      "from": "platform",
+      "to": "pay",
+      "label": "查单与回调核实",
+      "variant": "security"
+    },
+    {
+      "id": "cache",
+      "from": "platform",
+      "to": "redis",
+      "label": "辅助状态"
+    },
+    {
+      "id": "resource",
+      "from": "gate",
+      "to": "seaweed",
+      "label": "核权后读取",
+      "variant": "security"
+    },
+    {
+      "id": "jobs",
+      "from": "platform",
+      "to": "ops",
+      "label": "outbox与任务"
+    },
+    {
+      "id": "restriction-witness",
+      "from": "platform",
+      "to": "recovery",
+      "label": "限制计划先见证（待建设）",
+      "variant": "dashed"
+    },
+    {
+      "id": "point",
+      "from": "mysql",
+      "to": "recovery",
+      "label": "恢复点待验证",
+      "variant": "dashed"
+    },
+    {
+      "id": "versions",
+      "from": "seaweed",
+      "to": "recovery",
+      "label": "版本与密钥待验证",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "逻辑环境",
+      "items": [
+        "本地、隔离验收、生产是三类逻辑环境，不是已购资源",
+        "所有平台与游戏表当前指向同一xj_play；环境数据隔离尚待方案确认",
+        "公网来源与运营入口按最小暴露配置，实际域名与宿主未定"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "运行职责",
+      "items": [
+        "管理端和玩家身份分别核验；支付回跳不能证明到账",
+        "纯前端游戏没有数据库凭据；确需可信游戏后端时仅访问本游戏授权表",
+        "浏览器宿主桥不持权益真相；资源模块在Java应用内，不是独立服务"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "恢复与成本",
+      "items": [
+        "MySQL当前binlog关闭，PITR与限制尾部完整性未证明",
+        "备份/见证在独立故障域的方向已确认，资源和费用未批准",
+        "RPO15分钟、RTO4小时仅为后续演练目标"
+      ]
+    }
+  ]
+}
