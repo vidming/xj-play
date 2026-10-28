@@ -1,0 +1,88 @@
+# ==================================================
+# 只提交 backend / docs / frontend 三个目录
+# 其余内容（含各 AI 工具配置、本地配置、构建产物）一律忽略
+# ==================================================
+
+# ---------- 默认忽略仓库根目录的一切 ----------
+/*
+
+# ---------- 只放行这三个目录 ----------
+!/backend/
+!/docs/
+!/frontend/
+
+# ---------- 放行仓库级配置文件 ----------
+# .gitignore 与 AGENTS.md 属于项目约定本身，需要随仓库分发
+!/.gitignore
+!/AGENTS.md
+
+# ---------- 规则文档：仅本地保存，不纳入 git ----------
+# 该目录含服务器与数据库明文凭据，整体排除：不提交、不推送
+docs/07-规则文档/
+
+# ---------- 嵌套上游仓库的 .git 元数据不提交 ----------
+backend/yudao-boot-mini/.git/
+frontend/yudao-ui-admin-vue3/.git/
+
+# ---------- 系统垃圾文件 ----------
+.DS_Store
+**/.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# ---------- IDE / 编辑器 ----------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.history/
+.fleet/
+*.code-workspace
+
+# ---------- 后端：构建产物与本地配置 ----------
+**/target/
+**/build/
+**/dist/
+**/.flattened-pom.xml
+*.log
+logs/
+**/application-my.yaml
+# 后端本地运行配置：不读不改，也不提交
+backend/yudao-boot-mini/yudao-server/src/main/resources/application-local.yaml
+
+# ---------- 前端：依赖与构建缓存 ----------
+**/node_modules/
+**/.pnpm-store/
+**/dist/
+**/dist-ssr/
+**/dist-*/
+**/.vite/
+**/.turbo/
+**/.cache/
+**/.playwright-cli/
+**/auto-*.d.ts
+**/pnpm-debug*
+**/coverage/
+**/output/
+
+# ---------- Python / 其它常见临时产物 ----------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---------- 凭据与密钥（防止误提交） ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+
+# ---------- 上游仓库元数据备份（不提交） ----------
+**/.git-upstream-backup/
