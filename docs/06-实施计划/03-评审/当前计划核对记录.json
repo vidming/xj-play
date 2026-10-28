@@ -1,0 +1,208 @@
+{
+  "date": "2026-10-28",
+  "status": "阶段4计划已按实际P41接受；W00仅允许细化规划，未启动实施",
+  "source": "实际AC1/GP1/EP1/CM1及XJ-STAGE4-PLAN-20261028的P41/CM2；阶段3本地提交426c040",
+  "checks": {
+    "packages": 14,
+    "startAndAcceptanceDependencyCycles": 0,
+    "requirementsAndAcceptanceCoverage": 21,
+    "testIdCoverage": "T01–T21",
+    "estimatedPlatformPersonDays": [
+      73,
+      129
+    ],
+    "unknownEffort": [
+      "W10完整G-A",
+      "W20章节/G-B",
+      "W30场景/回归"
+    ],
+    "W11ScheduledBeforeGame": false,
+    "generatorByteStability": "通过",
+    "chineseNumberedDirectories": "docs各级编号连续、中文语义通过"
+  },
+  "independentReview": {
+    "method": "独立代理只读复核及修复后复核",
+    "findingsClosed": [
+      "产品GP1进度导入与本次GP1交接时限消歧；保留双方/跳过购买/并发重核与确认失效",
+      "AC-19真实加载、静音/避免突发声、扩大返回及首页不预载完整游戏包"
+    ],
+    "remainingFindings": []
+  },
+  "browser": {
+    "date": "2026-10-28",
+    "gantt": [
+      {
+        "width": 320,
+        "overflow": false,
+        "rows": 14,
+        "text": true
+      },
+      {
+        "width": 736,
+        "overflow": false,
+        "rows": 14,
+        "text": true
+      },
+      {
+        "width": 1440,
+        "overflow": false,
+        "rows": 14,
+        "text": true
+      }
+    ],
+    "inlineForm": {
+      "viewports": [
+        {
+          "shellWidth": 320,
+          "frameWidth": 288,
+          "overflow": false,
+          "blankSelection": true
+        },
+        {
+          "shellWidth": 736,
+          "frameWidth": 704,
+          "overflow": false,
+          "blankSelection": true
+        },
+        {
+          "shellWidth": 1440,
+          "frameWidth": 1408,
+          "overflow": false,
+          "blankSelection": true
+        }
+      ],
+      "defaultApproval": false,
+      "stubSendPayload": "通过",
+      "saveIsNotApproval": "通过",
+      "editRequiresNotes": "通过",
+      "restore": "通过",
+      "sendFailure": "通过",
+      "limitation": "本地渲染器与假宿主测试；真实会话宿主发送能力须用户实际点击后验证，本次未发送任何确认",
+      "actualUserMessageReceived": "2026-10-28实际收到P41/CM2，确认来自用户发送消息，不来自控件恢复"
+    },
+    "pageErrors": []
+  },
+  "artifacts": [
+    {
+      "path": "docs/06-实施计划/01-文档/实施计划与里程碑.md",
+      "sha256": "b28895fa58b5696d1d5c56e213d70a0bf1852bd506e0048a2e54a94e664bf780"
+    },
+    {
+      "path": "docs/06-实施计划/01-文档/测试验收与追溯.md",
+      "sha256": "f10e1e06807b6c2e5c3fe2dfede315efb72665481853185b7a16fe1a4f22a737"
+    },
+    {
+      "path": "docs/06-实施计划/01-文档/资源风险与首切片建议.md",
+      "sha256": "63804120c9c0a06b3c132dd3b643922033227f2b2fcd1ce9bf7c409d8daaa2b1"
+    },
+    {
+      "path": "docs/06-实施计划/02-图表/实施依赖与相对甘特.html",
+      "sha256": "8a5b013e4d44ece33c91bb3a5950c46776bcf1e4bf265827a1a5ffa73e0b3b3e"
+    },
+    {
+      "path": "docs/06-实施计划/02-图表/工作包清单.json",
+      "sha256": "cb583622ac8fff57604f1d2c8b6323a333d69bbe05a08a0b17c7f31e4a4e6881"
+    },
+    {
+      "path": "docs/06-实施计划/02-图表/生成相对甘特.py",
+      "sha256": "f7a07415cedc9750e559dfe6a5c59baadd0bbf4155727a51e96e59bf8033a10f"
+    },
+    {
+      "path": "docs/06-实施计划/01-文档/W00工程与兼容基线规划.md",
+      "sha256": "6a070288df8f55740b2b03be17f1b812691fdd694150c5f18e3af601368a3f05"
+    }
+  ],
+  "verificationEntry": "docs/03-架构/04-评审/校验完整架构草案.py核当前资料指纹与本地Markdown链接；本记录随清单一起归档",
+  "limits": [
+    "工作量是粗估，不是自然日承诺；真实团队与预算未确定",
+    "未执行AC业务测试；数据库/服务/支付/游戏隔离/对象存储/备份恢复没有新增运行结果",
+    "表单以本地假宿主验证载荷和失败反馈；未代用户向当前会话发送确认，只有实际收到用户消息才批准",
+    "本计划已按P41接受；CM2仅授权限定计划路径提交，新UI与W00实施另审"
+  ],
+  "actualConfirmation": {
+    "code": "P41／CM2",
+    "date": "2026-10-28",
+    "notes": "高保真已由用户优化，要求分析同步影响；不等同新UI验收",
+    "scope": "限定计划路径本地提交，不推送；W00仅规划"
+  },
+  "W00Planning": {
+    "status": "planning，未start",
+    "contextValidation": "implement/check各4条真实输入，task.py validate通过",
+    "artifact": "docs/06-实施计划/01-文档/W00工程与兼容基线规划.md",
+    "sourceChecks": "根仓库布局；11处诊断8文件摘要与AV1一致；未重新运行类型检查",
+    "pending": "实施补丁、首期类型入口、下载脚本及提交范围另审"
+  },
+  "uiReview": {
+    "artifact": "docs/06-实施计划/03-评审/高保真更新影响核对.md",
+    "source": "用户新Demo，只读核对，未修改或提交",
+    "browser": {
+      "viewports": [
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "cards": 8,
+          "columns": "138px 138px",
+          "smallTargets": [
+            {
+              "text": "清除",
+              "height": 21.4375
+            },
+            {
+              "text": "免费试玩",
+              "height": 22
+            }
+          ],
+          "brand": "25px"
+        },
+        {
+          "width": 736,
+          "scrollWidth": 736,
+          "cards": 8,
+          "columns": "236px 236px",
+          "smallTargets": [
+            {
+              "text": "清除",
+              "height": 21.4375
+            },
+            {
+              "text": "免费试玩",
+              "height": 22
+            }
+          ],
+          "brand": "25px"
+        },
+        {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "cards": 8,
+          "columns": "277.5px 277.5px 277.5px 277.5px",
+          "smallTargets": [
+            {
+              "text": "清除",
+              "height": 21.4375
+            },
+            {
+              "text": "免费试玩",
+              "height": 22
+            }
+          ],
+          "brand": "29px"
+        }
+      ],
+      "interactions": {
+        "paid": 1,
+        "paidHash": "#/store?price=paid",
+        "reloadSort": "true",
+        "clear": 8,
+        "search": 1,
+        "placeholderLinks": 0,
+        "gb": {
+          "hash": "#/detail?game=gb",
+          "text": "发现游戏/未命名调查游戏未命名调查游戏调查作品资料设计样例全部资料模拟 · V0.2后续版本，未完成游戏沿着线索，找到自己的答案。线索、链接与仿真网页属于独立游戏自己的体验。一个收费范围可以跨多个页面，页面跳转本身不产生收费。提供方本项目团"
+        }
+      },
+      "errors": []
+    },
+    "detector": "2 warning及1 advisory，概念封面纹理/阴影，非页面功能失败；待人工与规范区分"
+  }
+}

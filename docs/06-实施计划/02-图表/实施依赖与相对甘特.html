@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>实施依赖与相对甘特</title>
+<style>
+:root { color-scheme:light dark; --paper:light-dark(#faf9f5,#191c1b); --ink:light-dark(#25312d,#e2e8e3);
+--line:light-dark(#ccd3ce,#45534c); --mark:light-dark(#36644c,#86b497); --soft:light-dark(#dce6de,#34483b); }
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 Georgia,"Songti SC",serif}
+main{max-width:1160px;margin:auto;padding:28px 20px}h1{font-size:28px;font-weight:500}a{color:inherit}p{max-width:90ch}
+table{border-collapse:collapse;width:100%;margin:20px 0}th,td{padding:12px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th:first-child{width:29%;font-weight:500}td:nth-child(2){width:15%}td:nth-child(3){width:15%}
+.track{height:20px;position:relative;background:repeating-linear-gradient(to right,transparent 0,transparent calc(10% - 1px),var(--line) 10%)}
+.range,.core{position:absolute;top:3px;height:14px;background:var(--soft)}.core{background:var(--mark)}.time{font:13px/1.5 monospace}
+.tag{padding:3px 8px;background:var(--soft)}code{overflow-wrap:anywhere}caption{text-align:left;font-weight:500}
+@media(max-width:650px){main{padding:18px 12px}thead{display:none}table,tbody,tr,th,td{display:block;width:100%!important}
+tr{padding:12px 0;border-bottom:1px solid var(--line)}th,td{border:0;padding:3px 0}.track{margin-top:10px}}
+</style><main>
+<h1>实施依赖与相对甘特</h1>
+<p class="tag">阶段4提交稿 · 全部未开始 · 只供计划审阅</p>
+<p>单执行者按依赖拓扑串行的参考；T0不是开工日期。深色为工作量下界，浅色延伸至上界。
+未确定团队、预算与外部等待，不把人日换算为承诺工期；有多个真实执行者时可重新排并行。</p>
+<p>已估平台工作包合计 <strong>73–129 人日</strong>，不含完整G-A/G-B、V0.2/V0.3未知项和采购/商户审核等待。
+W11虽有自身工作量估计，但前置游戏未知，因此不在时间轴上排定起点。</p>
+<table><caption>平台集成之前的相对轴（T0至T122，按各包上界串行）</caption>
+<thead><tr><th>工作包</th><th>工作量</th><th>开始依赖</th><th>相对轴</th></tr></thead><tbody><tr><th scope="row">W00 工程与兼容基线</th><td>3–6人日</td><td>无</td><td><div class="track" aria-label="T0起，估计3至6人日"><span class="range" style="left:0.0000%;width:4.9180%"></span><span class="core" style="left:0.0000%;width:2.4590%"></span></div><span class="time">T0 → T6（上界参考）</span></td></tr><tr><th scope="row">W01 数据与服务基础</th><td>7–12人日</td><td>W00</td><td><div class="track" aria-label="T6起，估计7至12人日"><span class="range" style="left:4.9180%;width:9.8361%"></span><span class="core" style="left:4.9180%;width:5.7377%"></span></div><span class="time">T6 → T18（上界参考）</span></td></tr><tr><th scope="row">W02 身份与账号</th><td>6–10人日</td><td>W01</td><td><div class="track" aria-label="T18起，估计6至10人日"><span class="range" style="left:14.7541%;width:8.1967%"></span><span class="core" style="left:14.7541%;width:4.9180%"></span></div><span class="time">T18 → T28（上界参考）</span></td></tr><tr><th scope="row">W03 目录与版本发布</th><td>5–9人日</td><td>W01</td><td><div class="track" aria-label="T28起，估计5至9人日"><span class="range" style="left:22.9508%;width:7.3770%"></span><span class="core" style="left:22.9508%;width:4.0984%"></span></div><span class="time">T28 → T37（上界参考）</span></td></tr><tr><th scope="row">W04 独立游戏运行与协议样例</th><td>8–15人日</td><td>W02、W03</td><td><div class="track" aria-label="T37起，估计8至15人日"><span class="range" style="left:30.3279%;width:12.2951%"></span><span class="core" style="left:30.3279%;width:6.5574%"></span></div><span class="time">T37 → T52（上界参考）</span></td></tr><tr><th scope="row">W05 买断交易与双支付</th><td>10–18人日</td><td>W02、W03</td><td><div class="track" aria-label="T52起，估计10至18人日"><span class="range" style="left:42.6230%;width:14.7541%"></span><span class="core" style="left:42.6230%;width:8.1967%"></span></div><span class="time">T52 → T70（上界参考）</span></td></tr><tr><th scope="row">W06 位置交接与云档</th><td>7–12人日</td><td>W04、W05</td><td><div class="track" aria-label="T70起，估计7至12人日"><span class="range" style="left:57.3770%;width:9.8361%"></span><span class="core" style="left:57.3770%;width:5.7377%"></span></div><span class="time">T70 → T82（上界参考）</span></td></tr><tr><th scope="row">W07 玩家前台</th><td>8–14人日</td><td>W02、W03</td><td><div class="track" aria-label="T82起，估计8至14人日"><span class="range" style="left:67.2131%;width:11.4754%"></span><span class="core" style="left:67.2131%;width:6.5574%"></span></div><span class="time">T82 → T96（上界参考）</span></td></tr><tr><th scope="row">W08 管理运营与分析</th><td>7–12人日</td><td>W03、W05、W06</td><td><div class="track" aria-label="T96起，估计7至12人日"><span class="range" style="left:78.6885%;width:9.8361%"></span><span class="core" style="left:78.6885%;width:5.7377%"></span></div><span class="time">T96 → T108（上界参考）</span></td></tr><tr><th scope="row">W09 平台集成与恢复验收</th><td>8–14人日</td><td>W04、W05、W06、W07、W08</td><td><div class="track" aria-label="T108起，估计8至14人日"><span class="range" style="left:88.5246%;width:11.4754%"></span><span class="core" style="left:88.5246%;width:6.5574%"></span></div><span class="time">T108 → T122（上界参考）</span></td></tr></tbody></table>
+<table><caption>保留依赖、尚不能排定日历的工作包</caption>
+<thead><tr><th>工作包</th><th>工作量</th><th>依赖</th><th>缺口</th></tr></thead><tbody><tr><th scope="row">W10 完整G-A独立设计制作接入</th><td>尚不可估</td><td>W09</td><td>内容规模、完整游戏规格和制作资源待单独确认</td></tr><tr><th scope="row">W11 V0.1发布与运维交付</th><td>4–7人日，起点待定</td><td>W10</td><td>前置完整游戏工作量未定，不能排定起点</td></tr><tr><th scope="row">W20 章节升级与完整G-B</th><td>尚不可估</td><td>W11</td><td>章节/升级详细切片、完整G-B内容及资源待复估</td></tr><tr><th scope="row">W30 场景商品与双游戏回归</th><td>尚不可估</td><td>W20</td><td>场景覆盖与前版运行结果待核</td></tr></tbody></table>
+<p><a href="../01-文档/实施计划与里程碑.md">实施计划</a> · <a href="工作包清单.json">可编辑工作包数据</a></p>
+<p>数据源SHA-256：<code>cb583622ac8fff57604f1d2c8b6323a333d69bbe05a08a0b17c7f31e4a4e6881</code>。页面由同目录生成脚本生成，不依赖网络，不承担确认或发布操作。</p>
+</main></html>
