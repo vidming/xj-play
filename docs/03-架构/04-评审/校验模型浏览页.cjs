@@ -41,8 +41,56 @@ let browser;
   const svgFile = path.join(base, '02-图表/完整物理ER-V0.1.svg');
   await page.goto(pathToFileURL(svgFile).href);
   assert.equal(await page.locator('g.node').count(), model.tables.length);
-  const glyph = await page.evaluate(() => {
+  const glyph = await page.evaluate(model => {
     let overlaps=0;
+    const modelMismatches=[];
+    const nodes = [...document.querySelectorAll('g.node')].map(node => {
+      const box=node.getBBox();
+      // BBox is local to the graph; canvas comparison uses the graph's translation.
+      const graphMatrix=node.ownerSVGElement.querySelector('g.graph').transform.baseVal.consolidate().matrix;
+      const canvasBox={x:box.x+graphMatrix.e,y:box.y+graphMatrix.f,width:box.width,height:box.height};
+      const glyphs=[...node.querySelectorAll('text')];
+      const texts=glyphs.map(text=>{
+        const b=text.getBBox();
+        return {x:b.x,y:b.y,right:b.x+b.width,bottom:b.y+b.height};
+      });
+      const table=model.tables.find(item=>item.name===node.querySelector('title')?.textContent);
+      if(!table)modelMismatches.push({node:node.querySelector('title')?.textContent,reason:'模型中不存在'});
+      else {
+        const expected=[`${table.name} · ${table.label}`,...table.columns.flatMap(column=>{
+          const roles=[...(column.key||[])];
+          if(table.unique.some(key=>key.length===1&&key[0]===column.name)&&!roles.includes('uk'))roles.push('uk');
+          return [column.name,column.sqlType,roles.join(',')+' '+(column.nullable?'NULL':'NOT NULL'),column.description];
+        }),`UNIQUE ${table.unique.map(key=>'('+key.join(',')+')').join('; ')}`];
+        const actual=glyphs.map(text=>text.textContent);
+        if(JSON.stringify(actual)!==JSON.stringify(expected))modelMismatches.push({node:table.name,reason:'字段、约束或文字与模型不一致'});
+      }
+      return {title:node.querySelector('title')?.textContent,box,canvasBox,texts};
+    });
+    const nodeNames=nodes.map(node=>node.title);
+    const expectedNames=model.tables.map(table=>table.name);
+    if(nodeNames.length!==expectedNames.length || new Set(nodeNames).size!==nodeNames.length ||
+       expectedNames.some(name=>!nodeNames.includes(name))){
+      modelMismatches.push({reason:'表节点存在缺失或重复'});
+    }
+    const textOverflows=nodes.flatMap(({title,box,texts})=>texts.filter(text=>
+      text.x < box.x-1 || text.right > box.x+box.width+1 ||
+      text.y < box.y-1 || text.bottom > box.y+box.height+1
+    ).map(()=>title));
+    const nodeOverlaps=[];
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i].box,b=nodes[j].box;
+      if(Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)>1 &&
+         Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y)>1){
+        nodeOverlaps.push([nodes[i].title,nodes[j].title]);
+      }
+    }
+    const root=document.documentElement;
+    const {x,y,width,height}=root.viewBox.baseVal;
+    const canvas={x,y,width,height};
+    const nodesOutsideCanvas=nodes.filter(({canvasBox:box})=>box.x < x-1 || box.y < y-1 ||
+      box.x+box.width > x+width+1 || box.y+box.height > y+height+1
+    ).map(({title})=>title);
     for(const node of document.querySelectorAll('g.node')){
       const rows = new Map();
       for(const text of node.querySelectorAll('text')){
@@ -55,9 +103,13 @@ let browser;
         for(let i=1;i<row.length;i++)if(row[i].x<row[i-1].right-1)overlaps++;
       }
     }
-    return {sameRowTextOverlaps:overlaps};
-  });
+    return {sameRowTextOverlaps:overlaps,textOverflows,nodeOverlaps,nodesOutsideCanvas,canvas,modelMismatches};
+  },model);
   assert.equal(glyph.sameRowTextOverlaps,0, 'SVG表内文本重叠');
+  assert.deepEqual(glyph.modelMismatches,[], 'SVG表文字与物理模型不一致');
+  assert.deepEqual(glyph.textOverflows,[], 'SVG字段文字越出表节点');
+  assert.deepEqual(glyph.nodeOverlaps,[], 'SVG表节点互相覆盖');
+  assert.deepEqual(glyph.nodesOutsideCanvas,[], 'SVG表节点越出有效绘图边界');
   assert.equal(errors.length,0);
   const sha = f => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
   console.log(JSON.stringify({

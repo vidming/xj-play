@@ -182,7 +182,7 @@
       "post": {
         "operationId": "createGuestSession",
         "summary": "签发匿名试玩会话",
-        "description": "Origin/CSRF引导校验和限流；只签发HttpOnly匿名Cookie，无账号资产",
+        "description": "Origin/CSRF引导校验和限流；只签发HttpOnly匿名Cookie，无账号资产；200 Set-Cookie明确签发__Host-xj-session；令牌不放响应体/URL/日志。",
         "tags": [
           "玩家"
         ],
@@ -251,6 +251,12 @@
                   "const": "no-store"
                 },
                 "description": "私人接口不缓存"
+              },
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "__Host-xj-session=<服务端生成不透明令牌>; Path=/; Secure; HttpOnly; SameSite=Lax；不设置Domain。成功仅签发GUEST不透明令牌；同名Cookie覆盖旧值，按服务端会话记录校验，不在JSON返回令牌"
               }
             }
           },
@@ -722,7 +728,7 @@
       "post": {
         "operationId": "loginPlayer",
         "summary": "玩家登录",
-        "description": "泛化存在性反馈；成功重发才切换旧令牌；60秒/小时5次；token不进URL日志",
+        "description": "账号密码登录；注册仅返回Acknowledgement，注册后须显式登录。可选intentId只为请求时当前有效guest Cookie对应的原guest run之单个OPEN意图创建交接；必须先核账号密码成功、当前guest Cookie解析的session.id须精确等于意图guest_session_id及原run.session_id；guest会话在登录时有效、意图在原run有效时创建及历史run/session/作品/版本归属与30分钟登录交接资格，再在同库事务中创建目标PLAYER会话、唯一intent交接和幂等结果，最后在200 Set-Cookie签发PLAYER Cookie并在服务端撤销原guest令牌（仅保留交接历史快照）。账号密码认证失败才使登录失败；认证成功后无有效guest Cookie、intentId无可信交接资格或意图不再OPEN时登录仍成功、签发PLAYER Cookie但不创建交接，响应不区分这些原因。交接失败只产生与绑定失败相同的泛化INTENT_BINDING_INVALID摘要，放在200 data.handoffError且不改变登录state=SUCCEEDED；不透露不存在、取消、过期或Cookie/谱系细节，不能把它当作密码认证失败。若创建意图后、登录前guest轮换为另一session记录且无服务端可信轮换谱系，不建交接并泛化提示重新选择商品；只持公开intentId不能认领，也不扫描该guest其他意图。相同登录Idempotency-Key及规范化请求经原guest令牌摘要对应的已成功结果或原结果对应PLAYER Cookie识别重试，只复用同一会话/交接并重发原PLAYER Cookie结果；已撤销guest令牌不能发起新交接，不延长期限；不同账号、不同请求复用key泛化拒绝。无intentId则普通登录。原run可在登录页打开后正常EXITED；不要求登录时仍READY/活跃。普通run退出或登录后guest令牌撤销不废止已创建的交接；安全撤销/游戏暂停可使位置不可用，不抹已核实付款事实。邮箱验证可在绑定后完成，但购买前必须验证；60秒/小时5次；token不进URL日志。",
         "tags": [
           "玩家"
         ],
@@ -773,7 +779,7 @@
                       "pattern": "^[A-Za-z0-9._:-]+$"
                     },
                     "data": {
-                      "$ref": "#/components/schemas/Acknowledgement"
+                      "$ref": "#/components/schemas/LoginResult"
                     }
                   },
                   "required": [
@@ -791,6 +797,12 @@
                   "const": "no-store"
                 },
                 "description": "私人接口不缓存"
+              },
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "__Host-xj-session=<服务端生成不透明令牌>; Path=/; Secure; HttpOnly; SameSite=Lax；不设置Domain。成功签发PLAYER不透明令牌并覆盖同名guest/旧PLAYER Cookie；原guest令牌在服务端撤销，交接只依已持久化的登录时有效快照，旧Cookie不能继续访问GUEST API；幂等重试重发原PLAYER Cookie结果，不另建交接"
               }
             }
           },
@@ -896,9 +908,9 @@
           }
         },
         "security": [],
-        "x-authorization": "公开；不泄露私人对象",
+        "x-authorization": "公开账号密码登录；intentId交接须同一可信请求携当前有效guest Cookie与CSRF，目标账号仅来自成功认证，不能由intentId授权；登录前guest当前session.id必须等于意图原会话，异session且无服务端可信轮换谱系拒绝，不凭同浏览器推断",
         "x-version-policy": "v1重大不兼容变更新major；兼容窗口另定",
-        "x-idempotency": "可信主体+动作+对象+key；同key不同payload=409；重试复用key；持久唯一关系兜底",
+        "x-idempotency": "原guest会话+登录动作+key+规范化请求；同key重试复用目标session、handoff和响应，不重新签发会话或延长有效期；响应重试只查原guest令牌摘要已提交结果或已签发的同一PLAYER会话；撤销guest令牌不能再新建交接；异账号/异载荷泛化拒绝",
         "x-runtime-status": "仅设计，尚未实施",
         "requestBody": {
           "required": true,
@@ -909,7 +921,53 @@
               }
             }
           }
-        }
+        },
+        "x-static-cases": [
+          {
+            "case": "认证成功且交接资格有效",
+            "schemaValid": true,
+            "request": {
+              "email": "player@example.com",
+              "password": "example-passphrase",
+              "intentId": "123e4567-e89b-42d3-a456-426614174000"
+            },
+            "given": "同一可信登录请求有当前有效guest Cookie、原run有效时创建的指定OPEN意图；原run现可正常EXITED；成功认证",
+            "expect": "登录成功；仅该intent创建一次交接；同键重试原会话与交接结果"
+          },
+          {
+            "case": "拒绝请求结构",
+            "schemaValid": false,
+            "request": {
+              "email": "player@example.com",
+              "password": "example-passphrase",
+              "intentId": "not-a-uuid"
+            },
+            "given": "intentId不是UUID，尚未执行账号密码认证",
+            "expect": "认证前400格式校验失败；不创建会话或交接"
+          },
+          {
+            "case": "密码账号认证失败才登录失败",
+            "schemaValid": true,
+            "request": {
+              "email": "player@example.com",
+              "password": "example-passphrase",
+              "intentId": "123e4567-e89b-42d3-a456-426614174000"
+            },
+            "given": "账号密码认证失败，不进入交接判断",
+            "expect": "登录失败；不创建PLAYER会话或交接；不因intentId改变认证结果"
+          },
+          {
+            "case": "认证成功但guest Cookie或意图不满足交接",
+            "schemaValid": true,
+            "request": {
+              "email": "player@example.com",
+              "password": "example-passphrase",
+              "intentId": "123e4567-e89b-42d3-a456-426614174000"
+            },
+            "given": "账号密码认证成功；无有效guest Cookie、无交接资格或意图非OPEN中的任一情况",
+            "expect": "登录仍成功并签发PLAYER Cookie；不创建交接；仅泛化INTENT_BINDING_INVALID摘要且不泄漏具体原因"
+          }
+        ]
       }
     },
     "/app-api/xj/v1/email-verifications": {
@@ -3639,7 +3697,7 @@
       "post": {
         "operationId": "createRun",
         "summary": "核实范围后创建运行",
-        "description": "核实范围后创建运行；可选intentId只接受公开意图编号，服务端核对当前会话、匿名绑定、作品、当前访问和版本后，才通过Run.resume交付受控位置；不存在或不属于当前绑定返回INTENT_BINDING_INVALID。RunResume.versionId必须等于本次Run.versionId，位置不授权、不跨版本静默复用、不写URL或日志。",
+        "description": "核实范围后创建运行；可选intentId只接受公开意图编号，服务端核当前PLAYER会话/账号与GI-A绑定或PLAYER直达创建的BOUND意图目标一致、RunCreate.gameId必须等于意图gameId，目标范围按意图contentKeys逐key重核当前权益或试玩规则，不由客户端另传或扩大。位置仍在绑定后24小时保留窗口、未被安全撤销/游戏暂停且作品/精确版本匹配。原run正常EXITED不影响绑定，但每次独立核当前权益和目标版本后，才经Run.resume交付受控位置；不凭BOUND、RETURNED或位置授予权限。缺失、作品/范围/主体不符返回泛化INTENT_BINDING_INVALID。首次交付按固定锁序在同事务内创建run、固定唯一return_run_id并将BOUND原子转为RETURNED；已RETURNED只接受return_run_id精确等于本次已持久run的原键原请求重放，返回同一结果。同键异规范化请求、换键再交付或换run重放均拒绝，不覆盖return_run_id、不创建第二个承接run。RunResume.versionId须等于本次Run.versionId，位置不跨版本复用、不写URL或日志。",
         "tags": [
           "玩家"
         ],
@@ -3819,7 +3877,7 @@
         ],
         "x-authorization": "平台受控匿名或玩家会话；每次验证run/版本/会话归属；游客仅试玩",
         "x-version-policy": "v1重大不兼容变更新major；兼容窗口另定",
-        "x-idempotency": "可信主体+动作+对象+key；同key不同payload=409；重试复用key；持久唯一关系兜底",
+        "x-idempotency": "当前可信GUEST/PLAYER会话+createRun+对象作用域+Idempotency-Key+规范化请求；携intentId时对象作用域为该意图，无intentId时为当前会话+gameId+entryMode+适用版本/模式的创建作用域；同会话同对象同键同请求重放原run，同键异请求拒绝，换键是独立运行申请。GUEST无intentId仅限TRIAL；携BOUND/RETURNED意图仅当前PLAYER会话可用。首次成功原子写return_run_id与BOUND→RETURNED；RETURNED+return_run_id仅重放同键同请求的同一run/RunResume；同键异请求、换键或换run拒绝",
         "x-runtime-status": "仅设计，尚未实施",
         "requestBody": {
           "required": true,
@@ -3830,7 +3888,63 @@
               }
             }
           }
-        }
+        },
+        "x-static-cases": [
+          {
+            "case": "BOUND首次交付原子转为RETURNED",
+            "schemaValid": true,
+            "request": {
+              "gameId": "123e4567-e89b-42d3-a456-426614174000",
+              "entryMode": "OWNED",
+              "intentId": "123e4567-e89b-42d3-a456-426614174001"
+            },
+            "given": "意图BOUND于当前主体，gameId相等，目标范围按intent content_keys核验且位置/版本有效",
+            "expect": "同事务创建run并固定return_run_id，BOUND原子转RETURNED；同键重试返回原run"
+          },
+          {
+            "case": "RETURNED加return_run_id重放原结果",
+            "schemaValid": true,
+            "request": {
+              "gameId": "123e4567-e89b-42d3-a456-426614174000",
+              "entryMode": "OWNED",
+              "intentId": "123e4567-e89b-42d3-a456-426614174001"
+            },
+            "given": "意图已RETURNED，持久return_run_id等于首次成功run；同主体同键同规范化请求",
+            "expect": "返回同一run及原RunResume，不创建新run、不重新消费位置"
+          },
+          {
+            "case": "游客无意图创建与重放",
+            "schemaValid": true,
+            "request": {
+              "gameId": "123e4567-e89b-42d3-a456-426614174000",
+              "entryMode": "TRIAL"
+            },
+            "given": "当前有效GUEST会话、无意图、TRIAL请求合法；对象作用域为会话+gameId+entryMode+适用版本/模式",
+            "expect": "首次创建游客run；同会话同对象同键同请求重放原run，同键异请求拒绝，不涉及return_run_id"
+          },
+          {
+            "case": "拒绝作品或意图范围不符",
+            "schemaValid": true,
+            "request": {
+              "gameId": "123e4567-e89b-42d3-a456-426614174009",
+              "entryMode": "OWNED",
+              "intentId": "123e4567-e89b-42d3-a456-426614174001"
+            },
+            "given": "RunCreate.gameId与意图作品不同，或目标范围未通过intent content_keys的当前权限核验",
+            "expect": "泛化INTENT_BINDING_INVALID；不创建run、不交付位置、不改变意图"
+          },
+          {
+            "case": "拒绝换键换run或同键异请求",
+            "schemaValid": true,
+            "request": {
+              "gameId": "123e4567-e89b-42d3-a456-426614174000",
+              "entryMode": "OWNED",
+              "intentId": "123e4567-e89b-42d3-a456-426614174001"
+            },
+            "given": "同键不同规范化请求，或已RETURNED后换键/换run请求再次交付",
+            "expect": "拒绝并保留原return_run_id；不覆盖原结果、不创建第二个承接run"
+          }
+        ]
       }
     },
     "/app-api/xj/v1/runs/{runId}/context": {
@@ -4844,7 +4958,7 @@
       "post": {
         "operationId": "createIntent",
         "summary": "登记原游戏购买返回意图",
-        "description": "登记原游戏购买返回意图",
+        "description": "由当前有效GUEST或PLAYER Cookie及归属一致的可信有效run创建购买返回意图；服务端核run.session_id、subject、版本所属作品、内容范围与当前访问/权益，不凭客户端提供的账号或intentId授权。GUEST原TRIAL run创建OPEN匿名意图，服务端固化原guest会话与run/版本/作品；创建后run正常EXITED不阻断交接，创建后30分钟内且guest登录时仍有效才可发起GI-A。PLAYER run直接用服务端当前PLAYER会话及其subject原子创建BOUND意图，bound_at/目标会话当场写入，无guest_session_id、无需登录或handoff；后续位置仍须再核当前会话/权益及精确版本。resumeHandle不含凭据且不回显；报价10分钟独立，购买前需邮箱已验证。",
         "tags": [
           "玩家"
         ],
@@ -5022,7 +5136,7 @@
             "playerSession": []
           }
         ],
-        "x-authorization": "平台受控匿名或玩家会话；每次验证run/版本/会话归属；游客仅试玩",
+        "x-authorization": "当前有效GUEST或PLAYER Cookie、CSRF与run.session_id一致；PLAYER subject取服务端会话并与run归属核对，GUEST只准TRIAL；服务端核作品/版本/内容/权益，不接受客户端指定目标账号",
         "x-version-policy": "v1重大不兼容变更新major；兼容窗口另定",
         "x-idempotency": "可信主体+动作+对象+key；同key不同payload=409；重试复用key；持久唯一关系兜底",
         "x-runtime-status": "仅设计，尚未实施",
@@ -5035,14 +5149,69 @@
               }
             }
           }
-        }
+        },
+        "x-static-cases": [
+          {
+            "case": "GUEST有效",
+            "schemaValid": true,
+            "given": "当前有效GUEST Cookie与TRIAL run匹配，创建时run有效，内容/作品/版本核对",
+            "expect": "OPEN、guest_session_id非空、subject_id和bound_player_session_id为空，登录后才可GI-A",
+            "request": {
+              "runId": "123e4567-e89b-42d3-a456-426614174001",
+              "contentKeys": [
+                "chapter.1"
+              ],
+              "resumeHandle": "scene-1"
+            }
+          },
+          {
+            "case": "PLAYER有效",
+            "schemaValid": true,
+            "given": "当前有效PLAYER Cookie与同账号PLAYER run匹配，作品/版本/内容/访问权益核对",
+            "expect": "直接BOUND，subject_id、bound_player_session_id和bound_at非空；guest_session_id和handoff为空",
+            "request": {
+              "runId": "123e4567-e89b-42d3-a456-426614174001",
+              "contentKeys": [
+                "chapter.1"
+              ],
+              "resumeHandle": "scene-1"
+            }
+          },
+          {
+            "case": "拒绝",
+            "schemaValid": true,
+            "given": "客户端自报账号、run与当前Cookie不一致、版本/内容/权益不符；或当前guest已轮换但试图使用旧run",
+            "expect": "泛化归属或权限错误，不创建意图",
+            "request": {
+              "runId": "123e4567-e89b-42d3-a456-426614174001",
+              "contentKeys": [
+                "chapter.1"
+              ],
+              "resumeHandle": "scene-1"
+            }
+          },
+          {
+            "case": "拒绝schema",
+            "schemaValid": false,
+            "request": {
+              "runId": "123e4567-e89b-42d3-a456-426614174001",
+              "contentKeys": [
+                "chapter.1"
+              ],
+              "resumeHandle": "scene-1",
+              "subjectId": "123e4567-e89b-42d3-a456-426614174002"
+            },
+            "given": "客户端额外提交subjectId，试图自报目标账号",
+            "expect": "400额外字段拒绝；不得自报目标账号"
+          }
+        ]
       }
     },
     "/app-api/xj/v1/purchase-intents/{intentId}/bind": {
       "post": {
         "operationId": "bindIntent",
         "summary": "登录后核验并承接匿名意图",
-        "description": "必须核验原匿名绑定与新登录会话；仅持intentId不足以认领",
+        "description": "仅GUEST创建的OPEN意图执行此空请求bind；PLAYER直达意图在创建时已BOUND，不调用bind。请求体必须为空。首次bind由当前PLAYER Cookie解析目标会话/账号，以同库intent唯一handoff核验当前PLAYER session.id精确匹配handoff.player_session_id和subject（无已实现的可信轮换谱系时不同session一律拒绝并重新选择商品）、原guest session/run/版本/作品、OPEN、意图创建时原run有效及历史归属、登录时guest有效的交接快照、handoff期限与未取消/安全撤销/消费；固定锁序在同事务内绑定账号/目标会话并消费handoff。公开intentId不授权。换号、guest登录前无谱系轮换或PLAYER登录后bind前无谱系轮换、跨浏览器、未建交接前意图登录资格过期或交接到期、取消、撤销或目标旧会话、重复消费统一泛化INTENT_BINDING_INVALID，不回显位置或存在性；同目标会话同Idempotency-Key在首次成功后返回原稳定结果。建议登录资格在创建后30分钟内且登录时guest有效；已成功登录的handoff再保留15分钟，不因原run正常EXITED或guest Cookie轮换/自然到期失效。位置绑定后24小时保留，安全撤销/游戏暂停可使位置不可用但不抹付款事实；邮箱验证可在bind后但购买前完成。",
         "tags": [
           "玩家"
         ],
@@ -5231,9 +5400,9 @@
             "playerSession": []
           }
         ],
-        "x-authorization": "验证当前主体与对象归属；新增资产/私人云档另需邮箱已验证",
+        "x-authorization": "仅当前有效PLAYER Cookie；GUEST意图须按同库唯一handoff核目标session/subject和原guest session/run/版本/作品历史快照及创建/登录时点；PLAYER直达BOUND意图不适用；不接受客户端会话或账号证明；PLAYER轮换为另一session记录且无服务端可信轮换谱系则泛化拒绝并重新选择商品，不凭同浏览器放行",
         "x-version-policy": "v1重大不兼容变更新major；兼容窗口另定",
-        "x-idempotency": "可信主体+动作+对象+key；同key不同payload=409；重试复用key；持久唯一关系兜底",
+        "x-idempotency": "首次bind将目标会话/账号及作用域Idempotency-Key摘要持久化并原子消费handoff；同会话同键稳定返回，换键/换号/换会话拒绝",
         "x-runtime-status": "仅设计，尚未实施",
         "requestBody": {
           "required": true,
@@ -5244,14 +5413,39 @@
               }
             }
           }
-        }
+        },
+        "x-static-cases": [
+          {
+            "case": "允许",
+            "schemaValid": true,
+            "given": "登录时同浏览器guest Cookie有效且指定原run有效时创建的OPEN意图；原run现可EXITED；目标PLAYER Cookie与handoff匹配且未过期",
+            "expect": "同库首次BOUND并CONSUMED；同会话同键重试返回原结果",
+            "request": {}
+          },
+          {
+            "case": "拒绝",
+            "schemaValid": true,
+            "given": "仅有公开intentId，或另一浏览器/账号/目标会话，或未建交接前意图过期/交接到期/取消/撤销/已消费，或原guest会话/run/版本/作品不匹配；或guest在登录前/PLAYER在bind前轮换为另一session且无服务端可信轮换谱系",
+            "expect": "泛化INTENT_BINDING_INVALID；无位置/归属泄露，无新交接",
+            "request": {}
+          },
+          {
+            "case": "拒绝schema",
+            "schemaValid": false,
+            "request": {
+              "guestSessionId": "伪造"
+            },
+            "given": "客户端额外提交guestSessionId，试图自报游客会话证明",
+            "expect": "400额外字段拒绝；不使用客户端交接证明"
+          }
+        ]
       }
     },
     "/app-api/xj/v1/purchase-intents/{intentId}": {
       "get": {
         "operationId": "getIntent",
         "summary": "查询购买返回及当前访问状态",
-        "description": "查询购买返回及当前访问状态；只返回绑定、状态、当前访问及returnAvailable，不回显resumeHandle或可直接恢复的位置。",
+        "description": "仅当前有权guest原会话或首次绑定/PLAYER直达创建的目标PLAYER会话/账号可查询购买返回状态；公开intentId本身不授权。只返回绑定、当前访问及returnAvailable，不回显resumeHandle或可直接恢复的位置；未交接意图的登录资格过期、交接到期、取消及换号泛化拒绝；已绑定意图由当前目标会话按归属查询。 会话轮换不能凭同浏览器推定归属；无可信轮换谱系按新session拒绝。",
         "tags": [
           "玩家"
         ],
@@ -5429,7 +5623,7 @@
       "post": {
         "operationId": "createQuote",
         "summary": "生成10分钟服务端报价",
-        "description": "生成10分钟服务端报价",
+        "description": "已验证邮箱的当前PLAYER会话生成10分钟服务端报价；若携intentId，须核该意图已BOUND于当前会话/账号、作品与目标商品修订及contentKeys覆盖相符，位置的24小时期限不替代报价期限或付款资格；不携intentId的普通商品购买仍按账号、商品与权益独立核验。金额由服务端计算，提交订单时重核修订和报价有效期。",
         "tags": [
           "玩家"
         ],
@@ -5607,7 +5801,7 @@
             "playerSession": []
           }
         ],
-        "x-authorization": "验证当前主体与对象归属；新增资产/私人云档另需邮箱已验证",
+        "x-authorization": "仅已验证邮箱的当前PLAYER会话；可选intentId须为当前会话/账号绑定的BOUND意图，且目标商品版本/作品/内容范围匹配；公开intentId不授权，过期位置不影响已付款事实",
         "x-version-policy": "v1重大不兼容变更新major；兼容窗口另定",
         "x-idempotency": "可信主体+动作+对象+key；同key不同payload=409；重试复用key；持久唯一关系兜底",
         "x-runtime-status": "仅设计，尚未实施",
@@ -5620,14 +5814,45 @@
               }
             }
           }
-        }
+        },
+        "x-static-cases": [
+          {
+            "case": "普通购买报价可不携意图",
+            "schemaValid": true,
+            "request": {
+              "productRevisionId": "123e4567-e89b-42d3-a456-426614174000"
+            },
+            "given": "当前PLAYER已验证邮箱，商品修订有效且按当前账号/权益生成报价",
+            "expect": "创建服务端报价；不伪造购买返回绑定"
+          },
+          {
+            "case": "携意图报价须绑定当前主体",
+            "schemaValid": true,
+            "request": {
+              "productRevisionId": "123e4567-e89b-42d3-a456-426614174000",
+              "intentId": "123e4567-e89b-42d3-a456-426614174001"
+            },
+            "given": "意图BOUND于当前会话/账号，作品/目标商品修订及contentKeys覆盖相符",
+            "expect": "创建服务端报价；提交确认仍重核全部守卫"
+          },
+          {
+            "case": "拒绝携入目标主体字段",
+            "schemaValid": false,
+            "request": {
+              "productRevisionId": "123e4567-e89b-42d3-a456-426614174000",
+              "subjectId": "123e4567-e89b-42d3-a456-426614174001"
+            },
+            "given": "客户端额外提交subjectId，试图自报报价目标主体",
+            "expect": "400额外字段拒绝；主体只取当前PLAYER会话"
+          }
+        ]
       }
     },
     "/app-api/xj/v1/orders": {
       "post": {
         "operationId": "createOrder",
         "summary": "重核报价并创建正应付订单",
-        "description": "dueFen必须>0；不接受客户端金额；零补款返回409并引导独立upgrade操作",
+        "description": "重核报价并创建正应付订单；仅dueFen>0。服务端锁序内确认报价属于当前PLAYER主体，且QuoteConfirm.expectedAccessRevision == quote.access_revision == 当前权益守卫revision；重核报价有效期、不可变商品修订、contentKeys、合格抵扣来源的归属/净实付/已分配/在途抵扣与revision，并按0<=creditFen<=priceFen、dueFen=priceFen-creditFen重算金额。任何变化拒绝并要求重新报价，不接受客户端金额。零补款不得创建订单或支付尝试，返回409并引导独立upgrade。",
         "tags": [
           "玩家"
         ],
@@ -5818,7 +6043,49 @@
               }
             }
           }
-        }
+        },
+        "x-static-cases": [
+          {
+            "case": "正补款报价确认创建订单",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "7"
+            },
+            "given": "报价属于当前主体，expectedAccessRevision=quote.access_revision=当前守卫revision=7，来源/在途抵扣与金额重核一致且dueFen>0",
+            "expect": "创建同一报价范围的应付订单；不另造抵扣或接受客户端金额"
+          },
+          {
+            "case": "零补款误走订单",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "7"
+            },
+            "given": "归属、三重revision及来源重核均有效，但dueFen=0",
+            "expect": "拒绝createOrder；不创建订单或支付尝试；引导createUpgrade"
+          },
+          {
+            "case": "revision或报价归属变化拒绝",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "6"
+            },
+            "given": "报价不属于当前主体，或expectedAccessRevision、quote.access_revision、当前守卫revision任一不相等",
+            "expect": "拒绝且不创建订单；重新取得报价与确认，不泄露他人报价"
+          },
+          {
+            "case": "抵扣来源或在途金额变化拒绝",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "7"
+            },
+            "given": "来源归属/净实付/已分配/在途抵扣或revision变化，或重算不满足金额关系",
+            "expect": "拒绝并不创建订单；重新报价，不重复使用抵扣"
+          }
+        ]
       },
       "get": {
         "operationId": "listOrders",
@@ -6006,7 +6273,7 @@
       "post": {
         "operationId": "createUpgrade",
         "summary": "重核并创建零补款升级",
-        "description": "该入口只接dueFen=0；不制造支付订单；正补款订单核实交付后关联升级；Upgrade必须完整返回目标productRevisionId、priceFen、currency、promise与contentKeys，以及服务端重核的creditFen/dueFen；零补款不得返回orderId，交付时必须返回grantId。",
+        "description": "重核并创建零补款升级；仅dueFen=0。服务端锁序内确认报价属于当前PLAYER主体，且QuoteConfirm.expectedAccessRevision == quote.access_revision == 当前权益守卫revision；重核报价有效期、不可变商品修订、contentKeys、合格抵扣来源的归属/净实付/已分配/在途抵扣与revision，并按0<=creditFen<=priceFen、dueFen=priceFen-creditFen重算金额。任何变化拒绝并要求重新报价，不接受客户端金额。正补款不得直接创建升级，必须先走订单并由渠道核实后交付。；Upgrade必须完整返回目标productRevisionId、priceFen、currency、promise与contentKeys，以及服务端重核的creditFen/dueFen；零补款不得返回orderId，交付时必须返回grantId。",
         "tags": [
           "玩家"
         ],
@@ -6197,7 +6464,49 @@
               }
             }
           }
-        }
+        },
+        "x-static-cases": [
+          {
+            "case": "零补款报价确认创建升级",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "7"
+            },
+            "given": "报价属于当前主体，expectedAccessRevision=quote.access_revision=当前守卫revision=7，来源/在途抵扣与金额重核一致且dueFen=0",
+            "expect": "创建零补款升级并原子抵扣；不创建订单或支付尝试"
+          },
+          {
+            "case": "正补款误走升级",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "7"
+            },
+            "given": "归属、三重revision及来源重核均有效，但dueFen>0",
+            "expect": "拒绝createUpgrade；不直接交付；引导createOrder并等待渠道核实"
+          },
+          {
+            "case": "revision或报价归属变化拒绝",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "6"
+            },
+            "given": "报价不属于当前主体，或expectedAccessRevision、quote.access_revision、当前守卫revision任一不相等",
+            "expect": "拒绝且不创建升级或抵扣；重新取得报价与确认，不泄露他人报价"
+          },
+          {
+            "case": "抵扣来源或在途金额变化拒绝",
+            "schemaValid": true,
+            "request": {
+              "quoteId": "123e4567-e89b-42d3-a456-426614174000",
+              "expectedAccessRevision": "7"
+            },
+            "given": "来源归属/净实付/已分配/在途抵扣或revision变化，或重算不满足金额关系",
+            "expect": "拒绝且不创建升级或抵扣；重新报价，不重复使用抵扣"
+          }
+        ]
       }
     },
     "/app-api/xj/v1/orders/{orderId}": {
@@ -15812,6 +16121,13 @@
             "type": "string",
             "minLength": 15,
             "maxLength": 128
+          },
+          "intentId": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "format": "uuid",
+            "description": "可选，仅指定该guest会话原run的单个OPEN意图；公开UUID不是授权证明"
           }
         },
         "required": [
@@ -17319,6 +17635,85 @@
           "sources",
           "expiresAt",
           "accessRevision"
+        ],
+        "x-cross-field-validation": [
+          "0<=creditFen<=priceFen且dueFen=priceFen-creditFen；金额只取服务端报价并在确认时重核"
+        ],
+        "x-static-cases": [
+          {
+            "case": "零补款金额关系成立",
+            "schemaValid": true,
+            "given": "服务端报价priceFen=1000、creditFen=1000、dueFen=0",
+            "expect": "金额关系成立，允许零补款升级路径继续确认",
+            "value": {
+              "id": "123e4567-e89b-42d3-a456-426614174000",
+              "gameId": "123e4567-e89b-42d3-a456-426614174001",
+              "productRevisionId": "123e4567-e89b-42d3-a456-426614174002",
+              "priceFen": 1000,
+              "creditFen": 1000,
+              "dueFen": 0,
+              "currency": "CNY",
+              "sources": [],
+              "expiresAt": "2026-10-28T12:00:00Z",
+              "accessRevision": "7"
+            }
+          },
+          {
+            "case": "正补款金额关系成立",
+            "schemaValid": true,
+            "given": "服务端报价priceFen=1000、creditFen=300、dueFen=700",
+            "expect": "金额关系成立，允许正补款订单路径继续确认",
+            "value": {
+              "id": "123e4567-e89b-42d3-a456-426614174000",
+              "gameId": "123e4567-e89b-42d3-a456-426614174001",
+              "productRevisionId": "123e4567-e89b-42d3-a456-426614174002",
+              "priceFen": 1000,
+              "creditFen": 300,
+              "dueFen": 700,
+              "currency": "CNY",
+              "sources": [],
+              "expiresAt": "2026-10-28T12:00:00Z",
+              "accessRevision": "7"
+            }
+          },
+          {
+            "case": "拒绝抵扣大于售价",
+            "schemaValid": true,
+            "amountRelationValid": false,
+            "given": "priceFen=1000、creditFen=1001、dueFen=0",
+            "expect": "拒绝报价，不进入订单或升级确认",
+            "value": {
+              "id": "123e4567-e89b-42d3-a456-426614174000",
+              "gameId": "123e4567-e89b-42d3-a456-426614174001",
+              "productRevisionId": "123e4567-e89b-42d3-a456-426614174002",
+              "priceFen": 1000,
+              "creditFen": 1001,
+              "dueFen": 0,
+              "currency": "CNY",
+              "sources": [],
+              "expiresAt": "2026-10-28T12:00:00Z",
+              "accessRevision": "7"
+            }
+          },
+          {
+            "case": "拒绝应付不等于售价减抵扣",
+            "schemaValid": true,
+            "amountRelationValid": false,
+            "given": "priceFen=1000、creditFen=300、dueFen=699",
+            "expect": "拒绝报价，不进入订单或升级确认",
+            "value": {
+              "id": "123e4567-e89b-42d3-a456-426614174000",
+              "gameId": "123e4567-e89b-42d3-a456-426614174001",
+              "productRevisionId": "123e4567-e89b-42d3-a456-426614174002",
+              "priceFen": 1000,
+              "creditFen": 300,
+              "dueFen": 699,
+              "currency": "CNY",
+              "sources": [],
+              "expiresAt": "2026-10-28T12:00:00Z",
+              "accessRevision": "7"
+            }
+          }
         ]
       },
       "QuoteConfirm": {
@@ -21854,6 +22249,37 @@
           "effectivePageNo",
           "pageSize",
           "total"
+        ]
+      },
+      "LoginResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "const": "SUCCEEDED"
+          },
+          "handoffError": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "const": "INTENT_BINDING_INVALID"
+              },
+              "msg": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "code",
+              "msg"
+            ],
+            "description": "可选；仅表示认证成功后未创建交接，不含对象存在性、取消、过期、Cookie或会话谱系细节"
+          }
+        },
+        "required": [
+          "state"
         ]
       },
       "AlipayNotice": {

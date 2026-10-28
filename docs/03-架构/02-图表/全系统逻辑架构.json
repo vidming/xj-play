@@ -325,14 +325,16 @@
       "id": "store-game",
       "from": "store",
       "to": "game",
-      "label": "受控启动 / 退出"
+      "label": "受控启动 / 退出",
+      "toSide": "left"
     },
     {
       "id": "game-host-bridge",
       "from": "game",
       "to": "store",
       "label": "MessagePort白名单RPC",
-      "variant": "security"
+      "variant": "security",
+      "fromSide": "left"
     },
     {
       "id": "host-resource-api",

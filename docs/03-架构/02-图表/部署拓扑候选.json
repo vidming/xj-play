@@ -337,21 +337,25 @@
       "id": "jobs",
       "from": "platform",
       "to": "ops",
-      "label": "outbox与任务"
+      "label": "outbox与任务",
+      "toSide": "right"
     },
     {
       "id": "restriction-witness",
       "from": "platform",
       "to": "recovery",
       "label": "限制计划先见证（待建设）",
-      "variant": "dashed"
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
     },
     {
       "id": "point",
       "from": "mysql",
       "to": "recovery",
       "label": "恢复点待验证",
-      "variant": "dashed"
+      "variant": "dashed",
+      "toSide": "right"
     },
     {
       "id": "versions",

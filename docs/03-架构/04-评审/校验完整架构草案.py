@@ -99,6 +99,41 @@ def api_valid(name, value, valid):
     sample_checks.append({"schema": name, "expectedValid": valid})
 
 
+def assert_static_case_structure(case):
+    assert set(case) <= {"case", "request", "value", "schemaValid", "amountRelationValid", "given", "expect"}, case
+    assert isinstance(case["case"], str) and case["case"]
+    assert isinstance(case["schemaValid"], bool)
+    assert ("request" in case) != ("value" in case), case
+    assert isinstance(case.get("given"), str) and case["given"]
+    assert isinstance(case.get("expect"), str) and case["expect"]
+    if "amountRelationValid" in case:
+        assert isinstance(case["amountRelationValid"], bool)
+        value = case["value"]
+        actual = (0 <= value["creditFen"] <= value["priceFen"]
+                  and value["dueFen"] == value["priceFen"] - value["creditFen"])
+        assert actual is case["amountRelationValid"], case
+
+
+static_case_count = 0
+for path, item in api["paths"].items():
+    for operation in item.values():
+        if "x-static-cases" not in operation:
+            continue
+        request_schema = operation["requestBody"]["content"]["application/json"]["schema"]["$ref"].rsplit("/", 1)[1]
+        for case in operation["x-static-cases"]:
+            assert_static_case_structure(case)
+            assert "request" in case, (path, case)
+            api_valid(request_schema, case["request"], case["schemaValid"])
+            static_case_count += 1
+for name, schema in schemas.items():
+    for case in schema.get("x-static-cases", []):
+        assert_static_case_structure(case)
+        assert "value" in case, (name, case)
+        api_valid(name, case["value"], case["schemaValid"])
+        static_case_count += 1
+checks["操作与Schema静态用例"] = f"{static_case_count}条逐例请求/载荷Schema断言；金额关系独立断言，非文案关键字检查"
+
+
 def standalone_valid(name, value, valid):
     result = jsonschema.Draft202012Validator(standalone[name], **validator_options).is_valid(value)
     assert result is valid, (name, value, result)
@@ -121,6 +156,11 @@ api_valid("PaymentCreate", {"channel": "ALIPAY", "method": "PAGE", "paid": True}
 api_valid("RunCreate", {"gameId": uuid, "entryMode": "TRIAL"}, True)
 api_valid("RunCreate", {"gameId": uuid, "entryMode": "TRIAL", "playerId": uuid}, False)
 api_valid("RunCreate", {"gameId": uuid, "entryMode": "TRIAL", "intentId": uuid}, True)
+api_valid("Login", {"email": "player@example.com", "password": "a" * 15, "intentId": uuid}, True)
+api_valid("Login", {"email": "player@example.com", "password": "a" * 15, "guestSessionId": uuid}, False)
+api_valid("Login", {"email": "player@example.com", "password": "a" * 15, "intentId": "invalid"}, False)
+api_valid("PurchaseIntentCreate", {"runId": uuid, "contentKeys": ["story.main"]}, True)
+api_valid("PurchaseIntentCreate", {"runId": uuid, "contentKeys": ["story.main"], "subjectId": uuid}, False)
 api_valid("RunResume", {"state": "UNAVAILABLE", "reason": "NO_SAVED_POSITION"}, True)
 api_valid("RunResume", {"state": "UNAVAILABLE", "reason": "NO_SAVED_POSITION", "handle": "position"}, False)
 api_valid("RunResume", {"state": "AVAILABLE", "handle": "position", "versionId": uuid,
@@ -135,6 +175,12 @@ api_valid("ContinueSummary", {"available": False, "saveState": "CONFLICT",
                               "accessState": "DENIED"}, True)
 api_valid("QuoteConfirm", {"quoteId": uuid, "expectedAccessRevision": "1"}, True)
 api_valid("QuoteConfirm", {"quoteId": uuid, "expectedAccessRevision": "1", "priceFen": 1}, False)
+api_valid("Empty", {}, True)
+api_valid("Empty", {"unexpected": None}, False)
+api_valid("LoginResult", {"state": "SUCCEEDED"}, True)
+api_valid("LoginResult", {"state": "SUCCEEDED", "handoffError": {"code": "INTENT_BINDING_INVALID", "msg": "暂时无法交接购买返回"}}, True)
+api_valid("LoginResult", {"state": "FAILED", "handoffError": {"code": "INTENT_BINDING_INVALID", "msg": "意图已取消"}}, False)
+api_valid("LoginResult", {"state": "SUCCEEDED", "handoffError": {"code": "CANCELLED", "msg": "意图已取消"}}, False)
 valid_upgrade = {"id": uuid, "gameId": uuid, "productRevisionId": uuid, "priceFen": 1000,
                  "creditFen": 1000, "dueFen": 0, "currency": "CNY", "promise": "买断全部已发布章节",
                  "contentKeys": ["story.main"], "state": "RESERVED"}
@@ -226,6 +272,42 @@ assert "returnAvailable" in schemas["PurchaseIntent"]["properties"]
 assert "resume" in schemas["Run"]["properties"]
 assert "continue" in schemas["LibraryItem"]["properties"]
 assert "INTENT_BINDING_INVALID" in schemas["Error"]["properties"]["code"]["enum"]
+assert "intentId" in schemas["Login"]["properties"] and "intentId" not in schemas["Login"]["required"]
+login = api["paths"]["/app-api/xj/v1/sessions"]["post"]
+create_run = api["paths"]["/app-api/xj/v1/runs"]["post"]
+create_order = api["paths"]["/app-api/xj/v1/orders"]["post"]
+create_upgrade = api["paths"]["/app-api/xj/v1/upgrades"]["post"]
+guest = api["paths"]["/app-api/xj/v1/guest-sessions"]["post"]
+bind = api["paths"]["/app-api/xj/v1/purchase-intents/{intentId}/bind"]["post"]
+assert all("Set-Cookie" in operation["responses"]["200"]["headers"] for operation in (login, guest))
+assert bind["requestBody"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/Empty"
+assert "GUEST" in api["paths"]["/app-api/xj/v1/purchase-intents"]["post"]["description"]
+assert "PLAYER" in api["paths"]["/app-api/xj/v1/purchase-intents"]["post"]["description"]
+quote = api["paths"]["/app-api/xj/v1/quotes"]["post"]
+assert "intentId" in schemas["QuoteCreate"]["properties"]
+assert "intentId" not in schemas["QuoteCreate"]["required"]
+assert "BOUND" in quote["x-authorization"] and "当前会话/账号" in quote["x-authorization"]
+assert "24小时" in create_run["description"]
+assert "RunCreate.gameId必须等于意图gameId" in create_run["description"]
+assert "contentKeys" in create_run["description"]
+assert "BOUND原子转为RETURNED" in create_run["description"]
+assert "return_run_id" in create_run["description"]
+for operation in (create_order, create_upgrade):
+    for required_semantic in ("当前PLAYER主体", "expectedAccessRevision == quote.access_revision == 当前权益守卫revision",
+                              "在途抵扣", "dueFen=priceFen-creditFen"):
+        assert required_semantic in operation["description"], (operation["operationId"], required_semantic)
+assert "零补款误走订单" in {case["case"] for case in create_order["x-static-cases"]}
+assert "正补款误走升级" in {case["case"] for case in create_upgrade["x-static-cases"]}
+for operation in (create_order, create_upgrade):
+    assert "revision或报价归属变化拒绝" in {case["case"] for case in operation["x-static-cases"]}
+assert "认证成功但guest Cookie或意图不满足交接" in {case["case"] for case in login["x-static-cases"]}
+assert "密码账号认证失败才登录失败" in {case["case"] for case in login["x-static-cases"]}
+assert {"BOUND首次交付原子转为RETURNED", "RETURNED加return_run_id重放原结果",
+        "拒绝作品或意图范围不符", "拒绝换键换run或同键异请求",
+        "游客无意图创建与重放"} == {case["case"] for case in create_run["x-static-cases"]}
+for required_semantic in ("GUEST/PLAYER会话", "无intentId时为当前会话+gameId+entryMode+适用版本/模式",
+                          "同会话同对象同键同请求重放原run"):
+    assert required_semantic in create_run["x-idempotency"]
 access_doc = (BASE / "03-文档/游戏接入与可信业务链路候选-V0.1.md").read_text()
 assert "### 6.1 购买返回契约（RT1已确认）" in access_doc
 assert "### 6.2 “我的游戏 / 继续游玩”契约（CL1已确认）" in access_doc
@@ -234,15 +316,33 @@ checks["已确认购买返回与继续契约"] = (
     "RT1：RunCreate.intentId可选、Run.resume受控交付且意图错误稳定拒绝；CL1：LibraryItem.continue只含摘要；"
     "PurchaseIntent不回显handle；仅静态结构检查，跨浏览器/版本/权限语义未运行"
 )
+checks["GI-A交接静态形状"] = (
+    "Login可选单intentId且不接收客户端会话ID，guest/登录声明Set-Cookie，bind空请求，"
+    "玩家直接购买路径及报价绑定守卫保留；仅Schema和静态文案检查，未验证Cookie/CSRF/事务/并发"
+)
+checks["登录运行报价守卫"] = (
+    "登录认证与交接失败分离；RunCreate按意图作品/范围校验并声明BOUND→RETURNED及原结果重放；"
+    "订单/升级共用报价归属、三重revision、来源/在途抵扣和金额重核；仅静态契约，未运行状态机或事务"
+)
 
 model = read("物理数据模型-V0.1.json")
 tables = {t["name"]: t for t in model["tables"]}
 refs = 0
+query_indexes = 0
+index_names = set()
 for t in tables.values():
     columns = {c["name"]: c for c in t["columns"]}
     assert len(columns) == len(t["columns"])
     for unique in t["unique"]:
         assert all(c in columns for c in unique)
+    for index in t.get("queryIndexes", []):
+        fields = index["columns"]
+        assert fields and len(fields) == len(set(fields))
+        assert all(c in columns and columns[c]["sqlType"] not in ("TEXT", "JSON", "MEDIUMBLOB") for c in fields)
+        assert not any(key[:len(fields)] == fields for key in t["unique"])
+        assert index["name"] not in index_names and len(index["name"]) <= 64
+        index_names.add(index["name"])
+        query_indexes += 1
     for c in t["columns"]:
         if "references" in c:
             target, col = c["references"].split(".")
@@ -263,6 +363,20 @@ assert {(r["from"], r["to"]) for r in model["logicalRelations"]} == {
 }
 assert ["data_namespace"] in tables["xj_game"]["unique"]
 assert ["return_run_id"] in tables["xj_purchase_intent"]["unique"]
+intent_fields = {c["name"]: c for c in tables["xj_purchase_intent"]["columns"]}
+assert "anonymous_binding" not in intent_fields
+assert intent_fields["guest_session_id"]["nullable"] and intent_fields["guest_session_id"]["references"] == "xj_session.id"
+assert intent_fields["bound_player_session_id"]["references"] == "xj_session.id"
+assert intent_fields["expires_at"]["nullable"]
+handoff = tables["xj_intent_handoff"]
+assert ["intent_id"] in handoff["unique"]
+handoff_fields = {c["name"]: c for c in handoff["columns"]}
+assert handoff_fields["intent_id"]["references"] == "xj_purchase_intent.id"
+assert handoff_fields["player_session_id"]["references"] == "xj_session.id"
+assert handoff_fields["guest_session_id"]["references"] == "xj_session.id"
+assert handoff_fields["subject_id"]["references"] == "xj_subject.id"
+assert {"expires_at", "consumed_at", "revoked_at", "state"} <= handoff_fields.keys()
+checks["GI-A数据结构"] = "匿名/账号意图分流，按意图唯一交接并关联双会话、主体、到期与消费/撤销；仅结构检查，未执行DDL"
 assert any(c["name"] == "operation_row_id" and c.get("references") == "xj_restriction_operation.id" for c in tables["xj_rl_event"]["columns"])
 analytics = tables["xj_analytics_event"]
 assert ["event_key"] in analytics["unique"]
@@ -280,6 +394,7 @@ for relation in model["logicalRelations"]:
 checks["物理模型"] = {"tables": len(tables), "columns": sum(len(t["columns"]) for t in tables.values()), "physicalForeignKeys": 0,
                      "logicalRelations": len(model["logicalRelations"]),
                      "stores": {s: sum(t["store"] == s for t in tables.values()) for s in sorted(store_ids)}}
+checks["查询索引候选"] = f"{query_indexes}个候选；字段、唯一键冗余与名称静态检查通过；尚未建索引或运行EXPLAIN"
 svg = (BASE / "02-图表/完整物理ER-V0.1.svg").read_text()
 dot = (BASE / "02-图表/完整物理ER-V0.1.dot").read_text()
 assert svg.count('class="node"') == len(tables)

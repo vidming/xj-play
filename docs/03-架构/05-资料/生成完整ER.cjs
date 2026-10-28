@@ -1,4 +1,5 @@
 // 使用环境已有Graphviz运行库生成完整字段的海报式ER；不安装依赖。
+// 复现渲染：NODE_PATH 指向 @viz-js/viz@3.25.0（内置 Graphviz 14.1.3），与当前 SVG 的生成版本一致。
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -9,7 +10,7 @@ const esc = s => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').repl
 const textWidth = s => [...String(s)].reduce((n, c) => n + (c.charCodeAt(0) > 127 ? 16 : 10), 28);
 const lines = [
   'digraph XJ {',
-  `graph [rankdir=LR, bgcolor="#fafbf7", nodesep=0.5, ranksep=1.2, fontname="Helvetica", label="间隙PLAY · 数据表逻辑关联 · ${model.tables.length}张表 · 物理外键0条 · 设计未实施", labelloc=t];`,
+  `graph [rankdir=LR, bgcolor="#fafbf7", nodesep=0.5, ranksep=1.2, fontname="Helvetica", label="间隙PLAY · 数据表逻辑关联 · ${model.tables.length}张表 · 物理外键0条 · 设计未实施\\n连线：虚线＝逻辑引用（无外键）；鸦爪＝多，竖线＝一，圆圈＝可空", labelloc=t];`,
   'node [shape=plain, fontname="Helvetica", fontsize=14];',
   'edge [color="#526d60", arrowsize=0.7, fontname="Helvetica", fontsize=10];'
 ];

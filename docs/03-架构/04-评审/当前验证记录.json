@@ -1,7 +1,35 @@
 {
-  "date": "2026-10-27",
-  "status": "阶段3静态契约与模型检查通过；完整ER已渲染但全图视觉未验收；完整架构尚未整体验收",
-  "scope": "继续阶段3架构方向收口与静态验证；已承接GB1／RC1／RT1／CL1；未读取保护配置、未安装/解析/编译、未连接业务服务、未建表、未修改源码、未采购或部署",
+  "date": "2026-10-28",
+  "status": "AC1已确认阶段3有边界设计验收；GP1与EP1参数已确认；只允许编制阶段4实施计划，运行未验证",
+  "queryIndexReview": {
+    "date": "2026-10-28",
+    "scope": "当前物理模型与字典的关键查询候选",
+    "result": "18个非唯一查询索引候选的字段存在、无同表唯一键同序冗余、名称不重复且不超过64字符；模型、字典和离线审阅页已同步",
+    "limitations": "未生成或执行DDL，未用实际查询、数据量、MySQL运行身份做EXPLAIN和写入成本测量；未列出的逻辑引用不自动索引"
+  },
+  "giaStaticReview": {
+    "date": "2026-10-28",
+    "result": "当前OpenAPI生成源与机读契约已同步：49表551列85逻辑关联、0物理外键，18个查询索引候选；GI-A游客交接、PLAYER直达、报价携意图守卫和24小时位置边界已静态核对；anonymous_binding未进入建表模型",
+    "limits": "GP1时限已确认；未运行认证、Cookie/CSRF、并发、支付或游戏隔离；AC1只验收设计和静态证据"
+  },
+  "decisionSourceAudit": {
+    "date": "2026-10-27",
+    "scope": "AC-B阶段3有边界设计验收、EW1观察事件72小时、CK1时钟容差5分钟",
+    "finding": "现有文件与本记录含上述选择结论及其描述，但在本轮可读取的当前对话中未定位到对应的原始选择消息；未定位不等于证明先前从未确认",
+    "latestUserConfirmation": "AC1／GP1／EP1／CM1，补充：无",
+    "handling": "历史AC-B/EW1/CK1来源说明保留；当前事项已由2026-10-28实际AC1/EP1明确确认取代，不再阻塞阶段4计划编制",
+    "contractGap": "reportGameEvents当前OpenAPI未定义跨会话补报凭据字段；ER-A首期不要求该能力，数据一致性规格6.3/6.4仅为未来扩展候选"
+  },
+  "eventRetryScopeDecision": {
+    "date": "2026-10-27",
+    "scope": "XJ-ARCH-EVENT-RETRY-20261027",
+    "source": "当前会话实际收到的visualization kind:message，而非仅有控件选中状态",
+    "selection": "ER-A",
+    "notes": "无",
+    "rule": "首期GAME观察事件只在原run运行中且当前会话有效时重试；WEB观察事件只在当前浏览会话有效时重试；结束或失效后无法证明归属的队列拒绝并计入分析覆盖缺口",
+    "limits": "不重确认AC-B/EW1/CK1；不授权阶段4、开发、建表、真实支付、部署；跨会话补报凭据、OpenAPI及模型增量只作为未来候选，未实现未测试"
+  },
+  "scope": "阶段3设计收口：登录/新run/报价守卫、当前模型与ER、静态契约、中文目录及当前资料清单；未读取保护配置、未连库、未建表、未改源码、未采购或部署",
   "cleanup": {
     "date": "2026-10-25",
     "backup": "/Users/hzmking/.codex/backups/xj-play/文档整理前-20261025-173257.tar.gz",
@@ -62,18 +90,143 @@
     "scope": "25项字节未变仅指前轮资料清理时的保护检查；本轮按当前设计更新了OpenAPI、桥Schema及模型页说明，不主张它们仍与清理前字节相同"
   },
   "architectureStatic": {
-    "date": "2026-10-26",
+    "date": "2026-10-28",
     "status": "静态契约检查通过；完整ER已渲染，全图视觉验收未完成",
     "checks": {
       "OpenAPI官方元模式与引用": "通过；82个唯一操作；未运行服务",
       "异步受理形状": "仅显式声明的存档提交使用202/SaveOperation，按id查询；资源读取只返回二进制或错误，无悬空202",
       "限制完成语义": "6个现有操作（含重置口令撤会话）注明SD2同库提交与未明语义；不新增内部日志API或游戏RPC；仅静态文案检查",
       "官方元模式来源": "https://spec.openapis.org/oas/3.1/schema/2025-09-15；2026-10-25实际HTTP200读取",
-      "Schema结构": "OpenAPI 119个schema＋3份独立Schema元模式与本地引用通过",
+      "Schema结构": "OpenAPI 120个schema＋3份独立Schema元模式与本地引用通过",
       "产品事件对应": "31项名称与固定PRD完全对应；businessRef按实际确认追加",
+      "操作与Schema静态用例": "31条逐例请求/载荷Schema断言；金额关系独立断言，非文案关键字检查",
       "桥契约边界": "保持17个业务RPC；补固定版本资源索引和分块控制形状；不验证实际ArrayBuffer、顺序、ACK背压、摘要或宿主确认",
       "代表性载荷": [
         {
+          "schema": "Login",
+          "expectedValid": true
+        },
+        {
+          "schema": "Login",
+          "expectedValid": false
+        },
+        {
+          "schema": "Login",
+          "expectedValid": true
+        },
+        {
+          "schema": "Login",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "RunCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "PurchaseIntentCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "PurchaseIntentCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "PurchaseIntentCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "PurchaseIntentCreate",
+          "expectedValid": false
+        },
+        {
+          "schema": "Empty",
+          "expectedValid": true
+        },
+        {
+          "schema": "Empty",
+          "expectedValid": true
+        },
+        {
+          "schema": "Empty",
+          "expectedValid": false
+        },
+        {
+          "schema": "QuoteCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteCreate",
+          "expectedValid": false
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "QuoteConfirm",
+          "expectedValid": true
+        },
+        {
+          "schema": "Quote",
+          "expectedValid": true
+        },
+        {
+          "schema": "Quote",
+          "expectedValid": true
+        },
+        {
+          "schema": "Quote",
+          "expectedValid": true
+        },
+        {
+          "schema": "Quote",
+          "expectedValid": true
+        },
+        {
           "schema": "PaymentCreate",
           "expectedValid": true
         },
@@ -104,6 +257,26 @@
         {
           "schema": "RunCreate",
           "expectedValid": true
+        },
+        {
+          "schema": "Login",
+          "expectedValid": true
+        },
+        {
+          "schema": "Login",
+          "expectedValid": false
+        },
+        {
+          "schema": "Login",
+          "expectedValid": false
+        },
+        {
+          "schema": "PurchaseIntentCreate",
+          "expectedValid": true
+        },
+        {
+          "schema": "PurchaseIntentCreate",
+          "expectedValid": false
         },
         {
           "schema": "RunResume",
@@ -139,6 +312,30 @@
         },
         {
           "schema": "QuoteConfirm",
+          "expectedValid": false
+        },
+        {
+          "schema": "Empty",
+          "expectedValid": true
+        },
+        {
+          "schema": "Empty",
+          "expectedValid": false
+        },
+        {
+          "schema": "LoginResult",
+          "expectedValid": true
+        },
+        {
+          "schema": "LoginResult",
+          "expectedValid": true
+        },
+        {
+          "schema": "LoginResult",
+          "expectedValid": false
+        },
+        {
+          "schema": "LoginResult",
           "expectedValid": false
         },
         {
@@ -313,38 +510,53 @@
       "载荷限制": "仅静态结构样本；来源、实际字节、加密、跨字段安全与事务均需实施验证",
       "首期支付与存档动作": "PT1机器契约拒绝JSAPI；存档动作移除READ_RESTORE，读取/恢复确认仍由专用接口承担；仅静态拒绝样本",
       "已确认购买返回与继续契约": "RT1：RunCreate.intentId可选、Run.resume受控交付且意图错误稳定拒绝；CL1：LibraryItem.continue只含摘要；PurchaseIntent不回显handle；仅静态结构检查，跨浏览器/版本/权限语义未运行",
+      "GI-A交接静态形状": "Login可选单intentId且不接收客户端会话ID，guest/登录声明Set-Cookie，bind空请求，玩家直接购买路径及报价绑定守卫保留；仅Schema和静态文案检查，未验证Cookie/CSRF/事务/并发",
+      "登录运行报价守卫": "登录认证与交接失败分离；RunCreate按意图作品/范围校验并声明BOUND→RETURNED及原结果重放；订单/升级共用报价归属、三重revision、来源/在途抵扣和金额重核；仅静态契约，未运行状态机或事务",
+      "GI-A数据结构": "匿名/账号意图分流，按意图唯一交接并关联双会话、主体、到期与消费/撤销；仅结构检查，未执行DDL",
       "事件去重规格": "服务端按可信作用域派生event_key并单列唯一；不以客户端原编号或event_type组合冒充作用域；仅静态模型检查",
       "物理模型": {
-        "tables": 48,
-        "columns": 533,
+        "tables": 49,
+        "columns": 551,
         "physicalForeignKeys": 0,
-        "logicalRelations": 77,
+        "logicalRelations": 85,
         "stores": {
-          "mysql": 48
+          "mysql": 49
         }
       },
-      "完整ER导出": "Graphviz已实际渲染DOT/SVG；文本与48表、77逻辑关联一致，物理外键0条",
+      "查询索引候选": "18个候选；字段、唯一键冗余与名称静态检查通过；尚未建索引或运行EXPLAIN",
+      "完整ER导出": "Graphviz已实际渲染DOT/SVG；文本与49表、85逻辑关联一致，物理外键0条",
       "完整ER限制": "Graphviz成功渲染不等于全图人工视觉验收通过；非ASCII字宽警告及大画幅审阅限制仍须如实保留。",
-      "当前资料指纹": "122份当前文件一致；这是整理后快照，不是新业务验收",
+      "当前资料指纹": "127份当前文件一致；这是整理后快照，不是新业务验收",
       "本地文档链接": "通过",
-      "源码保护": "前端干净；后端仅已知本地配置改动；未读取内容或diff"
-    }
+      "源码保护": "根仓库中的前后端源码目录干净；未读取受保护配置内容或diff"
+    },
+    "generatorIdempotency": {
+      "result": "8项生成物连续两次生成SHA-256逐一一致",
+      "commands": [
+        "python3 生成接口契约.py",
+        "python3 生成物理字典.py",
+        "python3 生成模型审阅页.py",
+        "NODE_PATH=/tmp/v3.25.0/node_modules node 生成完整ER.cjs"
+      ],
+      "note": "本轮最后仅新增run幂等语义及用例，OpenAPI再次由同生成器产生；未修改仓库依赖，生成稳定不构成运行验收"
+    },
+    "limits": "登录、状态机、报价守卫、事务与31条用例均为静态设计检查，未运行真实服务或独立游戏"
   },
   "modelBrowser": {
-    "date": "2026-10-26",
+    "date": "2026-10-28",
     "status": "文档浏览器检查通过",
-    "htmlSha256": "a10c6c8c9b8626646eb80c0b31cb0ddd5d236ccd280ab2b78db904b78695d293",
-    "svgSha256": "c3c7974f3f6fbe13ca4c03d2bb940399f03b8cf9e392670d84e38faa9c5a098a",
+    "htmlSha256": "e2ce3a1dc30d45ef42544f5d81f263da5b9030198a3601f38614d8a8aa38b491",
+    "svgSha256": "36e620fcb3aa1db3f2c77bbe81d6fe0ea2c317d7b8f3d65ad0de624a3dde58ff",
     "checks": {
-      "tables": 48,
-      "columns": 533,
+      "tables": 49,
+      "columns": 551,
       "stores": [
         {
           "id": "mysql",
-          "tables": 48
+          "tables": 49
         }
       ],
-      "logicalRelations": 77,
+      "logicalRelations": 85,
       "physicalForeignKeys": 0,
       "viewports": [
         320,
@@ -353,9 +565,20 @@
       ],
       "filter": "字段/表名过滤与引用导航通过",
       "sameRowTextOverlaps": 0,
+      "textOverflows": [],
+      "nodeOverlaps": [],
+      "nodesOutsideCanvas": [],
+      "canvas": {
+        "x": 0,
+        "y": 0,
+        "width": 13151,
+        "height": 9547
+      },
+      "modelMismatches": [],
       "pageErrors": []
     },
-    "limitations": "离线文档检查；SVG为大画幅，未完成全图人工视觉审阅；未测试真实平台/交易/存储"
+    "limitations": "离线文档检查；SVG为大画幅，未完成全图人工视觉审阅；未测试真实平台/交易/存储",
+    "method": "NODE_PATH指向Codex内置Playwright，实际运行校验模型浏览页.cjs；逐表比对模型，检查缺失/重复节点，并将graph局部bbox按平移转换到根viewBox后检查画布边界"
   },
   "currentUIDemo": {
     "status": "当前唯一Demo资源与既有模拟交互检查通过",
@@ -416,8 +639,8 @@
     "scope": "库外关入口、同库恢复与尾部缺证隔离；Archify四门禁通过，不证明恢复已演练"
   },
   "limitations": [
-    "本轮无扩大授权；SD2/RK1/MC1/CR1/OSF1及AV1/FM1/PT1/GB1/RC1/RT1/CL1继续有效；完整架构未整体验收，未进入阶段4",
-    "平台48表533列77条逻辑关联0物理外键为设计，底座及独立游戏玩法表未创建或计入；filemeta仅候选前缀例外",
+    "AC1仅验收设计并允许编制阶段4实施计划；GP1/EP1参数确认；CM1允许本轮docs本地提交，不推送；没有业务运行许可",
+    "当前平台49表551列85条逻辑关联0物理外键；底座和游戏玩法表不计入且未创建；FM1明确filemeta前缀例外",
     "同库限制/业务/outbox事务与关联守卫未实现；跨HTTP不自动原子；事件去重9个样本不是处理器或数据库测试",
     "MC-V01至MC-V14全部运行项未执行；8.2.0历史候选不是生产定版；本轮未解析依赖、编译或升级",
     "当前MySQL5.7.14、可见表0、log_bin=OFF及高权MCP身份沿用已取得元数据；实际应用账号、备份和完整限制尾部恢复未知",
@@ -425,8 +648,10 @@
     "Redis6.2.20 standalone仅MCP自报及固定资料支持候选，不证明应用实际连通、补丁完整、安全或生产适用",
     "RPO15分钟/RTO4小时仍是目标；具体完整恢复证据路线及资源费用未定，不能用缺证隔离冒充达标",
     "SDK、资源隔离、支付、游戏接入和业务闭环未运行验收；UI全模拟，本轮保留既有UI及Archify记录，未重跑",
-    "完整ER仍有Graphviz非ASCII字宽警告，未完成全图人工视觉审阅；文档浏览通过不代表业务能力",
-    "表单仅本地假宿主测试；保存/恢复/请求发送均不自动批准，用户可只确认部分；后续仅执行实际获准范围"
+    "表单仅本地假宿主测试；保存/恢复/请求发送均不自动批准，用户可只确认部分；后续仅执行实际获准范围",
+    "完整ER为49表551列85逻辑关联的大画幅；9分区、图例、结构总览与节点/字段边界检查已完成，未逐条人工走查85条连线的完整路径",
+    "两图人工查看为1400×774一档；1440/1600/1920/2048由工具gate检查溢出，未逐档目视",
+    "ER-A首期结束后拒绝补报；跨会话凭据仅为未来候选，未做原型、负向、并发或跨浏览器验证"
   ],
   "sourceResearch": {
     "scope": "Java/POM白名单只读；精确版本报告5.2/5.3及来源原位更新",
@@ -438,10 +663,23 @@
     "limits": "未解析依赖/编译；生成行为、Lombok精确组合及完整许可未验收"
   },
   "crossReview": {
-    "status": "定向复核通过",
-    "finding": "通用202缺少资源完成查询路径",
-    "resolution": "默认不生成通用202，仅operateSave明示受理且200/202同为SaveOperation；资源读取只二进制或错误",
-    "limits": "只读静态审查，不验证运行时行为"
+    "status": "两轮独立静态复核完成；3项首轮修复及3项检查缺口复测均无剩余实质发现",
+    "resolved": [
+      "登录认证失败与交接失败分离",
+      "RunCreate作品/范围守卫、BOUND→RETURNED与原结果重放",
+      "报价归属/三重revision/来源/在途抵扣及金额守卫",
+      "x-static-cases逐条Schema与金额断言",
+      "当前ER模型/边界复核",
+      "游客/无意图run的幂等对象作用域",
+      "SVG局部坐标到画布坐标的正确转换",
+      "重复或缺失表节点识别"
+    ],
+    "verification": [
+      "架构校验器通过：31条用例、49表551列85关联、127份指纹、本地链接和源码保护",
+      "模型浏览器通过：模型文字、文字重叠、字段越界、节点覆盖、真实画布边界均无异常",
+      "Python AST、OpenAPI JSON解析、Node --check通过"
+    ],
+    "limits": "只读静态审查与离线浏览器检查，不验证真实认证、事务幂等、数据库、支付、游戏隔离、存储或恢复；未逐线人工走查全ER"
   },
   "confirmationForm": {
     "status": "AV1/FM1/PT1实际消息已确认；原表单已替换为只读确认摘要，不能再次提交",
@@ -797,15 +1035,14 @@
     }
   },
   "currentChanges": [
-    "按实际选择落实GB1／RC1／RT1／CL1：管理端首期分发边界、恢复计划见证、购买返回受控位置和库页继续摘要进入当前设计，均未实施或运行验证",
-    "RT1补齐RunCreate.intentId、RunResume、Run.resume及唯一return_run_id绑定；CL1补齐LibraryItem.continue和ContinueSummary；新增409 INTENT_BINDING_INVALID，不回显原始位置",
-    "补强Upgrade响应契约：返回商品修订、价格、抵扣、应付、币种、承诺及内容范围；已交付必须有grantId，零补款不得伪造订单",
-    "将首期付款机器契约收紧为支付宝PAGE/WAP与微信NATIVE/H5；JSAPI及小程序请求拒绝，未来兼容须新版本契约另行确认",
-    "将存档提交动作收紧为WRITE/IMPORT/RESTORE/RESTART；读取走save/read、兼容确认走restore-confirm，移除READ_RESTORE歧义",
-    "在恢复规格原位补充故障前接受范围的库外见证、停写条件、恢复开放门禁及同库缺证隔离；RC1只确认方向，不证明CR1达标",
-    "在架构总审阅原位同步GB1管理端首期分发边界、RC1恢复证据路线及11处TS2304的剩余影响",
-    "重新生成OpenAPI、事件/桥Schema、物理模型、字典、ER源及审阅页，并由Graphviz 14.1.3重渲染SVG；当前48表533列77逻辑关联，未修改源码/依赖，不构成新批准或全图视觉验收",
-    "当前资料清单更新为122份；更新后再次执行静态契约、模型浏览器、本地链接与源码保护检查通过"
+    "修复登录静态用例语义：只有密码账号认证失败使登录失败；认证成功但guest Cookie/意图不满足交接仍登录成功，仅返回泛化handoffError",
+    "补RunCreate.gameId与意图作品一致、按intent content_keys核范围；BOUND首次交付原子转RETURNED并固定return_run_id；同键同请求重放原run/RunResume，拒绝换键/换run/异请求",
+    "补订单/升级报价归属、expectedAccessRevision==quote.access_revision==当前守卫revision、来源/在途抵扣及金额重核；零补款与正补款分路拒绝",
+    "31条x-static-cases逐条执行Schema与金额关系断言，补Empty、LoginResult、可选字段与守卫结构检查",
+    "保持49表551列85逻辑关联、0物理外键与18个索引候选；模型、字典、ER和审阅页同源生成",
+    "当前ER的9分区、图例与结构总览已查看；551列逐表比对一致，表内文字重叠、字段越界、节点覆盖和越界均为0；不做逐线全路径或运行验收",
+    "8项生成物重复生成字节稳定；82操作120Schema31事件，127份当前资料指纹与本地链接通过；前后端源码保护检查通过",
+    "2026-10-28实际AC1/GP1/EP1/CM1确认；服务端30分钟登录资格、15分钟交接、24小时位置保留，72小时事件窗口及5分钟容差；仅进入阶段4计划编制"
   ],
   "objectStorageResearch": {
     "date": "2026-10-26",
@@ -859,37 +1096,40 @@
     }
   },
   "completeERExport": {
-    "date": "2026-10-26",
-    "status": "Graphviz已实际渲染DOT/SVG；全图人工视觉验收未完成",
+    "date": "2026-10-28",
+    "status": "Graphviz已实际渲染DOT/SVG；分区、图例与结构概览已查看；节点/字段边界检查通过",
     "engine": "环境已有@viz-js/viz",
     "graphvizVersion": "14.1.3",
-    "tables": 48,
-    "columns": 533,
+    "tables": 49,
+    "columns": 551,
     "physicalForeignKeys": 0,
-    "logicalRelations": 77,
+    "logicalRelations": 85,
     "stores": [
       {
         "id": "mysql",
         "label": "统一MySQL · xj_play",
-        "tables": 48
+        "tables": 49
       }
     ],
-    "modelSha256": "60548a485bd5d728e6d845734b09fee3cd3f129e73285d221b7343718d0e191c",
-    "dotSha256": "2284b49552a74f4427959529798196fdbab9f11f4d316fc70014780ea07eb905",
-    "svgSha256": "c3c7974f3f6fbe13ca4c03d2bb940399f03b8cf9e392670d84e38faa9c5a098a",
+    "modelSha256": "e734da30362e0c2f090b1a82707b8aa5511bf2cebba77316e63703044d4c70af",
+    "dotSha256": "b36ddaa0f601b617f20210629c8c7d899a50f6a9e5a62d3d2d8070e5dc9c0aa5",
+    "svgSha256": "36e620fcb3aa1db3f2c77bbe81d6fe0ea2c317d7b8f3d65ad0de624a3dde58ff",
     "warnings": [
       {
         "message": "Warning: no value for width of non-ASCII character 233. Falling back to width of space character",
         "level": "warning"
       }
     ],
-    "scope": "完整字段大画幅SVG已由Graphviz渲染；非ASCII字宽警告仍存在，不声称全图人工视觉验收或手机视口检查通过",
+    "scope": "49表大画幅SVG、9分区、顶部图例及结构总览；未建表、未逐线验证全路径",
     "visualSampling": {
-      "date": "2026-10-27",
-      "method": "将已有13131×9648 SVG在临时目录缩放为2200像素总览并人工查看；临时图不归档",
-      "observed": "总体分组与连线可见，但缩放后字段不可辨识；不具备逐表字段/线端与字宽的全图人工审阅条件",
-      "result": "仅完成全图结构概览观察；完整视觉验收仍未完成，字段需分区放大或使用模型审阅页逐表核对"
-    }
+      "date": "2026-10-28",
+      "method": "当前SVG的9个分区按可读尺寸分块查看，顶部图例与13151×9547结构总览另查；临时图不归档",
+      "observed": "表头、字段、约束、领域分组及图例可读；未观察到表内文字或节点互相遮挡",
+      "result": "设计资料视觉检查通过；字段正确性另由模型逐表比对，非逐条连线全路径验证"
+    },
+    "canvas": "13151×9547pt",
+    "legend": "图标题下新增一行记号说明：虚线=逻辑引用（无外键）；鸦爪=多，竖线=一，圆圈=可空",
+    "renderer": "@viz-js/viz@3.25.0（内置Graphviz 14.1.3），安装于临时目录 /tmp/v3.25.0，未写入仓库依赖"
   },
   "approvedObjectStorage": {
     "scope": "XJ-OSS-PRODUCT-20261026",
@@ -1282,9 +1522,9 @@
   },
   "architectureReview": {
     "date": "2026-10-26",
-    "remainingUpdated": "2026-10-27",
+    "remainingUpdated": "2026-10-28",
     "entry": "docs/03-架构/03-文档/架构候选与复用决策-V0.1.md#8-阶段3总审阅与下一门禁",
-    "status": "新增系统总图、部署拓扑与可信业务数据流，以及技术选型定版条件；结构与浏览器自动检查通过、人工视觉未核；完整架构仍未整体验收，旧表单失效，不进入阶段4",
+    "status": "AC1有边界设计验收完成；三图、ER分区与静态契约已复核；只允许编制阶段4计划",
     "coverage": "任务书交付矩阵、设计未决与实施验证边界、有限本地验证、filer表名与支付终端比较",
     "crossReview": {
       "reviewers": [
@@ -1310,7 +1550,7 @@
       "GB1首期分发边界的真实构建图、资源清单、深链接404与权限回归待验收",
       "网页支付真实产品资质、终端条件与对账"
     ],
-    "limits": "事件采集迟到窗口具体限值仍待收口；算法与Schema样本不是事件处理器、数据库或业务闭环测试；ER全图视觉审阅未完成"
+    "limits": "GP1/EP1已确认参数；静态样本不是事件处理器、数据库或业务闭环测试；未逐条人工验收85条连线全路径"
   },
   "localToolMetadata": {
     "date": "2026-10-26",
@@ -3492,25 +3732,207 @@
     "deploymentDiagram": "docs/03-架构/02-图表/部署拓扑候选.json",
     "selectionMatrix": "docs/03-架构/03-文档/技术选型与定版条件.md",
     "boundaryCorrection": "总图与部署拓扑均改为独立游戏 -> 商店浏览器宿主MessagePort桥 -> Java应用内受控资源模块；资源模块不作为独立部署服务；两图重新finalize且自动四门禁均通过",
-    "verification": "Archify三图validate/deliver/check/browser-check通过；总图及拓扑将浏览器宿主桥与Java应用内资源模块的关系修正后重新finalize通过；静态契约与本地文档链接另核",
-    "limitations": "总图当前自动报告5处交叉、部署拓扑6处交叉，未做人眼视觉审阅；库连接、支付、对象存储、恢复、隔离及管理端类型仍有未验项；未决定生产供应商、资源与精确制品；旧验收表单摘要已失效",
+    "verification": "Archify三图validate/deliver/check/browser-check通过；本轮修正总图store↔game双向连线端口（store-game.toSide=left、game-host-bridge.fromSide=left），交叉由5降至4；部署拓扑修正jobs.toSide=right、restriction-witness自platform右侧出、point.toSide=right，交叉由6降至2；两图properCrossings均为0，剩余交叉带跨线缺口",
+    "limitations": "剩余交叉为4处（总图）与2处（部署拓扑），均为可视化跨线缺口而非未解决交叉；全尺寸多档目视、库连接、支付、对象存储、恢复、隔离及管理端类型仍未验；未决定生产供应商、资源与精确制品；旧验收表单摘要失效",
     "dataFlowDiagram": "docs/03-架构/02-图表/可信业务数据流.json",
-    "remainingDecision": "GAME/WEB观察事件的迟到受理时长、来源差异及客户端时钟容差待用户确认；正常结束后的原run归属证明待协议验证；判定顺序与候选边界见数据与运营6.2"
+    "remainingDecision": "该图初次复核时GAME/WEB观察事件窗口及容差待确认；后续工作区记录EW1/CK1选择，但原始消息本轮待核。ER-A已确认首期结束后不补报，正常结束后的跨会话归属证明仅属未来扩展候选；判定顺序与首期边界见数据与运营6.2",
+    "visualReview": {
+      "date": "2026-10-27",
+      "method": "在1400×774浏览器窗口打开本机HTTP副本，逐图查看标题、组件文字、连线标签、边界标题与图例",
+      "systemDiagram": "三段式（浏览器侧/Java应用/数据与外部）可辨；宿主转发受控请求为主线，跨越后台权限、发送邮箱验证、任务/事件/审计三处交叉带缺口；未发现遮挡或文字截断",
+      "deploymentDiagram": "四条边界成员同列，右侧数据与外部服务对齐；jobs与限制见证在右下与资源读取交叉带缺口；图例在首屏下缘，需纵向滚动",
+      "limits": "只查看1400×774一档；1440/1600/1920/2048仅由工具gate检查溢出，未逐档目视"
+    },
+    "portFixScope": "只改连线端口与路由提示，未改组件、连线方向、标签、来源或指纹范围"
   },
   "eventWindowDecisionDraft": {
     "date": "2026-10-27",
     "scope": "XJ-ARCH-EVENT-WINDOW-20261027-V0.2",
-    "status": "候选表单已校验，尚未收到用户选择；不得记入当前有效决策或视为阶段3验收",
-    "form": "独立本地审阅页 architecture-event-window-review.html；不是仓库正式架构规格",
-    "fingerprintMethod": "三个相对路径字典序排列，每项为路径、空格、文件字节SHA-256与LF；拼接后以UTF-8计算SHA-256",
-    "files": {
-      "docs/03-架构/03-文档/技术选型与定版条件.md": "7a95fdb55d37f4b77a1f629e361dc1ad28671fd166e8a640ee4e34205c3c5a25",
-      "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md": "2db62176bb067c1d6421423939988086bd15522c5ef4fd1e14aeb02614a17ec5",
-      "docs/03-架构/03-文档/架构候选与复用决策-V0.1.md": "9cf4495ce75be07c394e8319bd498fd37454f6e9b471a060460b2938d3b03809"
+    "confirmation": {
+      "date": "2026-10-27",
+      "source": "现有工作区声称对话问答（ask_user_question）中选择 72 小时与 5 分钟；本轮未定位原始消息",
+      "selected": {
+        "window": "EW1",
+        "clock": "CK1"
+      },
+      "recordedIn": "docs/03-架构/01-决策/当前有效决策.md（EW1／CK1）",
+      "basis": "原稿称选项文本来自 architecture-event-window-review.html，依据为对话选择而非表单摘要；实际选择消息本轮待核"
     },
-    "aggregateSha256": "c688aaf9fbce324fbc538341d95711e18b3bbd53b57dfe99d039040c101a834d",
-    "choices": "EW1统一72小时推荐/EW2统一7日/EW3待决；CK1起止与未来5分钟推荐/CK2同边界30分钟/CK3待决；允许部分选择",
-    "checks": "从HTML提取JS执行node --check，修复原稿跨行单引号字符串语法错误；模拟DOM检查空选、部分与组合选择、无发送通道及可发送预览通过",
-    "limits": "未完成页面人工视觉审阅；没有实际发送消息；旧run证明、MySQL/游戏运行/支付/恢复均未验证，且选择不授权阶段4或建表"
+    "currentPage": "只读确认摘要；无表单、脚本、输入或发送入口",
+    "currentSummaryValidation": {
+      "status": "只读页源码检查通过",
+      "checks": [
+        "无 form/input/script/发送入口",
+        "EW1／CK1 及 2026-10-27 日期完整呈现",
+        "声明不构成阶段3整体验收或阶段4授权"
+      ]
+    },
+    "status": "现有记录称EW1统一72小时、CK1时钟容差5分钟已确认；本轮原始选择消息待核，ER-A不重确认这两项",
+    "history": {
+      "form": "architecture-event-window-review.html 原为可提交表单，已替换为只读摘要",
+      "draftFiles": {
+        "docs/03-架构/03-文档/技术选型与定版条件.md": "22cb1036816f671d424958b02abfb3ade0f73a786fd18379f9f30cbd3e4c1614",
+        "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md": "e0473128900eec1f8babeec34087c6558832f3de926eb4c5bbd0cf5fe15d65b2",
+        "docs/03-架构/03-文档/架构候选与复用决策-V0.1.md": "6d017c3372db3758f1360e2024db5b8916ae9c0514b68f7e6e1d7b92dc9716ce"
+      },
+      "draftAggregate": "3261c6a2aa8b02a23f69c5ea4ea967a6fb9f0aea296f9fd39b9d95d51ca0a7f7",
+      "note": "对话选择不以表单摘要为验收依据；摘要仅标识当时的选项文本来源"
+    }
+  },
+  "stage3Review": {
+    "date": "2026-10-27",
+    "scope": "阶段3收口前的三项核查：图示可读性、完整ER分区、正常结束run的补报归属证明；并汇总整体架构验收材料",
+    "diagramReadability": {
+      "status": "两图自动门禁通过并完成一档人工查看；交叉经端口修正后减少",
+      "systemDiagram": {
+        "crossings": 4,
+        "bends": 4,
+        "maxStretch": 1.51,
+        "minProjectedTextPx": 7.5,
+        "artifactSha256": "09c4dc8155bcf710e8ae427d77d47c425349410f8e7cdd6bb14323b4ff5d141a"
+      },
+      "deploymentDiagram": {
+        "crossings": 2,
+        "bends": 2,
+        "maxStretch": 1.13,
+        "minProjectedTextPx": 7.5,
+        "artifactSha256": "5b19656a14c7e1f38e784b4471cee4a736e8d544201b0079164939932f9c7696"
+      },
+      "limits": "1440/1600/1920/2048只由工具gate检查溢出，未逐档目视；数据流图最小投影文字6.1px接近下限",
+      "dataFlowDiagram": {
+        "crossings": 1,
+        "bends": 0,
+        "minProjectedTextPx": 6.1,
+        "note": "按930px阅读宽度预算，最小投影文字6.1px（下限6px）；1400×774实际窗口下标题、列头、节点与连线标签均可辨",
+        "artifactSha256": "51e8ce299c9d00c5"
+      },
+      "method": "浏览器查看两档：1024×768（无头Chrome整页截图）与1400×774（内置浏览器窗口）；逐图检查标题、组件文字、连线标签、边界标题与图例",
+      "viewportChecks": [
+        {
+          "size": "1024×768",
+          "checked": [
+            "全系统逻辑架构",
+            "部署拓扑候选",
+            "可信业务数据流"
+          ],
+          "observed": "三图标题、组件文字、连线标签与图例均可辨；窄宽度下整幅缩放，未出现溢出或截断"
+        },
+        {
+          "size": "1400×774",
+          "checked": [
+            "全系统逻辑架构",
+            "部署拓扑候选",
+            "可信业务数据流"
+          ],
+          "observed": "三图均可辨，未见遮挡或截断；需纵向滚动看全图"
+        }
+      ]
+    },
+    "completeERReview": {
+      "status": "49表551列与模型逐项一致；9个分区、图例及结构总览已查看；表内文字重叠0、字段越界0、节点覆盖0、节点越界0；连线仍无逐条关系名",
+      "tables": 49,
+      "columns": 551,
+      "fieldCompare": "按表比对字段名、SQL类型、可空性、pk/ref/uk标记、字段语义及UNIQUE行，551列全部一致",
+      "domains": 9,
+      "domainCheck": "9个分区的标题与表集合与模型domain一致；新增xj_intent_handoff位于交易分区，双会话、主体、意图唯一及到期/消费/撤销字段可读",
+      "textOverflow": 0,
+      "visualSampling": "沿用当前交接表版本的9分区分块检查，并补顶部图例与结构总览；不保留逐版过程截图",
+      "limits": "不做13151×9547单屏1:1浏览；字段正确性由模型逐表比对；大画幅连线无逐条关系名，只有总图例，不声称逐条连线全路径人工验收",
+      "rendering": "以Chrome无头渲染当前SVG分区、图例与结构总览；不改变源SVG",
+      "nodeOverlaps": 0,
+      "nodesOutsideCanvas": 0,
+      "modelMismatches": []
+    },
+    "oldRunAttribution": {
+      "status": "ER-A已确认首期结束后拒绝；跨会话凭据仅留未来扩展协议候选，未原型未验证",
+      "location": "docs/03-架构/03-文档/数据一致性部署与运营候选-V0.1.md#63-正常结束-run-的补报归属证明未来扩展候选不属首期",
+      "design": "按run签发不透明补报凭据，仅存哈希；宿主在自身作用域保存待补报队列；补报需当前会话主体与原run主体一致，并核生命周期、游戏版本、窗口与时间相容性；凭据不授予资源、存档、新run或他人数据权限",
+      "rejected": "不以runId、客户端自报身份或事件字段重建归属；匿名run不跨会话保留；撤销/注销/删除的run不因凭据或容差恢复",
+      "pending": "凭据存放与同源可读性、跨浏览器与隐私模式留存、并发与重放、轮换撤销、崩溃后队列完整性、与W/C组合边界",
+      "contractGap": "OpenAPI的reportGameEvents无补报凭据参数，GameEvents仅含事件数组；物理模型xj_run没有凭据摘要、签发/到期及撤销字段。ER-A已确认首期结束后拒绝，运行中/有效会话内重试；规格6.4的跨会话增量仅为未来候选，未批准实施，未改机器契约或模型"
+    },
+    "acceptanceMaterial": "docs/03-架构/04-评审/阶段3整体架构验收材料-V0.1.md",
+    "limits": "AC1已确认设计验收；运行未验证，阶段4只编制计划；ER为分区与总览检查，非逐条连线全路径验收",
+    "erLegend": {
+      "date": "2026-10-27",
+      "change": "在完整物理ER的图标题下新增连线记号说明，并保留审阅页的同一说明",
+      "how": "在临时目录安装 @viz-js/viz@3.25.0（Graphviz 14.1.3），NODE_PATH 指向后运行 生成完整ER.cjs；未修改仓库依赖或全局环境",
+      "stability": "先用现有 DOT 重渲染，得到与原 SVG 完全相同的 SHA-256（c3c7974f…），确认渲染链可复现；再加图例行重渲染，48 个节点包围盒零差异",
+      "result": "SVG 高度 9648→9665pt，宽不变；节点、连线、字段文字未变；顶部图例已目视确认",
+      "limit": "连线仍无逐条关系名；图例只解释记号含义",
+      "notationCheck": {
+        "relations": 77,
+        "marks": {
+          "teetee+crowodot": 53,
+          "teeodot+crowodot": 18,
+          "teetee+teeodot": 4,
+          "teeodot+teeodot": 2
+        },
+        "reading": "父端teetee=必有一个、teeodot=可无；子端crow=多、tee=一个（FK列唯一时）；圆圈=可空；与图例文字一致"
+      },
+      "labelsTrial": {
+        "date": "2026-10-27",
+        "what": "在临时目录给77条连线加关系名（FK列名）并重渲染，未写入仓库",
+        "result": "画布 13131×9665 → 13923×9136；节点位置整体重排",
+        "decision": "不采纳",
+        "why": [
+          "关系名就是连线端点已显示的字段名，信息重复",
+          "重排会使已完成的9个分区查看失效，需要重做全部分区",
+          "边长占用增大，10pt连线文字在大画幅上比字段文字更小"
+        ]
+      }
+    },
+    "architectureReview": {
+      "date": "2026-10-27",
+      "document": "docs/03-架构/04-评审/阶段3架构复核与阶段4移交条件-V0.1.md",
+      "scope": "按专业架构交付项复核：上下文、逻辑、数据、契约、流程、部署、决策、质量属性、风险、移交、威胁、可观测性、成本、发布回退",
+      "found": [
+        "质量属性与容量假设缺失",
+        "风险散落在限制段、无统一登记",
+        "阶段4验证无进入/退出条件",
+        "安全对策未按威胁归类",
+        "SLO、成本、灰度回退、运行证据缺失"
+      ],
+      "supplemented": [
+        "容量与延迟假设表（未验证）",
+        "11 项风险登记（触发信号/影响/对策）",
+        "10 项阶段4验证与移交清单（方法/退出/证据）",
+        "6 类威胁与对策摘要"
+      ],
+      "leftToPhase4": [
+        "实连与权限、建表迁移、游戏隔离、支付沙箱、对象存储与恢复、备份恢复演练、补报凭据矩阵、管理端构建、容量压测、安全复核",
+        "SLO/告警阈值/值班、成本报价、灰度与回退演练"
+      ],
+      "conclusion": "设计交付项完整；接口生成源及登录/新run/报价守卫静态缺陷本轮修复并复核；运行类缺口不阻塞有边界的设计验收，但不得当作运行通过",
+      "acceptance": "2026-10-28实际AC1接受有边界设计验收；允许编制阶段4计划，不授权开发、建表、采购、支付或部署"
+    }
+  },
+  "currentApproval": {
+    "date": "2026-10-28",
+    "source": "当前对话实际发送消息",
+    "message": "选择`AC1／GP1／EP1／CM1，补充：无`，下次记得以表单的形式让我选择确认发送",
+    "selection": [
+      "AC1",
+      "GP1",
+      "EP1",
+      "CM1"
+    ],
+    "anonymousLoginMinutes": 30,
+    "handoffMinutes": 15,
+    "positionRetentionHours": 24,
+    "observationLatenessHours": 72,
+    "clientClockToleranceMinutes": 5,
+    "scope": "接受有边界设计验收；编制阶段4计划供审；提交本轮当前docs改动，不推送；本地忽略Trellis约定不强制跟踪",
+    "notAuthorized": [
+      "业务开发",
+      "建表或数据修改",
+      "采购",
+      "真实支付",
+      "公开发布",
+      "部署"
+    ],
+    "confirmationPreference": "当前会话内可选择发送的表单；保存选择不等于批准",
+    "verification": "参数确认标签更新后静态契约与三档模型浏览检查通过；不作为新的运行证据",
+    "review": "独立只读复核发现三类当前状态旧文案；已同步接口边界、字典生成源/当前规格和EP1参数结论，运行边界不变"
   }
 }

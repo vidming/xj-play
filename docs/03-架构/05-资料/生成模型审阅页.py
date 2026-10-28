@@ -38,11 +38,16 @@ for table in tables:
             f'<td>{html.escape(c["description"])}</td></tr>')
     mermaid.append("    }")
     uniques = "；".join("(" + ",".join(k) + ")" for k in table["unique"])
+    query_indexes = "；".join(
+        f'{idx["name"]}({",".join(idx["columns"])})：{idx["purpose"]}'
+        for idx in table.get("queryIndexes", [])
+    )
+    index_note = f'<p>查询索引候选（未建）：{html.escape(query_indexes)}</p>' if query_indexes else ""
     sections.append(
         f'<section id="{name}" data-domain="{html.escape(table["domain"])}" data-store="{table["store"]}"><h2>{name} · {html.escape(table["label"])}</h2>'
         f'<p>存储：{stores[table["store"]]}（{table["store"]}）；领域：{table["domain"]}；唯一约束：{html.escape(uniques)}</p>'
         '<table><thead><tr><th>字段</th><th>SQL类型</th><th>可空</th><th>键/关联</th><th>逻辑关联目标</th><th>语义</th></tr></thead>'
-        f'<tbody>{"".join(rows)}</tbody></table><p>{html.escape(table["rules"])}</p>'
+        f'<tbody>{"".join(rows)}</tbody></table>{index_note}<p>{html.escape(table["rules"])}</p>'
         f'<p>删除：{html.escape(table["deletePolicy"])}</p><a href="#top">回目录</a></section>')
 mermaid += relations
 mermaid.insert(1, "    %% 全部连线仅表示逻辑关联；不建立物理外键。")
@@ -59,9 +64,10 @@ th:nth-child(1){{width:16%}}th:nth-child(2){{width:15%}}th:nth-child(3){{width:5
 @media(max-width:650px){{body{{padding:14px}}table,thead,tbody,tr,th,td{{display:block;width:auto!important}}thead{{display:none}}tr{{margin:18px 0}}td:before{{content:attr(data-label) "：";font-weight:600}}}}
 </style></head><body id="top">
 <h1>间隙PLAY · 物理模型审阅草案</h1>
-<p>{model["date"]} · {len(tables)}张设计表 · {sum(len(t["columns"]) for t in tables)}列 · 未建表；MCP仅做过元数据只读核对。</p>
+<p>{model["date"]} · {len(tables)}张设计表 · {sum(len(t["columns"]) for t in tables)}列 · {sum(len(t.get("queryIndexes", [])) for t in tables)}个查询索引候选 · 未建表；MCP仅做过元数据只读核对。</p>
 <p>SD2已确认：所有平台/游戏表设计使用当前MCP数据库xj_play；当前模型全部{len(tables)}表在同一MySQL，具体独立游戏玩法表尚未设计/创建。RK1已明确：全部{len(model["logicalRelations"])}条连线和REF仅表示逻辑关联，物理外键0条；前缀区分归属，不代表独立恢复或访问权限。</p>
-<p>字段与引用浏览入口；可编辑关系源为<a href="完整物理ER-V0.1.mmd">Mermaid ER源</a>、<a href="完整物理ER-V0.1.dot">DOT源</a>；<a href="完整物理ER-V0.1.svg">完整字段大画幅SVG</a>已导出，统一规格源为<a href="../05-资料/物理数据模型-V0.1.json">物理模型JSON</a>。当前保留一份模型及必要源文件，旧排版失败候选已清理；大画幅SVG尚未完成全图人工视觉验收。</p>
+<p>字段与引用浏览入口；可编辑关系源为<a href="完整物理ER-V0.1.mmd">Mermaid ER源</a>、<a href="完整物理ER-V0.1.dot">DOT源</a>；<a href="完整物理ER-V0.1.svg">完整字段大画幅SVG</a>已导出，统一规格源为<a href="../05-资料/生成物理字典.py">生成脚本</a>。当前保留一份模型及必要源文件；9个分区、图例与结构总览已查看，字段及节点边界由校验脚本核对；不声称逐条连线全路径或业务运行验收。</p>
+<p>ER 连线记号：虚线表示逻辑引用，不代表物理外键；箭头两端分别标记被引用行与引用行，鸦爪（crow）表示多端、竖线表示一端、空心圆圈表示可空。</p>
 <label>查找表名、领域或字段语义 <input type="search" aria-label="查找模型" placeholder="如：退款、cash_fact、存档"></label>
 <div role="status" aria-live="polite" id="count">显示全部{len(tables)}张表</div>
 <nav aria-label="模型目录"><ul>{nav}</ul></nav>

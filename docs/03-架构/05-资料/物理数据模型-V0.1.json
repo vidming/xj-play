@@ -1,7 +1,7 @@
 {
   "version": "0.1",
   "status": "阶段3物理设计草案，未建库/未运行",
-  "date": "2026-10-26",
+  "date": "2026-10-28",
   "engineCandidate": "当前MCP：xj_play / MySQL 5.7.14 / InnoDB；未完成既有后端兼容验收",
   "conventions": {
     "encoding": "文本utf8mb4；ASCII标识二进制精确比较",
@@ -10,7 +10,7 @@
     "foreignKeyPolicy": "RK1：全部references/ref及ER连线只表达逻辑关联，不创建FOREIGN KEY或ON DELETE/UPDATE约束；保留主键、必要唯一键及查询索引",
     "referenceIntegrity": "应用服务在写入事务内核目标存在、游戏/主体/环境归属与状态；关联写入和清理共用守卫及固定锁序，防并发检查后删除；导入/修复/批处理走同等校验，定期核孤儿/错域引用并隔离，不能凭孤儿自动补权益或删现金",
     "idPolicy": "内部BIGINT服务端生成/需验证既有ID适配；公开UUID，任何ID均不代表访问权",
-    "indexes": "每个引用字段为索引候选；另按排序/待处理时间建复合索引，待EXPLAIN验证",
+    "indexes": "queryIndexes列出关键查询候选；未列出的引用字段不自动建索引。实施前按实际查询、数据量、写入成本及EXPLAIN核对，不把候选当已建约束",
     "ddl": "仅设计，未执行DDL；5.7不能依赖CHECK强制，使用服务端校验、事务守卫与主键/必要唯一键；不生成物理外键，DDL隐式提交须独立迁移",
     "storage": "OSF1精确引用集中xj_storage_object；游戏版本、存储版本和业务revision分离；存储定位仅后端可见",
     "storageIndex": "对象定位复合唯一键采用ASCII/二进制，候选最大2192字节；须随最终InnoDB页尺寸/行格式验证，不以JSON声明当已建约束",
@@ -135,16 +135,64 @@
       "label": "run_id"
     },
     {
+      "from": "xj_purchase_intent.guest_session_id",
+      "to": "xj_session.id",
+      "kind": "logical",
+      "label": "guest_session_id"
+    },
+    {
+      "from": "xj_purchase_intent.version_id",
+      "to": "xj_game_version.id",
+      "kind": "logical",
+      "label": "version_id"
+    },
+    {
+      "from": "xj_purchase_intent.game_id",
+      "to": "xj_game.id",
+      "kind": "logical",
+      "label": "game_id"
+    },
+    {
       "from": "xj_purchase_intent.subject_id",
       "to": "xj_subject.id",
       "kind": "logical",
       "label": "subject_id"
     },
     {
+      "from": "xj_purchase_intent.bound_player_session_id",
+      "to": "xj_session.id",
+      "kind": "logical",
+      "label": "bound_player_session_id"
+    },
+    {
       "from": "xj_purchase_intent.return_run_id",
       "to": "xj_run.id",
       "kind": "logical",
       "label": "return_run_id"
+    },
+    {
+      "from": "xj_intent_handoff.intent_id",
+      "to": "xj_purchase_intent.id",
+      "kind": "logical",
+      "label": "intent_id"
+    },
+    {
+      "from": "xj_intent_handoff.guest_session_id",
+      "to": "xj_session.id",
+      "kind": "logical",
+      "label": "guest_session_id"
+    },
+    {
+      "from": "xj_intent_handoff.player_session_id",
+      "to": "xj_session.id",
+      "kind": "logical",
+      "label": "player_session_id"
+    },
+    {
+      "from": "xj_intent_handoff.subject_id",
+      "to": "xj_subject.id",
+      "kind": "logical",
+      "label": "subject_id"
     },
     {
       "from": "xj_quote.subject_id",
@@ -745,7 +793,19 @@
         ]
       ],
       "rules": "",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_session_subject",
+          "columns": [
+            "subject_id",
+            "revoked_at",
+            "expires_at"
+          ],
+          "purpose": "账号撤会话时定位仍有效会话",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_identity_action",
@@ -1028,7 +1088,20 @@
         ]
       ],
       "rules": "data_namespace为服务端登记的精确前缀，游戏key仅小写字母开头加字母数字且最长16位；空值仅未启用后端。前缀不是SQL权限或客户端可传表名，游戏账户逐表授权，禁止写xj_平台事实。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_game_listing",
+          "columns": [
+            "sale_state",
+            "runtime_state",
+            "published_at",
+            "id"
+          ],
+          "purpose": "公开目录按状态和发布时间翻页",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_game_version",
@@ -1648,10 +1721,49 @@
           "referenceKind": "logical"
         },
         {
+          "name": "guest_session_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "GUEST创建时的原会话，须与原run.session_id一致；PLAYER直达为空",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_session.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "version_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原run实际版本快照；正常EXITED后仍核历史归属",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game_version.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "game_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "原版本所属作品快照，与version.game_id一致",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_game.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "origin_run_validated_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "创建当刻服务端验证run有效的时刻；之后正常EXITED不撤销意图"
+        },
+        {
           "name": "subject_id",
           "sqlType": "BIGINT UNSIGNED",
           "nullable": true,
-          "description": "匿名意图登录绑定前可空",
+          "description": "GUEST创建时为空，bind后写入；PLAYER直达取当前可信会话主体",
           "key": [
             "ref"
           ],
@@ -1671,16 +1783,39 @@
           "description": "游戏自有不透明位置；限制长度且无凭据"
         },
         {
-          "name": "anonymous_binding",
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "仅GUEST登录交接资格GP1确认创建后30分钟；PLAYER直达为空，不截断已建handoff的15分钟"
+        },
+        {
+          "name": "bound_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "GUEST首次bind或PLAYER直达创建的绑定时刻；GP1确认位置保留至其后24小时"
+        },
+        {
+          "name": "bound_player_session_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": true,
+          "description": "GUEST首次bind目标会话或PLAYER直达创建的当前可信会话",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_session.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "bind_key_digest",
           "sqlType": "BINARY(32)",
           "nullable": true,
-          "description": "防窃取intentId认领"
+          "description": "仅GUEST首次bind的作用域幂等键摘要；PLAYER直达为空"
         },
         {
           "name": "state",
           "sqlType": "VARCHAR(24)",
           "nullable": false,
-          "description": "OPEN/BOUND/RETURNED/CANCELLED"
+          "description": "GUEST创建OPEN再bind为BOUND；PLAYER直达创建BOUND；RETURNED/CANCELLED"
         },
         {
           "name": "return_run_id",
@@ -1708,8 +1843,153 @@
           "return_run_id"
         ]
       ],
-      "rules": "intentId只是公开引用。仅当前可信会话和原匿名绑定可承接；首次成功绑定return_run后按稳定结果幂等返回，同一run不得回填多个意图。状态、主体、作品或版本不匹配拒绝，不回显handle，不将位置解释为权益。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "rules": "创建须核当前有效GUEST/PLAYER Cookie与run.session_id、run当刻有效、run.version_id与game/version、内容范围及当前访问/权益，主体只取服务端会话，不信客户端账号。GUEST仅TRIAL创建OPEN，guest_session_id非空且subject_id/bound_player_session_id/bound_at为空；GP1确认expires_at为created_at+30分钟，仅约束登录资格，登录时当前guest session.id须精确等于意图guest_session_id及原run.session_id且有效。登录前guest换为另一session记录且无服务端可信轮换谱系则泛化拒绝并重新选商品。登录成功显式指定intentId才为该意图在同库建立唯一handoff；注册不自动登录。GUEST bind按固定锁序锁意图及handoff，核原run创建时有效的历史归属、登录时guest有效快照、当前PLAYER session.id/subject与handoff目标精确一致、OPEN及15分钟handoff有效，在事务内写subject_id/BOUND/bound_at/bound_player_session_id/bind_key_digest并消费handoff；不以已过的30分钟登录资格截断已建handoff。登录后PLAYER换另一session且无服务端可信轮换谱系泛化拒绝并重新选商品；只有原目标会话/账号/同键幂等返回，其他重复消费拒绝。PLAYER直达创建时原子写subject_id/BOUND/bound_at/bound_player_session_id，guest_session_id/expires_at/bind_key_digest为空，不建handoff、不走bind；创建幂等以可信会话+动作+key及规范化请求持久结果约束。原run正常EXITED及登录后guest令牌正常撤销不废止已建交接；安全撤销/游戏暂停可令位置不可用，不抹已核实付款事实。GP1确认位置bound_at后24小时清理；run仍另核当前会话、权益、作品与精确版本，位置不授权。报价独立10分钟，购买前须邮箱验证；同一return_run_id不得回填多个意图。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_intent_guest_open",
+          "columns": [
+            "guest_session_id",
+            "state",
+            "expires_at",
+            "id"
+          ],
+          "purpose": "匿名会话下未交接意图到期/撤销查证",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        },
+        {
+          "name": "idx_xj_intent_bound_session",
+          "columns": [
+            "bound_player_session_id",
+            "state",
+            "id"
+          ],
+          "purpose": "目标会话下已绑定意图查证",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
+    },
+    {
+      "name": "xj_intent_handoff",
+      "label": "游客意图登录会话交接",
+      "domain": "交易",
+      "store": "mysql",
+      "columns": [
+        {
+          "name": "id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "key": [
+            "pk"
+          ],
+          "description": "平台内部主键，服务端生成；不作为鉴权依据"
+        },
+        {
+          "name": "public_id",
+          "sqlType": "CHAR(36) ASCII",
+          "nullable": false,
+          "key": [
+            "uk"
+          ],
+          "description": "服务端UUID公开标识；不可猜测不代替对象授权"
+        },
+        {
+          "name": "created_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "服务端UTC创建时刻"
+        },
+        {
+          "name": "intent_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "仅指定GUEST意图一对一交接；唯一键保留防换号认领",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_purchase_intent.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "guest_session_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "登录时有效的原guest Cookie解析结果，与意图及原run历史快照一致",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_session.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "player_session_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "同次成功登录签发的目标PLAYER会话",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_session.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "subject_id",
+          "sqlType": "BIGINT UNSIGNED",
+          "nullable": false,
+          "description": "成功认证的目标账号，取服务端会话，不接受客户端自报",
+          "key": [
+            "ref"
+          ],
+          "references": "xj_subject.id",
+          "referenceKind": "logical"
+        },
+        {
+          "name": "expires_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": false,
+          "description": "GP1确认登录后15分钟；不受此前30分钟登录资格或guest自然到期截断"
+        },
+        {
+          "name": "state",
+          "sqlType": "VARCHAR(16)",
+          "nullable": false,
+          "description": "ACTIVE/CONSUMED/REVOKED；到期另按时间条件判断"
+        },
+        {
+          "name": "consumed_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "首次成功绑定时同事务置CONSUMED"
+        },
+        {
+          "name": "revoked_at",
+          "sqlType": "DATETIME(6)",
+          "nullable": true,
+          "description": "取消、安全撤销或目标会话撤销时失效"
+        }
+      ],
+      "unique": [
+        [
+          "public_id"
+        ],
+        [
+          "intent_id"
+        ]
+      ],
+      "rules": "仅GUEST创建的OPEN意图在成功登录并显式指定intentId时创建，当前guest Cookie解析的session.id必须等于意图guest_session_id及原run.session_id且登录当刻有效，意图创建后30分钟内。原run须在创建意图时有效并核历史版本/作品，不要求登录或bind时仍READY/活跃；登录失败不创建。目标PLAYER会话、handoff和登录幂等结果同库事务创建，登录后撤销原guest令牌但保留已核验的历史交接。登录同key同规范化请求复用原PLAYER会话、handoff和结果，不延长时限；异账号/异载荷或已存在不同目标泛化拒绝。guest登录前换session或PLAYER在bind前换session且无服务端可信轮换谱系时拒绝并重新选商品，不凭同浏览器放行。bind只以当前PLAYER Cookie核player_session_id及subject_id，固定锁序锁意图与交接，原子绑定并消费；到期、取消、安全撤销、旧目标会话或不同键重复消费拒绝。正常EXITED及登录后的guest令牌撤销/自然到期不废止交接。位置安全撤销/游戏暂停不抹付款事实；清理时保留intent_id唯一墓碑至意图生命周期终结，不能清理后重建交接。无物理外键。",
+      "deletePolicy": "按意图保留期受控清理/匿名化，保留唯一占用防再次交接；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_intent_handoff_expiry",
+          "columns": [
+            "state",
+            "expires_at",
+            "id"
+          ],
+          "purpose": "到期交接关系清理与撤销候选",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_quote",
@@ -1934,7 +2214,19 @@
         ]
       ],
       "rules": "免费和零补款升级不用本表制造付费订单；真实异常收款不受下单输入上限截断。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_order_subject_time",
+          "columns": [
+            "subject_id",
+            "created_at",
+            "id"
+          ],
+          "purpose": "本人订单稳定翻页",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_order_scope",
@@ -2108,7 +2400,19 @@
         ]
       ],
       "rules": "",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_payment_attempt_order",
+          "columns": [
+            "order_id",
+            "created_at",
+            "id"
+          ],
+          "purpose": "同订单付款尝试查证",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_payment_notice",
@@ -2336,7 +2640,19 @@
         ]
       ],
       "rules": "一单可有多笔真实实收；仅一份正常履约来源，多付不重复发权，逐笔核退。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_cash_fact_order",
+          "columns": [
+            "order_id",
+            "verified_at",
+            "id"
+          ],
+          "purpose": "同订单实收与多付核对",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_refund",
@@ -2665,7 +2981,20 @@
         ]
       ],
       "rules": "多份有效来源范围取并集；已购完全覆盖不重复销售；退款仅处置对应来源。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_grant_subject_game",
+          "columns": [
+            "subject_id",
+            "game_id",
+            "state",
+            "id"
+          ],
+          "purpose": "本人作品有效来源合并",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_grant_scope",
@@ -3030,7 +3359,29 @@
         ]
       ],
       "rules": "",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_run_session",
+          "columns": [
+            "session_id",
+            "state",
+            "expires_at"
+          ],
+          "purpose": "会话失效时撤销运行",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        },
+        {
+          "name": "idx_xj_run_subject",
+          "columns": [
+            "subject_id",
+            "state",
+            "expires_at"
+          ],
+          "purpose": "账号注销时定位运行",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_save_blob",
@@ -3114,7 +3465,19 @@
         ]
       ],
       "rules": "对象须已核验AVAILABLE、bucket_role=SAVE且上传计划归属本主体/作品/保存操作；对象byte_size为约定编码后未压缩长度≤1048576；digest为该字节SHA-256。游戏version_id、对象storage_version_id与save_head.revision不得混用。DELETED墓碑在无引用且清理证据持久化后移除，不保留可定位私人正文的无限期引用。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_save_blob_owner",
+          "columns": [
+            "subject_id",
+            "state",
+            "id"
+          ],
+          "purpose": "账号分类清理核对存档对象",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_save_head",
@@ -3720,7 +4083,19 @@
         ]
       ],
       "rules": "OSF1：SeaweedFS社区私有桶首写前版本化，配置未知/暂停或空/null存储版本一律不提交有效引用。配置引用固定映射桶/集群，迁移须创建并核验新对象引用；不重定向旧profile。精确定位及摘要、长度、MIME、加密信息核验后不可变；每objectId只绑定一个接受版本，不以同key最新对象兜底。消费者事务锁上传计划及本行核归属/AVAILABLE/角色后加引用；清理锁同一计划/对象、核全消费者/未决操作/备份引用后转DELETE_PENDING，后续新引用拒绝。逻辑不可见只到LOGICALLY_DELETED；全部适用副本、底层回收及备份窗口消退后才PURGED。密文存储须记录密钥版本及完整性信息并验证可解密；未加密的两个加密字段同时为空。表记录不含用户归属，授权须沿资源/存档/证据及上传计划核归属；禁止跨私人主体复用。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_storage_object_purge",
+          "columns": [
+            "state",
+            "purge_not_before",
+            "id"
+          ],
+          "purpose": "到期清理候选筛选，不代替引用和备份核验",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_support_case",
@@ -3842,7 +4217,19 @@
         ]
       ],
       "rules": "",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_support_case_due",
+          "columns": [
+            "state",
+            "next_review_at",
+            "id"
+          ],
+          "purpose": "待处理和逾期工单认领",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_support_message",
@@ -4171,8 +4558,30 @@
           "business_revision"
         ]
       ],
-      "rules": "",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "rules": "MySQL5.7候选认领：先读有界到期ID，再逐行以id、原revision、状态及到期条件做条件UPDATE；只将实际改动1行的提交视为取得租约。每次认领递增revision作为数据库写回栅栏；完成/重试须匹配所持最新revision、LEASED状态及未到期租约，续租亦须匹配并递增revision。过期旧工作者不能覆盖新认领者结果。租约过期仅允许重新查证，不证明先前外部副作用未发生；外部调用复用原业务稳定标识与原渠道号，先核渠道/游戏/对象实际结果，不因重领换号重做不可逆动作。DONE需核实际效果；业务结果未明时任务留在RETRY或DEAD并告警/人工处理，不静默丢弃。租约与重试上限需隔离并发/崩溃测试；不依赖SKIP LOCKED。",
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_outbox_due",
+          "columns": [
+            "state",
+            "next_attempt_at",
+            "id"
+          ],
+          "purpose": "到期任务认领",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        },
+        {
+          "name": "idx_xj_outbox_lease",
+          "columns": [
+            "state",
+            "lease_until",
+            "id"
+          ],
+          "purpose": "租约过期任务查证",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_idempotency",
@@ -4440,7 +4849,28 @@
         ]
       ],
       "rules": "去重算法及来源作用域见数据一致性部署与运营候选6.1；GAME绑定可信run，WEB绑定平台签发会话及作品，SERVER绑定持久业务事件。相同键同规范化事件返回重复，异载荷拒绝；event_type不加入唯一键，防同编号更换类型绕过。同库不使客户端事件成为现金事实。普通明细滚动30日；注销按7日目标，哈希键不视为匿名。",
-      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除"
+      "deletePolicy": "应用服务按业务分类清理并检查有效引用；不建物理外键，不级联删除",
+      "queryIndexes": [
+        {
+          "name": "idx_xj_analytics_event_retention",
+          "columns": [
+            "received_at",
+            "id"
+          ],
+          "purpose": "普通行为明细滚动清理",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        },
+        {
+          "name": "idx_xj_analytics_event_type_time",
+          "columns": [
+            "event_type",
+            "received_at",
+            "id"
+          ],
+          "purpose": "按事件类型和服务端接收区间汇总",
+          "status": "候选；待隔离环境EXPLAIN及写入成本核实"
+        }
+      ]
     },
     {
       "name": "xj_metric_snapshot",

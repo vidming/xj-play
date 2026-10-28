@@ -141,14 +141,34 @@ access_revision|BIGINT UNSIGNED|授予/撤销变化递增
 """, unique=[["subject_id", "game_id"]], rules="升级/退款/授予先取得环境门禁及适用的限制头/原操作守卫，再取得本守卫作为第一把业务锁，随后按来源id稳定顺序锁；不得反向再取门禁，不在事务内等渠道网络。")
 table("purchase_intent", "购买返回意图", "交易", """
 run_id|BIGINT UNSIGNED|原运行上下文|xj_run.id
-subject_id|BIGINT UNSIGNED?|匿名意图登录绑定前可空|xj_subject.id
+guest_session_id|BIGINT UNSIGNED?|GUEST创建时的原会话，须与原run.session_id一致；PLAYER直达为空|xj_session.id
+version_id|BIGINT UNSIGNED|原run实际版本快照；正常EXITED后仍核历史归属|xj_game_version.id
+game_id|BIGINT UNSIGNED|原版本所属作品快照，与version.game_id一致|xj_game.id
+origin_run_validated_at|DATETIME(6)|创建当刻服务端验证run有效的时刻；之后正常EXITED不撤销意图
+subject_id|BIGINT UNSIGNED?|GUEST创建时为空，bind后写入；PLAYER直达取当前可信会话主体|xj_subject.id
 content_keys|JSON|所需内容范围，不含金额/权限事实
 resume_handle|TEXT|游戏自有不透明位置；限制长度且无凭据
-anonymous_binding|BINARY(32)?|防窃取intentId认领
-state|VARCHAR(24)|OPEN/BOUND/RETURNED/CANCELLED
+expires_at|DATETIME(6)?|仅GUEST登录交接资格GP1确认创建后30分钟；PLAYER直达为空，不截断已建handoff的15分钟
+bound_at|DATETIME(6)?|GUEST首次bind或PLAYER直达创建的绑定时刻；GP1确认位置保留至其后24小时
+bound_player_session_id|BIGINT UNSIGNED?|GUEST首次bind目标会话或PLAYER直达创建的当前可信会话|xj_session.id
+bind_key_digest|BINARY(32)?|仅GUEST首次bind的作用域幂等键摘要；PLAYER直达为空
+state|VARCHAR(24)|GUEST创建OPEN再bind为BOUND；PLAYER直达创建BOUND；RETURNED/CANCELLED
 return_run_id|BIGINT UNSIGNED?|RT1服务端核验后绑定承接位置的新运行|xj_run.id
 return_issued_at|DATETIME(6)?|受控位置交付时刻；不写URL/日志
-""", unique=[["return_run_id"]], rules="intentId只是公开引用。仅当前可信会话和原匿名绑定可承接；首次成功绑定return_run后按稳定结果幂等返回，同一run不得回填多个意图。状态、主体、作品或版本不匹配拒绝，不回显handle，不将位置解释为权益。")
+""", unique=[["return_run_id"]],
+      rules="创建须核当前有效GUEST/PLAYER Cookie与run.session_id、run当刻有效、run.version_id与game/version、内容范围及当前访问/权益，主体只取服务端会话，不信客户端账号。GUEST仅TRIAL创建OPEN，guest_session_id非空且subject_id/bound_player_session_id/bound_at为空；GP1确认expires_at为created_at+30分钟，仅约束登录资格，登录时当前guest session.id须精确等于意图guest_session_id及原run.session_id且有效。登录前guest换为另一session记录且无服务端可信轮换谱系则泛化拒绝并重新选商品。登录成功显式指定intentId才为该意图在同库建立唯一handoff；注册不自动登录。GUEST bind按固定锁序锁意图及handoff，核原run创建时有效的历史归属、登录时guest有效快照、当前PLAYER session.id/subject与handoff目标精确一致、OPEN及15分钟handoff有效，在事务内写subject_id/BOUND/bound_at/bound_player_session_id/bind_key_digest并消费handoff；不以已过的30分钟登录资格截断已建handoff。登录后PLAYER换另一session且无服务端可信轮换谱系泛化拒绝并重新选商品；只有原目标会话/账号/同键幂等返回，其他重复消费拒绝。PLAYER直达创建时原子写subject_id/BOUND/bound_at/bound_player_session_id，guest_session_id/expires_at/bind_key_digest为空，不建handoff、不走bind；创建幂等以可信会话+动作+key及规范化请求持久结果约束。原run正常EXITED及登录后guest令牌正常撤销不废止已建交接；安全撤销/游戏暂停可令位置不可用，不抹已核实付款事实。GP1确认位置bound_at后24小时清理；run仍另核当前会话、权益、作品与精确版本，位置不授权。报价独立10分钟，购买前须邮箱验证；同一return_run_id不得回填多个意图。")
+table("intent_handoff", "游客意图登录会话交接", "交易", """
+intent_id|BIGINT UNSIGNED|仅指定GUEST意图一对一交接；唯一键保留防换号认领|xj_purchase_intent.id
+guest_session_id|BIGINT UNSIGNED|登录时有效的原guest Cookie解析结果，与意图及原run历史快照一致|xj_session.id
+player_session_id|BIGINT UNSIGNED|同次成功登录签发的目标PLAYER会话|xj_session.id
+subject_id|BIGINT UNSIGNED|成功认证的目标账号，取服务端会话，不接受客户端自报|xj_subject.id
+expires_at|DATETIME(6)|GP1确认登录后15分钟；不受此前30分钟登录资格或guest自然到期截断
+state|VARCHAR(16)|ACTIVE/CONSUMED/REVOKED；到期另按时间条件判断
+consumed_at|DATETIME(6)?|首次成功绑定时同事务置CONSUMED
+revoked_at|DATETIME(6)?|取消、安全撤销或目标会话撤销时失效
+""", unique=[["intent_id"]],
+      rules="仅GUEST创建的OPEN意图在成功登录并显式指定intentId时创建，当前guest Cookie解析的session.id必须等于意图guest_session_id及原run.session_id且登录当刻有效，意图创建后30分钟内。原run须在创建意图时有效并核历史版本/作品，不要求登录或bind时仍READY/活跃；登录失败不创建。目标PLAYER会话、handoff和登录幂等结果同库事务创建，登录后撤销原guest令牌但保留已核验的历史交接。登录同key同规范化请求复用原PLAYER会话、handoff和结果，不延长时限；异账号/异载荷或已存在不同目标泛化拒绝。guest登录前换session或PLAYER在bind前换session且无服务端可信轮换谱系时拒绝并重新选商品，不凭同浏览器放行。bind只以当前PLAYER Cookie核player_session_id及subject_id，固定锁序锁意图与交接，原子绑定并消费；到期、取消、安全撤销、旧目标会话或不同键重复消费拒绝。正常EXITED及登录后的guest令牌撤销/自然到期不废止交接。位置安全撤销/游戏暂停不抹付款事实；清理时保留intent_id唯一墓碑至意图生命周期终结，不能清理后重建交接。无物理外键。")
+TABLES[-1]["deletePolicy"] = "按意图保留期受控清理/匿名化，保留唯一占用防再次交接；不建物理外键，不级联删除"
 table("quote", "服务端报价", "交易", """
 subject_id|BIGINT UNSIGNED|已验证账号|xj_subject.id
 product_revision_id|BIGINT UNSIGNED|目标商品承诺|xj_product_revision.id
@@ -404,7 +424,8 @@ next_attempt_at|DATETIME(6)|可重试时刻
 lease_until|DATETIME(6)?|崩溃后可认领
 attempts|INT UNSIGNED|重试次数
 revision|BIGINT UNSIGNED|后台重试与任务认领并发修订
-""", unique=[["business_type", "business_ref", "business_revision"]])
+""", unique=[["business_type", "business_ref", "business_revision"]],
+      rules="MySQL5.7候选认领：先读有界到期ID，再逐行以id、原revision、状态及到期条件做条件UPDATE；只将实际改动1行的提交视为取得租约。每次认领递增revision作为数据库写回栅栏；完成/重试须匹配所持最新revision、LEASED状态及未到期租约，续租亦须匹配并递增revision。过期旧工作者不能覆盖新认领者结果。租约过期仅允许重新查证，不证明先前外部副作用未发生；外部调用复用原业务稳定标识与原渠道号，先核渠道/游戏/对象实际结果，不因重领换号重做不可逆动作。DONE需核实际效果；业务结果未明时任务留在RETRY或DEAD并告警/人工处理，不静默丢弃。租约与重试上限需隔离并发/崩溃测试；不依赖SKIP LOCKED。")
 table("idempotency", "请求幂等结果", "治理运营", """
 principal_ref|VARCHAR(128)|可信主体或受控匿名上下文
 action|VARCHAR(128)|动作与对象作用域
@@ -534,6 +555,41 @@ revision|BIGINT UNSIGNED|发布检查点与清理互斥
 """, unique=[["head_id", "through_seq"]],
       rules="检查点和限制链在同一库，不能承诺整库回滚不丢限制。固定一致前缀，完整承接有效限制、必要计划/幂等映射和原authorityRef/epoch/seq/opId/phase/planDigest/eventDigest；后续检查点继续承接或保留唯一载体。验证可恢复副本后在头守卫下切指针再清前缀；未决游戏清理不因TTL丢失。没有可靠副本、超额度/包长就保留原事件，不截断或伪称压缩成功。")
 
+QUERY_INDEXES = {
+    "xj_game": [("idx_xj_game_listing", ["sale_state", "runtime_state", "published_at", "id"], "公开目录按状态和发布时间翻页")],
+    "xj_session": [("idx_xj_session_subject", ["subject_id", "revoked_at", "expires_at"], "账号撤会话时定位仍有效会话")],
+    "xj_purchase_intent": [
+        ("idx_xj_intent_guest_open", ["guest_session_id", "state", "expires_at", "id"], "匿名会话下未交接意图到期/撤销查证"),
+        ("idx_xj_intent_bound_session", ["bound_player_session_id", "state", "id"], "目标会话下已绑定意图查证"),
+    ],
+    "xj_intent_handoff": [("idx_xj_intent_handoff_expiry", ["state", "expires_at", "id"], "到期交接关系清理与撤销候选")],
+    "xj_run": [
+        ("idx_xj_run_session", ["session_id", "state", "expires_at"], "会话失效时撤销运行"),
+        ("idx_xj_run_subject", ["subject_id", "state", "expires_at"], "账号注销时定位运行"),
+    ],
+    "xj_order": [("idx_xj_order_subject_time", ["subject_id", "created_at", "id"], "本人订单稳定翻页")],
+    "xj_payment_attempt": [("idx_xj_payment_attempt_order", ["order_id", "created_at", "id"], "同订单付款尝试查证")],
+    "xj_cash_fact": [("idx_xj_cash_fact_order", ["order_id", "verified_at", "id"], "同订单实收与多付核对")],
+    "xj_grant": [("idx_xj_grant_subject_game", ["subject_id", "game_id", "state", "id"], "本人作品有效来源合并")],
+    "xj_save_blob": [("idx_xj_save_blob_owner", ["subject_id", "state", "id"], "账号分类清理核对存档对象")],
+    "xj_support_case": [("idx_xj_support_case_due", ["state", "next_review_at", "id"], "待处理和逾期工单认领")],
+    "xj_outbox": [
+        ("idx_xj_outbox_due", ["state", "next_attempt_at", "id"], "到期任务认领"),
+        ("idx_xj_outbox_lease", ["state", "lease_until", "id"], "租约过期任务查证"),
+    ],
+    "xj_storage_object": [("idx_xj_storage_object_purge", ["state", "purge_not_before", "id"], "到期清理候选筛选，不代替引用和备份核验")],
+    "xj_analytics_event": [
+        ("idx_xj_analytics_event_retention", ["received_at", "id"], "普通行为明细滚动清理"),
+        ("idx_xj_analytics_event_type_time", ["event_type", "received_at", "id"], "按事件类型和服务端接收区间汇总"),
+    ],
+}
+for item in TABLES:
+    if item["name"] in QUERY_INDEXES:
+        item["queryIndexes"] = [
+            {"name": name, "columns": columns, "purpose": purpose, "status": "候选；待隔离环境EXPLAIN及写入成本核实"}
+            for name, columns, purpose in QUERY_INDEXES[item["name"]]
+        ]
+
 LOGICAL_RELATIONS = [
     {"from": t["name"] + "." + c["name"], "to": c["references"],
      "kind": "logical", "label": c["name"]}
@@ -550,7 +606,7 @@ model = {
         "foreignKeyPolicy": "RK1：全部references/ref及ER连线只表达逻辑关联，不创建FOREIGN KEY或ON DELETE/UPDATE约束；保留主键、必要唯一键及查询索引",
         "referenceIntegrity": "应用服务在写入事务内核目标存在、游戏/主体/环境归属与状态；关联写入和清理共用守卫及固定锁序，防并发检查后删除；导入/修复/批处理走同等校验，定期核孤儿/错域引用并隔离，不能凭孤儿自动补权益或删现金",
         "idPolicy": "内部BIGINT服务端生成/需验证既有ID适配；公开UUID，任何ID均不代表访问权",
-        "indexes": "每个引用字段为索引候选；另按排序/待处理时间建复合索引，待EXPLAIN验证",
+        "indexes": "queryIndexes列出关键查询候选；未列出的引用字段不自动建索引。实施前按实际查询、数据量、写入成本及EXPLAIN核对，不把候选当已建约束",
         "ddl": "仅设计，未执行DDL；5.7不能依赖CHECK强制，使用服务端校验、事务守卫与主键/必要唯一键；不生成物理外键，DDL隐式提交须独立迁移",
         "storage": "OSF1精确引用集中xj_storage_object；游戏版本、存储版本和业务revision分离；存储定位仅后端可见",
         "storageIndex": "对象定位复合唯一键采用ASCII/二进制，候选最大2192字节；须随最终InnoDB页尺寸/行格式验证，不以JSON声明当已建约束",
@@ -572,8 +628,8 @@ out = BASE / "05-资料/物理数据模型-V0.1.json"
 out.write_text(json.dumps(model, ensure_ascii=False, indent=2) + "\n")
 lines = [
     "# 物理数据字典与迁移草案", "",
-    f"V0.1；{TODAY}；状态：阶段3设计草案，未整体验收；未建表；已通过MCP只读核对xj_play元数据，未读业务数据。", "",
-    "唯一规格源：[物理模型](../05-资料/物理数据模型-V0.1.json)，由同目录生成脚本同步本字典。"
+    f"V0.1；{TODAY}；状态：阶段3设计草案，已纳入AC1有边界设计验收，运行未验收；未建表；已通过MCP只读核对xj_play元数据，未读业务数据。", "",
+    "唯一规格源：[生成脚本](../05-资料/生成物理字典.py)；[物理模型](../05-资料/物理数据模型-V0.1.json)和本字典均由它生成。 "
     "不把设计表数或字段数当运行能力。两个支付渠道都在范围内；平台与游戏表均在xj_play，游戏玩法数据属于游戏前缀，不进入平台统一剧情模型。", "",
     "## 公共约定", "",
 ]
@@ -597,6 +653,14 @@ for t in TABLES:
             keys += " → " + c["references"]
         lines.append(f"| `{c['name']}` | `{c['sqlType']}` | {'是' if c['nullable'] else '否'} | {keys or '—'} | {c['description']} |")
     lines += ["", "唯一约束：" + "；".join("(" + ",".join(x) + ")" for x in t["unique"]) + "。"]
+    if t.get("queryIndexes"):
+        lines += ["", "查询索引候选（未建、非唯一；需按实际查询及写入成本核实）：",
+                  "", "| 名称 | 字段顺序 | 查询用途 |",
+                  "| --- | --- | --- |"]
+        lines += [
+            f"| `{idx['name']}` | `({','.join(idx['columns'])})` | {idx['purpose']} |"
+            for idx in t["queryIndexes"]
+        ]
     if t["rules"]:
         lines += ["", t["rules"]]
 lines += ["", "## 迁移与回滚", "",

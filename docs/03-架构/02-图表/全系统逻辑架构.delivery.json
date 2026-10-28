@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "receiptId": "11b8f312-35b9-4a95-905a-8b6cb5f207cb",
+  "receiptId": "935d647c-0730-488a-9189-ab36ba3c1352",
   "status": "current",
   "command": "deliver",
   "type": "architecture",
   "input": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/全系统逻辑架构.json",
   "output": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/全系统逻辑架构.html",
   "specification": {
-    "sha256": "375137e67d0e4bde5660a907e06895ce00c4a99c4588872d9728c9aed166783b",
-    "bytes": 8812
+    "sha256": "6baf69e84c90591325e0f222344af6a31082c4aa044a22b677ab3c818dbebdad",
+    "bytes": 8862
   },
   "artifact": {
-    "sha256": "bf5fb1cca101317effecd156ccbdc8ae8fa4e9b2a2c7b7909c73b57ddafb0b9b",
-    "bytes": 839161
+    "sha256": "09c4dc8155bcf710e8ae427d77d47c425349410f8e7cdd6bb14323b4ff5d141a",
+    "bytes": 839082
   }
 }

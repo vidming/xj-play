@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "receiptId": "c981d00d-2c4a-43a0-9be5-41088025525b",
+  "receiptId": "df64ed82-e917-45f9-ac23-032c77857794",
   "status": "current",
   "command": "deliver",
   "type": "architecture",
   "input": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/部署拓扑候选.json",
   "output": "/Users/hzmking/Workspace/01-Development/01-Projects/01-Work/02-myproject/xj-play/docs/03-架构/02-图表/部署拓扑候选.html",
   "specification": {
-    "sha256": "c81419bb01ab714bc11d8af8daeaabee142d87c0828ddfbdc598d241c6f1fbb7",
-    "bytes": 8493
+    "sha256": "385e4f847a101e59e3df350656524d862366ac8c1eb32a121eb0e6fcb896cfa9",
+    "bytes": 8594
   },
   "artifact": {
-    "sha256": "3b705a0725b9f211030fd66c2efbed0be7c14662ecef0d92ffdbc46e38be2f39",
-    "bytes": 838085
+    "sha256": "5b19656a14c7e1f38e784b4471cee4a736e8d544201b0079164939932f9c7696",
+    "bytes": 837908
   }
 }
