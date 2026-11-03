@@ -62,7 +62,7 @@
         <aviator.version>5.4.4</aviator.version>
         <velocity.version>2.4.1</velocity.version>
         <fastjson2.version>2.0.65</fastjson2.version>
-        <guava.version>33.7.1-jre</guava.version>
+        <guava.version>33.8.0-jre</guava.version>
         <transmittable-thread-local.version>2.14.5</transmittable-thread-local.version>
         <commons-net.version>3.13.0</commons-net.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
@@ -72,7 +72,7 @@
         <bizlog-sdk.version>3.0.6</bizlog-sdk.version>
         <netty.version>4.2.18.Final</netty.version>
         <mqtt.version>1.2.5</mqtt.version>
-        <vertx.version>4.5.26</vertx.version>
+        <vertx.version>4.5.27</vertx.version>
         <okhttp.version>4.12.0</okhttp.version>
         <californium.version>3.14.0</californium.version>
         <j2mod.version>3.4.0</j2mod.version>
@@ -83,7 +83,7 @@
         <jimureport.version>2.5.4</jimureport.version>
         <jimubi.version>2.5.4</jimubi.version>
         <weixin-java.version>4.8.6-20260919.232150</weixin-java.version>
-        <bouncycastle.version>1.80</bouncycastle.version>
+        <bouncycastle.version>1.85</bouncycastle.version>
         <alipay-sdk-java.version>4.40.1014.ALL</alipay-sdk-java.version>
     </properties>
 
